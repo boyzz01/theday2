@@ -1,0 +1,234 @@
+<script setup>
+import { ref, computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const plan = computed(() => page.props.auth.subscription);
+const flash = computed(() => page.props.flash);
+
+const sidebarOpen = ref(false);
+const sidebarCollapsed = ref(false);
+
+const navItems = [
+    {
+        label: 'Dashboard',
+        route: 'dashboard',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>`,
+    },
+    {
+        label: 'Undangan Saya',
+        route: 'dashboard',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
+    },
+    {
+        label: 'Buat Undangan',
+        route: 'dashboard.templates',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4v16m8-8H4"/>`,
+        highlight: true,
+    },
+    {
+        label: 'Paket & Langganan',
+        route: 'dashboard',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
+    },
+    {
+        label: 'Pengaturan Akun',
+        route: 'profile.edit',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>`,
+    },
+];
+
+const isActive = (routeName) => route().current(routeName);
+
+const logout = () => router.post(route('logout'));
+
+const avatarInitials = computed(() => {
+    if (!user.value?.name) return '?';
+    return user.value.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+});
+</script>
+
+<template>
+    <div class="min-h-screen flex" style="background-color: #FFFDF7">
+
+        <!-- ── Sidebar Overlay (mobile) ─────────────────────────── -->
+        <Transition name="fade">
+            <div
+                v-if="sidebarOpen"
+                class="fixed inset-0 z-20 bg-black/40 lg:hidden"
+                @click="sidebarOpen = false"
+            />
+        </Transition>
+
+        <!-- ── Sidebar ──────────────────────────────────────────── -->
+        <aside
+            :class="[
+                'fixed top-0 left-0 h-full z-30 flex flex-col transition-all duration-300',
+                'bg-white border-r border-stone-100 shadow-sm',
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+                'lg:translate-x-0 lg:static lg:z-auto',
+                sidebarCollapsed ? 'lg:w-16' : 'w-64',
+            ]"
+        >
+            <!-- Logo -->
+            <div class="flex items-center gap-3 px-5 py-5 border-b border-stone-100">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                     style="background-color: #D4A373">
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <span v-if="!sidebarCollapsed"
+                      class="font-semibold text-lg text-stone-800 tracking-tight"
+                      style="font-family: 'Playfair Display', serif">
+                    TheDay
+                </span>
+                <!-- Collapse toggle desktop -->
+                <button
+                    class="hidden lg:flex ml-auto p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
+                    @click="sidebarCollapsed = !sidebarCollapsed"
+                >
+                    <svg class="w-4 h-4 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Nav Items -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <template v-for="item in navItems" :key="item.label">
+                    <!-- Highlight "Buat Undangan" differently -->
+                    <Link
+                        v-if="item.highlight"
+                        :href="route(item.route)"
+                        :class="[
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
+                            'text-white shadow-sm',
+                            sidebarCollapsed ? 'justify-center' : '',
+                        ]"
+                        style="background-color: #D4A373"
+                    >
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
+                        <span v-if="!sidebarCollapsed">{{ item.label }}</span>
+                    </Link>
+
+                    <Link
+                        v-else
+                        :href="route(item.route)"
+                        :class="[
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                            isActive(item.route)
+                                ? 'text-amber-800 bg-amber-50'
+                                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                            sidebarCollapsed ? 'justify-center' : '',
+                        ]"
+                    >
+                        <svg class="w-5 h-5 flex-shrink-0" :style="isActive(item.route) ? 'color:#D4A373' : ''"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
+                        <span v-if="!sidebarCollapsed">{{ item.label }}</span>
+                    </Link>
+                </template>
+            </nav>
+
+            <!-- Plan badge -->
+            <div v-if="!sidebarCollapsed && plan" class="mx-3 mb-3 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                <p class="text-xs text-amber-600 font-medium">Paket Aktif</p>
+                <p class="text-sm font-semibold text-amber-800 mt-0.5">{{ plan.plan_name }}</p>
+                <Link :href="route('dashboard')"
+                      class="text-xs mt-1 inline-block font-medium"
+                      style="color: #D4A373">
+                    Upgrade →
+                </Link>
+            </div>
+
+            <!-- User footer -->
+            <div class="border-t border-stone-100 p-3">
+                <div :class="['flex items-center gap-3', sidebarCollapsed ? 'justify-center' : '']">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                         style="background-color: #D4A373">
+                        {{ avatarInitials }}
+                    </div>
+                    <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-stone-800 truncate">{{ user?.name }}</p>
+                        <p class="text-xs text-stone-400 truncate">{{ user?.email }}</p>
+                    </div>
+                    <button
+                        v-if="!sidebarCollapsed"
+                        @click="logout"
+                        class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                        title="Keluar"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── Main content ─────────────────────────────────────── -->
+        <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- Top bar -->
+            <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-100 px-4 lg:px-6 h-14 flex items-center gap-4">
+                <!-- Mobile hamburger -->
+                <button
+                    class="lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors"
+                    @click="sidebarOpen = !sidebarOpen"
+                >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+
+                <!-- Page title slot -->
+                <div class="flex-1 min-w-0">
+                    <slot name="header" />
+                </div>
+
+                <!-- Right actions -->
+                <div class="flex items-center gap-2">
+                    <!-- Flash message -->
+                    <Transition name="slide-down">
+                        <div v-if="flash?.success"
+                             class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs font-medium border border-green-100">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {{ flash.success }}
+                        </div>
+                    </Transition>
+
+                    <!-- Avatar dropdown shortcut -->
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                         style="background-color: #D4A373">
+                        {{ avatarInitials }}
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page content -->
+            <main class="flex-1 p-4 lg:p-6 overflow-auto">
+                <slot />
+            </main>
+        </div>
+
+    </div>
+</template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s; }
+.slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-8px); }
+</style>

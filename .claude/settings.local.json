@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk php:*)",
+      "Bash(rtk grep:*)",
+      "Bash(rtk npm:*)",
+      "Bash(grep -n \"duration_days\" c:\\\\Users\\\\Ardi\\\\Desktop\\\\undangan\\\\theday\\\\database\\\\migrations/*.php)",
+      "Bash(rtk ls:*)"
+    ]
+  }
+}
