@@ -1,6 +1,7 @@
 <script setup>
 defineProps({
-    scale: { type: Number, default: 0.58 },
+    // 254px screen (260px frame – 6px border) / 375px content = 0.677
+    scale: { type: Number, default: 0.677 },
 });
 </script>
 

@@ -119,7 +119,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                 class="flex items-center justify-center p-6 md:p-8 flex-shrink-0"
                                 :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22)`"
                             >
-                                <PhoneMockup :scale="0.62">
+                                <PhoneMockup>
 
                                     <!-- ── Mini-invitation renderer ──────────── -->
                                     <div
