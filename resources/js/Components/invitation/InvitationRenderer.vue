@@ -9,6 +9,14 @@ import SectionRsvp     from '@/Pages/Invitation/Sections/SectionRsvp.vue';
 import SectionMessages from '@/Pages/Invitation/Sections/SectionMessages.vue';
 import SectionClosing  from '@/Pages/Invitation/Sections/SectionClosing.vue';
 
+// ── Premium template imports ───────────────────────────────────────────────
+import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTemplate.vue';
+
+// Template routing map: slug → component
+const TEMPLATE_MAP = {
+    'nusantara': NusantaraTemplate,
+};
+
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
@@ -16,6 +24,11 @@ const props = defineProps({
     // When isDemo=false, show the envelope/open screen
     autoOpen:   { type: Boolean, default: false },
 });
+
+// Check if this invitation uses a premium template with its own renderer
+const premiumTemplate = computed(() =>
+    TEMPLATE_MAP[props.invitation.template_slug] ?? null
+);
 
 // ── Theme ──────────────────────────────────────────────────────────────────
 const cfg          = computed(() => props.invitation.config ?? {});
@@ -88,6 +101,19 @@ onUnmounted(() => observer?.disconnect());
 </script>
 
 <template>
+    <!-- ── Premium template renderer (has its own sections + opening animation) -->
+    <component
+        v-if="premiumTemplate"
+        :is="premiumTemplate"
+        :invitation="invitation"
+        :messages="messages"
+        :is-demo="isDemo"
+        :auto-open="autoOpen || isDemo"
+    />
+
+    <!-- ── Default renderer (for free / basic templates) ───────────────────── -->
+    <template v-else>
+
     <!-- Background audio -->
     <audio
         v-if="invitation.music?.file_url"
@@ -215,4 +241,6 @@ onUnmounted(() => observer?.disconnect());
             <SectionClosing :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>
         </div>
     </div>
+
+    </template><!-- /v-else default renderer -->
 </template>

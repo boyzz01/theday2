@@ -2,6 +2,13 @@
 import { computed, onMounted, onUnmounted } from 'vue';
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 
+// ── Premium template components ───────────────────────────────────────────────
+import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTemplate.vue';
+
+const PREMIUM_TEMPLATE_MAP = {
+    'nusantara': NusantaraTemplate,
+};
+
 const props = defineProps({
     isOpen:   { type: Boolean, required: true },
     template: { type: Object,  default: null  },
@@ -19,6 +26,48 @@ const secondary = computed(() => cfg.value.secondary_color ?? '#FEFAE0');
 const accent    = computed(() => cfg.value.accent_color    ?? '#CCD5AE');
 const fontTitle = computed(() => cfg.value.font_title      ?? 'Playfair Display');
 const fontBody  = computed(() => cfg.value.font_body       ?? 'sans-serif');
+
+// ── Premium template detection ────────────────────────────────────────────────
+const premiumComponent = computed(() =>
+    props.template ? (PREMIUM_TEMPLATE_MAP[props.template.slug] ?? null) : null
+);
+
+// Build a proper invitation object from demo_data (mirrors what the controller does)
+function formatDateId(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+}
+
+const demoInvitation = computed(() => {
+    if (!premiumComponent.value || !props.template) return null;
+    const d    = demo.value;
+    const config = { ...(props.template.default_config ?? {}), ...(d.custom_config ?? {}) };
+    const isWedding = !!d.details?.groom_name;
+    return {
+        id:            'preview-demo',
+        slug:          'demo',
+        event_type:    isWedding ? 'pernikahan' : 'ulang_tahun',
+        details:       d.details ?? {},
+        events:        (d.events ?? []).map((e, i) => ({
+            id:                   i + 1,
+            event_name:           e.event_name ?? '',
+            event_date:           e.event_date ?? null,
+            event_date_formatted: formatDateId(e.event_date),
+            start_time:           e.start_time ?? null,
+            end_time:             e.end_time   ?? null,
+            venue_name:           e.venue_name    ?? null,
+            venue_address:        e.venue_address ?? null,
+            maps_url:             e.maps_url      ?? null,
+        })),
+        galleries:     (d.gallery ?? []).map((url, i) => ({ id: i + 1, image_url: url, caption: null })),
+        music:         null,
+        config,
+        template_slug: props.template.slug,
+        expires_at:    null,
+    };
+});
 
 const tierBadge = {
     free:    { label: 'Gratis',  bg: '#D1FAE5', color: '#065F46' },
@@ -119,8 +168,19 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                 class="flex items-center justify-center p-6 md:p-8 flex-shrink-0"
                                 :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22)`"
                             >
-                                <PhoneMockup>
+                                <!-- ── Premium template: render actual component ── -->
+                                <PhoneMockup v-if="premiumComponent">
+                                    <component
+                                        :is="premiumComponent"
+                                        :invitation="demoInvitation"
+                                        :messages="[]"
+                                        :is-demo="true"
+                                        :auto-open="true"
+                                    />
+                                </PhoneMockup>
 
+                                <!-- ── Default: generic mini-renderer ──────────── -->
+                                <PhoneMockup v-else>
                                     <!-- ── Mini-invitation renderer ──────────── -->
                                     <div
                                         class="min-h-full"

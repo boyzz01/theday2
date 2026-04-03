@@ -163,6 +163,44 @@ class TemplateSeeder extends Seeder
                 'sort_order'     => 3,
             ],
 
+            // ── Nusantara (Premium, dedicated renderer) ───────────
+            [
+                'category_id'    => $pernikahan->id,
+                'name'           => 'Nusantara',
+                'slug'           => 'nusantara',
+                'thumbnail_url'  => null,
+                'description'    => 'Template pernikahan premium bergaya keraton Jawa — megah, sakral, dan agung. Dilengkapi animasi gapura, ornamen batik kawung, sulur lung-lungan, dan mandala teratai.',
+                'default_config' => [
+                    'primary_color'       => '#8B6914',
+                    'primary_color_light' => '#C9A84C',
+                    'secondary_color'     => '#F5F0E8',
+                    'accent_color'        => '#6B1D1D',
+                    'dark_bg'             => '#2C1810',
+                    'font_title'          => 'Cinzel Decorative',
+                    'font_heading'        => 'Cormorant Garamond',
+                    'font_body'           => 'Crimson Text',
+                    'layout'              => 'vertical-scroll',
+                    'animation'           => 'javanese-gate',
+                    'has_opening_animation' => true,
+                    'has_parallax'          => true,
+                    'has_countdown'         => true,
+                    'ornament_style'        => 'javanese',
+                ],
+                'demo_data'      => array_merge($weddingDemo, ['custom_config' => [
+                    'primary_color'       => '#8B6914',
+                    'primary_color_light' => '#C9A84C',
+                    'secondary_color'     => '#F5F0E8',
+                    'accent_color'        => '#6B1D1D',
+                    'dark_bg'             => '#2C1810',
+                    'font_title'          => 'Cinzel Decorative',
+                    'font_heading'        => 'Cormorant Garamond',
+                    'font_body'           => 'Crimson Text',
+                ]]),
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 4,
+            ],
+
             // ── Ulang Tahun ────────────────────────────────────────
             [
                 'category_id'    => $ulangTahun->id,
