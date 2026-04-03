@@ -15,8 +15,9 @@ Route::get('/', function () {
 
 // ── Guest-accessible public routes (no auth required) ───────────────────────
 Route::middleware('guest.session')->group(function () {
-    Route::get('/templates', [TemplateGalleryController::class, 'index'])->name('templates.gallery');
-    Route::get('/editor',    [EditorController::class, 'create'])->name('editor.create');
+    Route::get('/templates',              [TemplateGalleryController::class, 'index'])->name('templates.gallery');
+    Route::get('/templates/{template:slug}/demo', [TemplateGalleryController::class, 'demo'])->name('templates.demo');
+    Route::get('/editor',                 [EditorController::class, 'create'])->name('editor.create');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {

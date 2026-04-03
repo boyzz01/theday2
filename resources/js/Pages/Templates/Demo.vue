@@ -1,0 +1,100 @@
+<script setup>
+import { computed } from 'vue';
+import { Head }     from '@inertiajs/vue3';
+import InvitationRenderer from '@/Components/invitation/InvitationRenderer.vue';
+
+const props = defineProps({
+    template:   { type: Object, required: true },
+    invitation: { type: Object, required: true },
+    messages:   { type: Array,  default: () => [] },
+    isGuest:    { type: Boolean, default: true },
+});
+
+const primary = computed(() => props.invitation.config?.primary_color ?? '#D4A373');
+
+function useTemplate() {
+    window.location.href = `/editor?template=${props.template.id}`;
+}
+</script>
+
+<template>
+    <Head :title="`Demo: ${template.name} — TheDay`"/>
+
+    <!-- ── Demo banner (sticky top, above everything) ───────────── -->
+    <div
+        class="sticky top-0 z-50 w-full"
+        style="background: linear-gradient(90deg, #2C1A0E, #4A2C18)"
+    >
+        <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-3 flex-wrap sm:flex-nowrap">
+            <!-- Icon + text -->
+            <div class="flex items-center gap-2 text-amber-200 text-xs font-medium flex-1 min-w-0">
+                <svg class="w-4 h-4 flex-shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <span class="truncate">
+                    Preview demo template
+                    <span class="font-bold text-amber-300">"{{ template.name }}"</span>
+                    — data yang ditampilkan adalah contoh.
+                </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a
+                    href="/templates"
+                    class="px-3 py-1.5 rounded-lg text-xs font-medium text-amber-200/70 hover:text-amber-100 transition-colors"
+                >
+                    ← Galeri
+                </a>
+                <button
+                    @click="useTemplate"
+                    class="px-4 py-1.5 rounded-lg text-xs font-bold text-stone-900 transition-all hover:opacity-90 active:scale-95"
+                    :style="`background-color: ${primary}`"
+                >
+                    Gunakan Template
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Full invitation renderer (demo mode, auto-opened) ─────── -->
+    <InvitationRenderer
+        :invitation="invitation"
+        :messages="messages"
+        :is-demo="true"
+        :auto-open="true"
+    />
+
+    <!-- ── Bottom CTA banner ─────────────────────────────────────── -->
+    <div
+        class="py-8 px-6 text-center"
+        style="background: linear-gradient(180deg, transparent, #2C1A0E22)"
+    >
+        <div class="max-w-sm mx-auto space-y-3">
+            <p class="text-sm font-semibold text-stone-700">Suka dengan template ini?</p>
+            <p class="text-xs text-stone-400">Mulai buat undangan sekarang — gratis, tanpa kartu kredit.</p>
+            <button
+                @click="useTemplate"
+                class="w-full py-3 rounded-2xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] shadow-lg"
+                :style="`background-color: ${primary}`"
+            >
+                Gunakan Template "{{ template.name }}"
+            </button>
+            <a href="/templates" class="block text-xs text-stone-400 hover:text-stone-600 transition-colors mt-1">
+                ← Lihat template lainnya
+            </a>
+        </div>
+    </div>
+</template>
+
+<style>
+/* Reuse the same global styles from invitation */
+:root { --inv-primary: #D4A373; --inv-font: 'Playfair Display', serif; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 4s linear infinite; }
+</style>

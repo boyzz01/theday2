@@ -6,6 +6,7 @@ const props = defineProps({
     slug:         { type: String, required: true },
     primaryColor: { type: String, default: '#D4A373' },
     fontFamily:   { type: String, default: 'Playfair Display' },
+    isDemo:       { type: Boolean, default: false },
 });
 
 const form = reactive({
@@ -28,6 +29,10 @@ const attendanceOptions = [
 ];
 
 async function submit() {
+    if (props.isDemo) {
+        serverError.value = 'Ini hanya demo — RSVP tidak dapat dikirim.';
+        return;
+    }
     errors.value      = {};
     serverError.value = '';
     submitting.value  = true;
@@ -77,6 +82,17 @@ async function submit() {
                 <p class="text-sm text-stone-500">
                     Konfirmasi kehadiran Anda telah kami terima.
                 </p>
+            </div>
+
+            <!-- Demo notice -->
+            <div v-if="isDemo"
+                 class="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-medium"
+                 style="background:#FEF3C7; color:#92400E">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Ini hanya demo — formulir tidak dapat dikirim.
             </div>
 
             <!-- Form -->

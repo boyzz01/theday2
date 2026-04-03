@@ -1,0 +1,338 @@
+<script setup>
+import { computed, onMounted, onUnmounted } from 'vue';
+import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
+
+const props = defineProps({
+    isOpen:   { type: Boolean, required: true },
+    template: { type: Object,  default: null  },
+});
+
+const emit = defineEmits(['close', 'use-template']);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const cfg   = computed(() => props.template?.default_config ?? {});
+const demo  = computed(() => props.template?.demo_data      ?? {});
+const tier  = computed(() => props.template?.tier           ?? 'free');
+
+const primary   = computed(() => cfg.value.primary_color   ?? '#D4A373');
+const secondary = computed(() => cfg.value.secondary_color ?? '#FEFAE0');
+const accent    = computed(() => cfg.value.accent_color    ?? '#CCD5AE');
+const fontTitle = computed(() => cfg.value.font_title      ?? 'Playfair Display');
+const fontBody  = computed(() => cfg.value.font_body       ?? 'sans-serif');
+
+const tierBadge = {
+    free:    { label: 'Gratis',  bg: '#D1FAE5', color: '#065F46' },
+    premium: { label: 'Premium', bg: '#FEF3C7', color: '#92400E' },
+};
+
+const features = [
+    { label: 'Animasi scroll halus'   },
+    { label: 'Formulir RSVP interaktif' },
+    { label: 'Gallery foto lightbox'  },
+    { label: 'Hitung mundur acara'    },
+    { label: 'Ucapan & doa tamu'      },
+    { label: 'Berbagi via WhatsApp'   },
+];
+
+// ── Demo content derivation ───────────────────────────────────────────────────
+const isWedding = computed(() =>
+    props.template?.category?.slug === 'pernikahan' ||
+    !! demo.value.details?.groom_name
+);
+
+const groomName = computed(() => demo.value.details?.groom_name        ?? 'Ahmad Rizky');
+const brideName = computed(() => demo.value.details?.bride_name        ?? 'Siti Nurhaliza');
+const bdayName  = computed(() => demo.value.details?.birthday_person_name ?? 'Arya');
+const bdayAge   = computed(() => demo.value.details?.birthday_age         ?? '');
+
+const events  = computed(() => demo.value.events  ?? []);
+const gallery = computed(() => demo.value.gallery ?? []);
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// ── Keyboard close ────────────────────────────────────────────────────────────
+function onKey(e) { if (e.key === 'Escape') emit('close'); }
+onMounted(()  => document.addEventListener('keydown', onKey));
+onUnmounted(() => document.removeEventListener('keydown', onKey));
+</script>
+
+<template>
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-250 ease-out"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition duration-200 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="isOpen && template"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+                style="background: rgba(0,0,0,0.75); backdrop-filter: blur(6px)"
+                @click.self="emit('close')"
+            >
+                <Transition
+                    enter-active-class="transition duration-250 ease-out"
+                    enter-from-class="opacity-0 scale-95 translate-y-2"
+                    enter-to-class="opacity-100 scale-100 translate-y-0"
+                    leave-active-class="transition duration-200 ease-in"
+                    leave-from-class="opacity-100 scale-100 translate-y-0"
+                    leave-to-class="opacity-0 scale-95 translate-y-2"
+                    appear
+                >
+                    <div
+                        v-if="isOpen"
+                        class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+                    >
+                        <!-- ── Header ─────────────────────────────────────────── -->
+                        <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100 flex-shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                                    :style="`background:${tierBadge[tier].bg};color:${tierBadge[tier].color}`"
+                                >
+                                    {{ tierBadge[tier].label }}
+                                </span>
+                                <h3 class="text-base font-semibold text-stone-800">{{ template.name }}</h3>
+                                <span class="text-xs text-stone-400 hidden sm:inline">· {{ template.category?.name }}</span>
+                            </div>
+                            <button
+                                @click="emit('close')"
+                                class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+                            >
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- ── Body ───────────────────────────────────────────── -->
+                        <div class="flex-1 overflow-auto flex flex-col md:flex-row min-h-0">
+
+                            <!-- Left: phone mockup -->
+                            <div
+                                class="flex items-center justify-center p-6 md:p-8 flex-shrink-0"
+                                :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22)`"
+                            >
+                                <PhoneMockup :scale="0.62">
+
+                                    <!-- ── Mini-invitation renderer ──────────── -->
+                                    <div
+                                        class="min-h-full"
+                                        :style="`background: linear-gradient(180deg, ${secondary}, white 60%); font-family: '${fontBody}', sans-serif`"
+                                    >
+                                        <!-- Cover -->
+                                        <div
+                                            class="flex flex-col items-center justify-center text-center px-6 pt-10 pb-8"
+                                            :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`"
+                                        >
+                                            <div class="w-12 h-0.5 mb-5 rounded-full" :style="`background:${primary}`"/>
+
+                                            <p
+                                                class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2"
+                                                :style="`color:${primary}`"
+                                            >
+                                                {{ isWedding ? 'Undangan Pernikahan' : 'Undangan Ulang Tahun' }}
+                                            </p>
+
+                                            <!-- Wedding cover -->
+                                            <template v-if="isWedding">
+                                                <p
+                                                    class="text-3xl font-bold leading-tight text-stone-800 mb-1"
+                                                    :style="`font-family: '${fontTitle}', serif`"
+                                                >{{ groomName }}</p>
+                                                <div class="flex items-center gap-3 my-1.5">
+                                                    <div class="w-8 h-px" :style="`background:${primary}`"/>
+                                                    <span class="text-sm" :style="`color:${primary}`">&amp;</span>
+                                                    <div class="w-8 h-px" :style="`background:${primary}`"/>
+                                                </div>
+                                                <p
+                                                    class="text-3xl font-bold leading-tight text-stone-800"
+                                                    :style="`font-family: '${fontTitle}', serif`"
+                                                >{{ brideName }}</p>
+                                            </template>
+
+                                            <!-- Birthday cover -->
+                                            <template v-else>
+                                                <p
+                                                    class="text-3xl font-bold leading-tight text-stone-800"
+                                                    :style="`font-family: '${fontTitle}', serif`"
+                                                >{{ bdayName }}</p>
+                                                <p
+                                                    class="text-sm mt-1 font-medium"
+                                                    :style="`color:${primary}`"
+                                                >
+                                                    Ulang Tahun ke-{{ bdayAge }}
+                                                </p>
+                                            </template>
+
+                                            <div class="w-12 h-0.5 mt-5 rounded-full" :style="`background:${primary}`"/>
+                                        </div>
+
+                                        <!-- Opening text snippet -->
+                                        <div v-if="demo.details?.opening_text" class="px-6 py-5 text-center">
+                                            <p class="text-[11px] text-stone-500 leading-relaxed italic line-clamp-4">
+                                                {{ demo.details.opening_text }}
+                                            </p>
+                                        </div>
+
+                                        <!-- Events -->
+                                        <div v-if="events.length" class="px-4 pb-4 space-y-3">
+                                            <p
+                                                class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3"
+                                                :style="`color:${primary}`"
+                                            >Waktu &amp; Lokasi</p>
+                                            <div
+                                                v-for="(ev, i) in events"
+                                                :key="i"
+                                                class="rounded-2xl p-3.5"
+                                                :style="`background:${primary}12; border:1px solid ${primary}25`"
+                                            >
+                                                <p class="text-xs font-bold text-stone-800 mb-1">{{ ev.event_name }}</p>
+                                                <p class="text-[11px] text-stone-500 mb-0.5">{{ formatDate(ev.event_date) }}</p>
+                                                <p class="text-[11px] text-stone-500 mb-0.5">{{ ev.start_time }}<span v-if="ev.end_time"> – {{ ev.end_time }}</span></p>
+                                                <div class="h-px my-2" :style="`background:${primary}20`"/>
+                                                <p class="text-[11px] font-medium text-stone-700">{{ ev.venue_name }}</p>
+                                                <p class="text-[10px] text-stone-400 leading-tight mt-0.5">{{ ev.venue_address }}</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Gallery strip -->
+                                        <div v-if="gallery.length" class="px-4 pb-5">
+                                            <p
+                                                class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3"
+                                                :style="`color:${primary}`"
+                                            >Galeri Foto</p>
+                                            <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
+                                                <img
+                                                    v-for="(src, i) in gallery"
+                                                    :key="i"
+                                                    :src="src"
+                                                    class="w-20 h-24 object-cover rounded-xl flex-shrink-0"
+                                                    :style="`border:2px solid ${primary}30`"
+                                                    @error="e => e.target.style.background = primary + '22'"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- RSVP CTA -->
+                                        <div class="px-5 pb-8 text-center">
+                                            <button
+                                                class="w-full py-3 rounded-2xl text-xs font-bold text-white shadow-sm"
+                                                :style="`background:${primary}`"
+                                            >
+                                                Konfirmasi Kehadiran
+                                            </button>
+                                            <p class="mt-4 text-[10px] text-stone-300">Dibuat dengan TheDay</p>
+                                        </div>
+                                    </div>
+                                    <!-- ── End mini-invitation ─────────────── -->
+
+                                </PhoneMockup>
+                            </div>
+
+                            <!-- Right: info panel -->
+                            <div class="flex-1 flex flex-col justify-between p-5 md:p-6 border-t md:border-t-0 md:border-l border-stone-100 overflow-y-auto">
+
+                                <div class="space-y-5">
+                                    <!-- Name + desc -->
+                                    <div>
+                                        <h2
+                                            class="text-xl font-bold text-stone-900 mb-1"
+                                            :style="`font-family: '${fontTitle}', serif`"
+                                        >{{ template.name }}</h2>
+                                        <p class="text-sm text-stone-500 leading-relaxed">
+                                            {{ template.description ?? 'Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.' }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Color palette -->
+                                    <div>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Palet Warna</p>
+                                        <div class="flex items-center gap-2">
+                                            <div
+                                                v-for="([label, color]) in [['Primer', primary], ['Sekunder', secondary], ['Aksen', accent]]"
+                                                :key="label"
+                                                class="flex flex-col items-center gap-1"
+                                            >
+                                                <div
+                                                    class="w-9 h-9 rounded-xl border border-stone-100 shadow-sm"
+                                                    :style="`background:${color}`"
+                                                />
+                                                <span class="text-[10px] text-stone-400">{{ label }}</span>
+                                            </div>
+                                            <div class="ml-1 flex flex-col gap-0.5">
+                                                <span class="text-[10px] text-stone-400">Font: <span class="text-stone-600 font-medium">{{ fontTitle }}</span></span>
+                                                <span class="text-[10px] text-stone-400">Body: <span class="text-stone-600 font-medium">{{ fontBody }}</span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Features -->
+                                    <div>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Fitur Tersedia</p>
+                                        <ul class="space-y-1.5">
+                                            <li
+                                                v-for="f in features"
+                                                :key="f.label"
+                                                class="flex items-center gap-2 text-sm text-stone-600"
+                                            >
+                                                <span
+                                                    class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                                                    :style="`background:${primary}20`"
+                                                >
+                                                    <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                         :style="`color:${primary}`">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                </span>
+                                                {{ f.label }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="pt-5 space-y-2.5">
+                                    <a
+                                        :href="`/templates/${template.slug}/demo`"
+                                        target="_blank"
+                                        class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:opacity-80"
+                                        :style="`color:${primary}; border-color:${primary}40`"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                        Lihat Demo Lengkap
+                                    </a>
+                                    <button
+                                        @click="emit('use-template', template.id)"
+                                        class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                                        :style="`background:${primary}`"
+                                    >
+                                        Gunakan Template Ini
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Transition>
+            </div>
+        </Transition>
+    </Teleport>
+</template>
+
+<style scoped>
+.line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

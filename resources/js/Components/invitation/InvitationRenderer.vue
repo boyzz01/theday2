@@ -1,0 +1,218 @@
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import SectionCover    from '@/Pages/Invitation/Sections/SectionCover.vue';
+import SectionOpening  from '@/Pages/Invitation/Sections/SectionOpening.vue';
+import SectionEvents   from '@/Pages/Invitation/Sections/SectionEvents.vue';
+import SectionGallery  from '@/Pages/Invitation/Sections/SectionGallery.vue';
+import SectionMusic    from '@/Pages/Invitation/Sections/SectionMusic.vue';
+import SectionRsvp     from '@/Pages/Invitation/Sections/SectionRsvp.vue';
+import SectionMessages from '@/Pages/Invitation/Sections/SectionMessages.vue';
+import SectionClosing  from '@/Pages/Invitation/Sections/SectionClosing.vue';
+
+const props = defineProps({
+    invitation: { type: Object,  required: true },
+    messages:   { type: Array,   default: () => [] },
+    isDemo:     { type: Boolean, default: false },
+    // When isDemo=false, show the envelope/open screen
+    autoOpen:   { type: Boolean, default: false },
+});
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+const cfg          = computed(() => props.invitation.config ?? {});
+const primaryColor = computed(() => cfg.value.primary_color ?? '#D4A373');
+const fontFamily   = computed(() => cfg.value.font_title    ?? cfg.value.font ?? 'Playfair Display');
+
+// ── Open / reveal state ────────────────────────────────────────────────────
+const opened = ref(props.isDemo || props.autoOpen);
+
+function openInvitation() { opened.value = true; }
+
+// ── Dynamic Google Font injection ──────────────────────────────────────────
+onMounted(() => {
+    const font = fontFamily.value.replace(/ /g, '+');
+    const link = document.createElement('link');
+    link.rel   = 'stylesheet';
+    link.href  = `https://fonts.googleapis.com/css2?family=${font}:ital,wght@0,400;0,600;0,700;1,400&display=swap`;
+    document.head.appendChild(link);
+
+    document.documentElement.style.setProperty('--inv-primary', primaryColor.value);
+    document.documentElement.style.setProperty('--inv-font', `'${fontFamily.value}', serif`);
+});
+
+// ── Background music ───────────────────────────────────────────────────────
+const musicPlaying = ref(false);
+const audioEl      = ref(null);
+
+function toggleMusic() {
+    if (!audioEl.value) return;
+    if (musicPlaying.value) {
+        audioEl.value.pause();
+        musicPlaying.value = false;
+    } else {
+        audioEl.value.play().then(() => { musicPlaying.value = true; }).catch(() => {});
+    }
+}
+
+function handleOpenAndPlay() {
+    openInvitation();
+    if (props.invitation.music?.file_url && audioEl.value) {
+        audioEl.value.play().then(() => { musicPlaying.value = true; }).catch(() => {});
+    }
+}
+
+// ── Messages ───────────────────────────────────────────────────────────────
+const localMessages = ref([...props.messages]);
+function onMessageSent(msg) { localMessages.value.unshift(msg); }
+
+// ── Section intersection tracking ─────────────────────────────────────────
+const activeSection = ref('cover');
+const sectionRefs   = {};
+
+function setSectionRef(name) {
+    return (el) => { if (el) sectionRefs[name] = el; };
+}
+
+let observer;
+onMounted(() => {
+    observer = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) activeSection.value = entry.target.dataset.section;
+            }
+        },
+        { threshold: 0.3 }
+    );
+    Object.values(sectionRefs).forEach((el) => observer.observe(el));
+});
+onUnmounted(() => observer?.disconnect());
+</script>
+
+<template>
+    <!-- Background audio -->
+    <audio
+        v-if="invitation.music?.file_url"
+        ref="audioEl"
+        :src="invitation.music.file_url"
+        loop
+        preload="none"
+        class="sr-only"
+    />
+
+    <!-- ── Envelope / open screen (not shown in demo) ───────────── -->
+    <Transition name="envelope">
+        <div
+            v-if="!opened"
+            class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-8"
+            :style="{ backgroundColor: primaryColor + '15', fontFamily }"
+        >
+            <div class="absolute top-0 left-0 right-0 h-2" :style="{ backgroundColor: primaryColor }"/>
+
+            <div class="max-w-sm w-full space-y-8">
+                <div>
+                    <p class="text-xs tracking-[0.3em] uppercase mb-3" :style="{ color: primaryColor }">
+                        Undangan {{ invitation.event_type === 'pernikahan' ? 'Pernikahan' : 'Ulang Tahun' }}
+                    </p>
+
+                    <template v-if="invitation.event_type === 'pernikahan'">
+                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
+                            {{ invitation.details?.groom_name ?? '—' }}
+                        </h1>
+                        <div class="flex items-center justify-center gap-3 my-3">
+                            <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
+                            <span class="text-lg" :style="{ color: primaryColor }">&amp;</span>
+                            <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
+                        </div>
+                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
+                            {{ invitation.details?.bride_name ?? '—' }}
+                        </h1>
+                    </template>
+                    <template v-else>
+                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
+                            {{ invitation.details?.birthday_person_name ?? '—' }}
+                        </h1>
+                        <p v-if="invitation.details?.birthday_age" class="mt-2 text-xl text-stone-500">
+                            {{ invitation.details.birthday_age }} tahun
+                        </p>
+                    </template>
+                </div>
+
+                <div v-if="invitation.events?.length" class="text-sm text-stone-500">
+                    {{ invitation.events[0].event_date_formatted }}
+                </div>
+
+                <button
+                    @click="handleOpenAndPlay"
+                    class="w-full py-4 rounded-2xl text-white text-sm font-semibold tracking-wide transition-all active:scale-95 shadow-lg"
+                    :style="{ backgroundColor: primaryColor }"
+                >
+                    Buka Undangan
+                    <svg class="inline-block w-4 h-4 ml-2 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <p class="text-xs text-stone-400">Kepada Yth. Bapak/Ibu/Sdr/i Tamu Undangan</p>
+            </div>
+
+            <div class="absolute bottom-0 left-0 right-0 h-2" :style="{ backgroundColor: primaryColor }"/>
+        </div>
+    </Transition>
+
+    <!-- ── Main scrolling content ────────────────────────────────── -->
+    <div v-if="opened" class="relative">
+
+        <!-- Floating music button -->
+        <button
+            v-if="invitation.music?.file_url"
+            @click="toggleMusic"
+            :class="['fixed bottom-6 right-4 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-90',
+                     musicPlaying ? 'animate-spin-slow' : '']"
+            :style="{ backgroundColor: primaryColor }"
+            aria-label="Toggle musik"
+        >
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 19V6l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/>
+            </svg>
+        </button>
+
+        <div data-section="cover" :ref="setSectionRef('cover')">
+            <SectionCover :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>
+        </div>
+
+        <div data-section="opening" :ref="setSectionRef('opening')">
+            <SectionOpening :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>
+        </div>
+
+        <div data-section="events" :ref="setSectionRef('events')">
+            <SectionEvents :events="invitation.events" :primary-color="primaryColor" :font-family="fontFamily"/>
+        </div>
+
+        <div v-if="invitation.galleries?.length" data-section="gallery" :ref="setSectionRef('gallery')">
+            <SectionGallery :galleries="invitation.galleries" :primary-color="primaryColor"/>
+        </div>
+
+        <div data-section="rsvp" :ref="setSectionRef('rsvp')">
+            <SectionRsvp
+                :slug="invitation.slug"
+                :primary-color="primaryColor"
+                :font-family="fontFamily"
+                :is-demo="isDemo"
+            />
+        </div>
+
+        <div data-section="messages" :ref="setSectionRef('messages')">
+            <SectionMessages
+                :slug="invitation.slug"
+                :messages="localMessages"
+                :primary-color="primaryColor"
+                :font-family="fontFamily"
+                :is-demo="isDemo"
+                @message-sent="onMessageSent"
+            />
+        </div>
+
+        <div data-section="closing" :ref="setSectionRef('closing')">
+            <SectionClosing :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>
+        </div>
+    </div>
+</template>
