@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -46,7 +47,10 @@ const navItems = [
 
 const isActive = (routeName) => route().current(routeName);
 
-const logout = () => router.post(route('logout'));
+const logout = async () => {
+    await axios.post(route('logout'));
+    window.location.href = '/';
+};
 
 const avatarInitials = computed(() => {
     if (!user.value?.name) return '?';
@@ -131,7 +135,7 @@ const avatarInitials = computed(() => {
                             sidebarCollapsed ? 'justify-center' : '',
                         ]"
                     >
-                        <svg class="w-5 h-5 flex-shrink-0" :style="isActive(item.route) ? 'color:#D4A373' : ''"
+                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item.route) ? 'text-amber-600' : 'text-stone-400'"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                         <span v-if="!sidebarCollapsed">{{ item.label }}</span>
                     </Link>

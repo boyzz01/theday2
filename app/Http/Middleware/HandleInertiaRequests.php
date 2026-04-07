@@ -36,7 +36,7 @@ class HandleInertiaRequests extends Middleware
                     if (! $sub) return null;
                     return [
                         'plan_name'        => $sub->plan->name,
-                        'status'           => $sub->status->value,
+                        'status'           => $sub->status,
                         'remove_watermark' => $sub->plan->remove_watermark,
                         'analytics_access' => $sub->plan->analytics_access,
                         'custom_music'     => $sub->plan->custom_music,

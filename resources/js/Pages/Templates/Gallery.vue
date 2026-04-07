@@ -80,7 +80,8 @@ const tiers = [
                     Pilih Template Undanganmu
                 </h1>
                 <p class="text-sm text-stone-400">
-                    Semua template bisa dikustomisasi warna, font, dan isinya. Coba dulu, daftar belakangan.
+                    Semua template bisa dikustomisasi warna, font, dan isinya. Coba dulu,
+                    <a href="/register" class="underline hover:text-stone-600 transition-colors">daftar</a> belakangan.
                 </p>
             </div>
 

@@ -44,7 +44,7 @@ const isGuest = computed(() => auth.value?.isGuest ?? true);
                         Masuk
                     </Link>
                     <Link
-                        href="/templates"
+                        href="/register"
                         class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                         style="background-color: #C8A26B"
                     >

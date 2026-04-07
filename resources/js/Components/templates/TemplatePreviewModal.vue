@@ -161,14 +161,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                         </div>
 
                         <!-- ── Body ───────────────────────────────────────────── -->
-                        <div class="flex-1 overflow-auto flex flex-col md:flex-row min-h-0">
+                        <div class="flex-1 min-h-0 flex flex-col md:flex-row">
 
-                            <!-- Left: phone mockup -->
+                            <!-- Left: phone mockup — hidden on mobile, visible on md+ -->
                             <div
-                                class="flex items-center justify-center p-6 md:p-8 flex-shrink-0"
+                                class="hidden md:flex items-center justify-center p-8 flex-shrink-0"
                                 :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22)`"
                             >
-                                <!-- ── Premium template: render actual component ── -->
                                 <PhoneMockup v-if="premiumComponent">
                                     <component
                                         :is="premiumComponent"
@@ -179,80 +178,46 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     />
                                 </PhoneMockup>
 
-                                <!-- ── Default: generic mini-renderer ──────────── -->
                                 <PhoneMockup v-else>
-                                    <!-- ── Mini-invitation renderer ──────────── -->
                                     <div
                                         class="min-h-full"
                                         :style="`background: linear-gradient(180deg, ${secondary}, white 60%); font-family: '${fontBody}', sans-serif`"
                                     >
-                                        <!-- Cover -->
-                                        <div
-                                            class="flex flex-col items-center justify-center text-center px-6 pt-10 pb-8"
-                                            :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`"
-                                        >
+                                        <div class="flex flex-col items-center justify-center text-center px-6 pt-10 pb-8"
+                                             :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`">
                                             <div class="w-12 h-0.5 mb-5 rounded-full" :style="`background:${primary}`"/>
-
-                                            <p
-                                                class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2"
-                                                :style="`color:${primary}`"
-                                            >
+                                            <p class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2" :style="`color:${primary}`">
                                                 {{ isWedding ? 'Undangan Pernikahan' : 'Undangan Ulang Tahun' }}
                                             </p>
-
-                                            <!-- Wedding cover -->
                                             <template v-if="isWedding">
-                                                <p
-                                                    class="text-3xl font-bold leading-tight text-stone-800 mb-1"
-                                                    :style="`font-family: '${fontTitle}', serif`"
-                                                >{{ groomName }}</p>
+                                                <p class="text-3xl font-bold leading-tight text-stone-800 mb-1"
+                                                   :style="`font-family: '${fontTitle}', serif`">{{ groomName }}</p>
                                                 <div class="flex items-center gap-3 my-1.5">
                                                     <div class="w-8 h-px" :style="`background:${primary}`"/>
                                                     <span class="text-sm" :style="`color:${primary}`">&amp;</span>
                                                     <div class="w-8 h-px" :style="`background:${primary}`"/>
                                                 </div>
-                                                <p
-                                                    class="text-3xl font-bold leading-tight text-stone-800"
-                                                    :style="`font-family: '${fontTitle}', serif`"
-                                                >{{ brideName }}</p>
+                                                <p class="text-3xl font-bold leading-tight text-stone-800"
+                                                   :style="`font-family: '${fontTitle}', serif`">{{ brideName }}</p>
                                             </template>
-
-                                            <!-- Birthday cover -->
                                             <template v-else>
-                                                <p
-                                                    class="text-3xl font-bold leading-tight text-stone-800"
-                                                    :style="`font-family: '${fontTitle}', serif`"
-                                                >{{ bdayName }}</p>
-                                                <p
-                                                    class="text-sm mt-1 font-medium"
-                                                    :style="`color:${primary}`"
-                                                >
+                                                <p class="text-3xl font-bold leading-tight text-stone-800"
+                                                   :style="`font-family: '${fontTitle}', serif`">{{ bdayName }}</p>
+                                                <p class="text-sm mt-1 font-medium" :style="`color:${primary}`">
                                                     Ulang Tahun ke-{{ bdayAge }}
                                                 </p>
                                             </template>
-
                                             <div class="w-12 h-0.5 mt-5 rounded-full" :style="`background:${primary}`"/>
                                         </div>
-
-                                        <!-- Opening text snippet -->
                                         <div v-if="demo.details?.opening_text" class="px-6 py-5 text-center">
                                             <p class="text-[11px] text-stone-500 leading-relaxed italic line-clamp-4">
                                                 {{ demo.details.opening_text }}
                                             </p>
                                         </div>
-
-                                        <!-- Events -->
                                         <div v-if="events.length" class="px-4 pb-4 space-y-3">
-                                            <p
-                                                class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3"
-                                                :style="`color:${primary}`"
-                                            >Waktu &amp; Lokasi</p>
-                                            <div
-                                                v-for="(ev, i) in events"
-                                                :key="i"
-                                                class="rounded-2xl p-3.5"
-                                                :style="`background:${primary}12; border:1px solid ${primary}25`"
-                                            >
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">Waktu &amp; Lokasi</p>
+                                            <div v-for="(ev, i) in events" :key="i" class="rounded-2xl p-3.5"
+                                                 :style="`background:${primary}12; border:1px solid ${primary}25`">
                                                 <p class="text-xs font-bold text-stone-800 mb-1">{{ ev.event_name }}</p>
                                                 <p class="text-[11px] text-stone-500 mb-0.5">{{ formatDate(ev.event_date) }}</p>
                                                 <p class="text-[11px] text-stone-500 mb-0.5">{{ ev.start_time }}<span v-if="ev.end_time"> – {{ ev.end_time }}</span></p>
@@ -261,51 +226,33 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                                 <p class="text-[10px] text-stone-400 leading-tight mt-0.5">{{ ev.venue_address }}</p>
                                             </div>
                                         </div>
-
-                                        <!-- Gallery strip -->
                                         <div v-if="gallery.length" class="px-4 pb-5">
-                                            <p
-                                                class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3"
-                                                :style="`color:${primary}`"
-                                            >Galeri Foto</p>
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">Galeri Foto</p>
                                             <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
-                                                <img
-                                                    v-for="(src, i) in gallery"
-                                                    :key="i"
-                                                    :src="src"
-                                                    class="w-20 h-24 object-cover rounded-xl flex-shrink-0"
-                                                    :style="`border:2px solid ${primary}30`"
-                                                    @error="e => e.target.style.background = primary + '22'"
-                                                />
+                                                <img v-for="(src, i) in gallery" :key="i" :src="src"
+                                                     class="w-20 h-24 object-cover rounded-xl flex-shrink-0"
+                                                     :style="`border:2px solid ${primary}30`"
+                                                     @error="e => e.target.style.background = primary + '22'" />
                                             </div>
                                         </div>
-
-                                        <!-- RSVP CTA -->
                                         <div class="px-5 pb-8 text-center">
-                                            <button
-                                                class="w-full py-3 rounded-2xl text-xs font-bold text-white shadow-sm"
-                                                :style="`background:${primary}`"
-                                            >
+                                            <button class="w-full py-3 rounded-2xl text-xs font-bold text-white shadow-sm" :style="`background:${primary}`">
                                                 Konfirmasi Kehadiran
                                             </button>
                                             <p class="mt-4 text-[10px] text-stone-300">Dibuat dengan TheDay</p>
                                         </div>
                                     </div>
-                                    <!-- ── End mini-invitation ─────────────── -->
-
                                 </PhoneMockup>
                             </div>
 
-                            <!-- Right: info panel -->
-                            <div class="flex-1 flex flex-col justify-between p-5 md:p-6 border-t md:border-t-0 md:border-l border-stone-100 overflow-y-auto">
+                            <!-- Right: info panel — full width on mobile, sidebar on md+ -->
+                            <div class="flex-1 overflow-y-auto flex flex-col md:border-l border-stone-100">
+                                <div class="flex-1 p-5 md:p-6 space-y-5">
 
-                                <div class="space-y-5">
                                     <!-- Name + desc -->
                                     <div>
-                                        <h2
-                                            class="text-xl font-bold text-stone-900 mb-1"
-                                            :style="`font-family: '${fontTitle}', serif`"
-                                        >{{ template.name }}</h2>
+                                        <h2 class="text-xl font-bold text-stone-900 mb-1"
+                                            :style="`font-family: '${fontTitle}', serif`">{{ template.name }}</h2>
                                         <p class="text-sm text-stone-500 leading-relaxed">
                                             {{ template.description ?? 'Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.' }}
                                         </p>
@@ -315,15 +262,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     <div>
                                         <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Palet Warna</p>
                                         <div class="flex items-center gap-2">
-                                            <div
-                                                v-for="([label, color]) in [['Primer', primary], ['Sekunder', secondary], ['Aksen', accent]]"
-                                                :key="label"
-                                                class="flex flex-col items-center gap-1"
-                                            >
-                                                <div
-                                                    class="w-9 h-9 rounded-xl border border-stone-100 shadow-sm"
-                                                    :style="`background:${color}`"
-                                                />
+                                            <div v-for="([label, color]) in [['Primer', primary], ['Sekunder', secondary], ['Aksen', accent]]"
+                                                 :key="label" class="flex flex-col items-center gap-1">
+                                                <div class="w-9 h-9 rounded-xl border border-stone-100 shadow-sm" :style="`background:${color}`"/>
                                                 <span class="text-[10px] text-stone-400">{{ label }}</span>
                                             </div>
                                             <div class="ml-1 flex flex-col gap-0.5">
@@ -337,17 +278,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     <div>
                                         <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Fitur Tersedia</p>
                                         <ul class="space-y-1.5">
-                                            <li
-                                                v-for="f in features"
-                                                :key="f.label"
-                                                class="flex items-center gap-2 text-sm text-stone-600"
-                                            >
-                                                <span
-                                                    class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                                                    :style="`background:${primary}20`"
-                                                >
-                                                    <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                         :style="`color:${primary}`">
+                                            <li v-for="f in features" :key="f.label" class="flex items-center gap-2 text-sm text-stone-600">
+                                                <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                                                      :style="`background:${primary}20`">
+                                                    <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" :style="`color:${primary}`">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                                     </svg>
                                                 </span>
@@ -357,25 +291,20 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     </div>
                                 </div>
 
-                                <!-- Actions -->
-                                <div class="pt-5 space-y-2.5">
-                                    <a
-                                        :href="`/templates/${template.slug}/demo`"
-                                        target="_blank"
-                                        class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:opacity-80"
-                                        :style="`color:${primary}; border-color:${primary}40`"
-                                    >
+                                <!-- Actions — sticky at bottom -->
+                                <div class="p-5 md:p-6 border-t border-stone-100 space-y-2.5 flex-shrink-0">
+                                    <a :href="`/templates/${template.slug}/demo`" target="_blank"
+                                       class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:opacity-80"
+                                       :style="`color:${primary}; border-color:${primary}40`">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                         </svg>
                                         Lihat Demo Lengkap
                                     </a>
-                                    <button
-                                        @click="emit('use-template', template.id)"
-                                        class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                                        :style="`background:${primary}`"
-                                    >
+                                    <button @click="emit('use-template', template.id)"
+                                            class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                                            :style="`background:${primary}`">
                                         Gunakan Template Ini
                                     </button>
                                 </div>
