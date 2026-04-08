@@ -72,20 +72,35 @@ class InvitationController extends Controller
             'template_id' => 'required|uuid|exists:templates,id',
         ]);
 
-        $template = Template::findOrFail($data['template_id']);
-
+        $template  = Template::findOrFail($data['template_id']);
         $eventType = $template->category?->slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan';
 
-        $invitation = Invitation::create([
-            'user_id'     => Auth::id(),
-            'template_id' => $template->id,
-            'title'       => $template->name,
-            'event_type'  => $eventType,
-            'slug'        => $this->generateUniqueSlug($template->name),
-            'status'      => 'draft',
-        ]);
+        // Reuse existing draft if one exists (max 1 draft per user)
+        $invitation = Invitation::where('user_id', Auth::id())
+            ->where('status', 'draft')
+            ->first();
 
-        $invitation->details()->create(['invitation_id' => $invitation->id]);
+        if ($invitation) {
+            $invitation->update([
+                'template_id' => $template->id,
+                'title'       => $template->name,
+                'event_type'  => $eventType,
+            ]);
+            $invitation->details()->updateOrCreate(
+                ['invitation_id' => $invitation->id],
+                []
+            );
+        } else {
+            $invitation = Invitation::create([
+                'user_id'     => Auth::id(),
+                'template_id' => $template->id,
+                'title'       => $template->name,
+                'event_type'  => $eventType,
+                'slug'        => $this->generateUniqueSlug($template->name),
+                'status'      => 'draft',
+            ]);
+            $invitation->details()->create(['invitation_id' => $invitation->id]);
+        }
 
         return redirect()->route('dashboard.invitations.edit', $invitation);
     }
