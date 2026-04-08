@@ -48,10 +48,10 @@ function defaultConfig() {
 
 // ─── Composable ───────────────────────────────────────────────────────────────
 
-export function useInvitationEditor(template) {
+export function useInvitationEditor(template, invitation = null) {
 
     // ── Core identifiers ─────────────────────────────────────────
-    const invitationId  = ref(null);
+    const invitationId  = ref(invitation?.id ?? null);
     const currentStep   = ref(1);
     const isSaving      = ref(false);
     const saveError     = ref(null);
@@ -59,34 +59,74 @@ export function useInvitationEditor(template) {
 
     // ── Step 1 — Basic info ──────────────────────────────────────
     const basic = reactive({
-        title:      '',
-        event_type: template?.category?.slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan',
+        title:      invitation?.title ?? '',
+        event_type: invitation?.event_type
+            ?? (template?.category?.slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan'),
     });
 
-    const details = reactive(defaultDetails());
+    const details = reactive({
+        ...defaultDetails(),
+        ...(invitation?.details ?? {}),
+    });
 
     // ── Step 2 — Events ──────────────────────────────────────────
-    const events = ref([defaultEvent()]);
+    const events = ref(invitation?.events?.length
+        ? invitation.events.map((e, i) => ({
+            _key:          Date.now() + Math.random() + i,
+            _serverId:     e.id,
+            event_name:    e.event_name    ?? '',
+            event_date:    e.event_date    ?? '',
+            start_time:    e.start_time    ?? '',
+            end_time:      e.end_time      ?? '',
+            venue_name:    e.venue_name    ?? '',
+            venue_address: e.venue_address ?? '',
+            maps_url:      e.maps_url      ?? '',
+            sort_order:    e.sort_order    ?? i,
+        }))
+        : [defaultEvent()]
+    );
 
     // ── Step 3 — Gallery ─────────────────────────────────────────
-    const galleries = ref([]);
+    const galleries = ref(invitation?.galleries?.length
+        ? invitation.galleries.map((g, i) => ({
+            _key:      Date.now() + Math.random() + i,
+            _serverId: g.id,
+            image_url: g.image_url,
+            caption:   g.caption   ?? '',
+        }))
+        : []
+    );
 
     // ── Step 4 — Music ───────────────────────────────────────────
-    const selectedMusic = ref(null); // { title, file_url }
+    const selectedMusic = ref(invitation?.music?.[0]
+        ? { title: invitation.music[0].title, file_url: invitation.music[0].file_url }
+        : null
+    );
 
     // ── Step 5 — Config ──────────────────────────────────────────
     const customConfig = reactive({
         ...defaultConfig(),
         ...(template?.default_config ?? {}),
+        ...(invitation?.custom_config ?? {}),
     });
 
     // ── Step 6 — Publish ─────────────────────────────────────────
     const publish = reactive({
-        slug:                  '',
-        is_password_protected: false,
+        slug:                  invitation?.slug                  ?? '',
+        is_password_protected: invitation?.is_password_protected ?? false,
         password:              '',
-        expires_at:            '',
+        expires_at:            invitation?.expires_at            ?? '',
     });
+
+    // ── Infer lastSavedStep from existing data ────────────────────
+    if (invitation?.id) {
+        let step = 1;
+        if (invitation.events?.length)    step = Math.max(step, 2);
+        if (invitation.galleries?.length) step = Math.max(step, 3);
+        if (invitation.music?.length)     step = Math.max(step, 4);
+        if (invitation.custom_config && Object.keys(invitation.custom_config).length) step = Math.max(step, 5);
+        lastSavedStep.value = step;
+    }
 
     // ── API helpers ───────────────────────────────────────────────
 
@@ -109,6 +149,10 @@ export function useInvitationEditor(template) {
             isSaving.value = false;
         }
     }
+
+    // ── Pending photo queue (deferred until saveStep1) ────────────
+    // key = field name without _url (e.g. "groom_photo"), value = File
+    const pendingPhotoFiles = reactive({});
 
     // ── Upload helpers ────────────────────────────────────────────
 
@@ -139,21 +183,14 @@ export function useInvitationEditor(template) {
         return res.data.data;
     }
 
-    async function uploadPhotoField(file, field) {
-        if (!invitationId.value) throw new Error('Simpan informasi dasar terlebih dahulu.');
-        const form = new FormData();
-        form.append(field, file);
-        const res = await axios.post(
-            apiUrl(`/invitations/${invitationId.value}/details`),
-            form,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-        // Sync the returned url back into details
-        const urlField = `${field}_url`;
-        if (res.data.data?.[urlField]) {
-            details[urlField] = res.data.data[urlField];
+    // Queue the file locally and show a preview — actual upload happens in saveStep1
+    function uploadPhotoField(file, field) {
+        // Revoke previous object URL to avoid memory leak
+        if (pendingPhotoFiles[field] && details[`${field}_url`]?.startsWith('blob:')) {
+            URL.revokeObjectURL(details[`${field}_url`]);
         }
-        return res.data.data?.[urlField] ?? '';
+        pendingPhotoFiles[field] = file;
+        details[`${field}_url`] = URL.createObjectURL(file);
     }
 
     async function uploadAudio(file) {
@@ -192,11 +229,28 @@ export function useInvitationEditor(template) {
                 });
             }
 
-            // Sync text details (no files here — files are uploaded on-demand)
+            // Sync text details
             await axios.post(
                 apiUrl(`/invitations/${invitationId.value}/details`),
                 sanitizedDetailsPayload()
             );
+
+            // Upload any pending photo files (queued when user picked a file)
+            for (const [field, file] of Object.entries(pendingPhotoFiles)) {
+                const form = new FormData();
+                form.append(field, file);
+                const res = await axios.post(
+                    apiUrl(`/invitations/${invitationId.value}/details`),
+                    form,
+                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                );
+                const urlField = `${field}_url`;
+                if (res.data.data?.[urlField]) {
+                    URL.revokeObjectURL(details[urlField]);
+                    details[urlField] = res.data.data[urlField];
+                }
+                delete pendingPhotoFiles[field];
+            }
 
             lastSavedStep.value = Math.max(lastSavedStep.value, 1);
         });
@@ -399,6 +453,16 @@ export function useInvitationEditor(template) {
         return data.image_url;
     }
 
+    // ── Draft restore (from sessionStorage) ──────────────────────
+
+    function restoreFromDraft(draft) {
+        if (!draft) return;
+        if (draft.basic)       Object.assign(basic, draft.basic);
+        if (draft.details)     Object.assign(details, draft.details);
+        if (draft.events?.length) events.value = draft.events;
+        if (draft.customConfig) Object.assign(customConfig, draft.customConfig);
+    }
+
     // ── Internal helpers ──────────────────────────────────────────
 
     function sanitizedDetailsPayload() {
@@ -436,6 +500,9 @@ export function useInvitationEditor(template) {
         selectedMusic,
         customConfig,
         publish,
+
+        // Draft restore
+        restoreFromDraft,
 
         // Save methods
         saveStep1,

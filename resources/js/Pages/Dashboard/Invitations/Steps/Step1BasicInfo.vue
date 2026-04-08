@@ -1,30 +1,16 @@
 <script setup>
-import { ref } from 'vue';
-
 const props = defineProps({
     basic:             { type: Object,   required: true },
     details:           { type: Object,   required: true },
     template:          { type: Object,   required: true },
-    invitationId:      { type: Object,   required: true }, // ref
     uploadPhotoField:  { type: Function, required: true },
 });
 
-const uploadingField = ref(null);
-const uploadError    = ref(null);
-
-async function handlePhotoUpload(event, field) {
+function handlePhotoUpload(event, field) {
     const file = event.target.files?.[0];
     if (!file) return;
-    uploadingField.value = field;
-    uploadError.value    = null;
-    try {
-        await props.uploadPhotoField(file, field.replace('_url', ''));
-    } catch {
-        uploadError.value = 'Gagal mengunggah foto.';
-    } finally {
-        uploadingField.value = null;
-        event.target.value = '';
-    }
+    props.uploadPhotoField(file, field.replace('_url', ''));
+    event.target.value = '';
 }
 
 const eventTypeOptions = [
@@ -104,26 +90,15 @@ const eventTypeOptions = [
                              class="w-20 h-20 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.groom_photo_url" class="w-full h-full object-cover" alt="Foto pria"/>
                         </div>
-                        <label :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all',
-                            uploadingField === 'groom_photo_url'
-                                ? 'border-amber-200 text-amber-400 bg-amber-50'
-                                : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50',
-                        ]">
-                            <svg v-if="uploadingField === 'groom_photo_url'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                            </svg>
-                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <label class="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            {{ uploadingField === 'groom_photo_url' ? 'Mengunggah…' : details.groom_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
+                            {{ details.groom_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
                             <input type="file" accept="image/*" class="sr-only"
-                                   :disabled="!invitationId.value"
                                    @change="handlePhotoUpload($event, 'groom_photo_url')"/>
                         </label>
-                        <p v-if="!invitationId.value" class="text-xs text-stone-400">Simpan terlebih dahulu untuk upload foto</p>
                     </div>
                 </div>
             </div>
@@ -152,23 +127,13 @@ const eventTypeOptions = [
                              class="w-20 h-20 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.bride_photo_url" class="w-full h-full object-cover" alt="Foto wanita"/>
                         </div>
-                        <label :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all',
-                            uploadingField === 'bride_photo_url'
-                                ? 'border-amber-200 text-amber-400 bg-amber-50'
-                                : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50',
-                        ]">
-                            <svg v-if="uploadingField === 'bride_photo_url'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                            </svg>
-                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <label class="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            {{ uploadingField === 'bride_photo_url' ? 'Mengunggah…' : details.bride_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
+                            {{ details.bride_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
                             <input type="file" accept="image/*" class="sr-only"
-                                   :disabled="!invitationId.value"
                                    @change="handlePhotoUpload($event, 'bride_photo_url')"/>
                         </label>
                     </div>
@@ -200,23 +165,13 @@ const eventTypeOptions = [
                              class="w-20 h-20 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.birthday_photo_url" class="w-full h-full object-cover" alt="Foto"/>
                         </div>
-                        <label :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all',
-                            uploadingField === 'birthday_photo_url'
-                                ? 'border-amber-200 text-amber-400 bg-amber-50'
-                                : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50',
-                        ]">
-                            <svg v-if="uploadingField === 'birthday_photo_url'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                            </svg>
-                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <label class="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium cursor-pointer transition-all border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            {{ uploadingField === 'birthday_photo_url' ? 'Mengunggah…' : details.birthday_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
+                            {{ details.birthday_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
                             <input type="file" accept="image/*" class="sr-only"
-                                   :disabled="!invitationId.value"
                                    @change="handlePhotoUpload($event, 'birthday_photo_url')"/>
                         </label>
                     </div>
