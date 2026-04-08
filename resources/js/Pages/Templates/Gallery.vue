@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import TemplatePreviewModal from '@/Components/templates/TemplatePreviewModal.vue';
+import { useLocale } from '@/Composables/useLocale';
 
 const props = defineProps({
     categories: Array,
@@ -56,16 +57,23 @@ function useTemplate(templateId) {
     }
 }
 
+const { locale, t } = useLocale();
+
 const allCategories = computed(() => [
-    { slug: 'all', name: 'Semua' },
-    ...props.categories,
+    { slug: 'all', name: t('Semua', 'All') },
+    ...props.categories.map(c => ({ ...c, name: locale.value === 'en' ? (c.name_en || c.name) : c.name })),
 ]);
 
-const tiers = [
-    { value: 'all',     label: 'Semua' },
-    { value: 'free',    label: 'Gratis' },
+const tiers = computed(() => [
+    { value: 'all',     label: t('Semua', 'All') },
+    { value: 'free',    label: t('Gratis', 'Free') },
     { value: 'premium', label: 'Premium' },
-];
+]);
+
+const tName  = (tmpl) => locale.value === 'en' ? (tmpl.name_en        || tmpl.name)        : tmpl.name;
+const tDesc  = (tmpl) => locale.value === 'en' ? (tmpl.description_en || tmpl.description) : tmpl.description;
+const tCat   = (tmpl) => locale.value === 'en' ? (tmpl.category.name_en || tmpl.category.name) : tmpl.category.name;
+const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
 </script>
 
 <template>
@@ -77,11 +85,12 @@ const tiers = [
             <!-- Heading -->
             <div class="text-center max-w-xl mx-auto mb-8">
                 <h1 class="text-2xl font-semibold text-stone-800 mb-2" style="font-family: 'Cormorant Garamond', serif; font-size: 2rem">
-                    Pilih Template Undanganmu
+                    {{ t('Pilih Template Undanganmu', 'Choose Your Invitation Template') }}
                 </h1>
                 <p class="text-sm text-stone-400">
-                    Semua template bisa dikustomisasi warna, font, dan isinya. Coba dulu,
-                    <a href="/register" class="underline hover:text-stone-600 transition-colors">daftar</a> belakangan.
+                    {{ t('Semua template bisa dikustomisasi warna, font, dan isinya. Coba dulu,', 'All templates are customizable in color, font, and content. Try first,') }}
+                    <a href="/register" class="underline hover:text-stone-600 transition-colors">{{ t('daftar', 'register') }}</a>
+                    {{ t('belakangan.', 'later.') }}
                 </p>
             </div>
 
@@ -125,7 +134,9 @@ const tiers = [
             </div>
 
             <p class="text-xs text-stone-400">
-                Menampilkan <span class="font-semibold text-stone-600">{{ templates.length }}</span> template
+                {{ t('Menampilkan', 'Showing') }}
+                <span class="font-semibold text-stone-600">{{ templates.length }}</span>
+                template
             </p>
 
             <!-- Template Grid -->
@@ -155,7 +166,7 @@ const tiers = [
                                 <div class="w-10 h-px mb-3" :style="`background-color: ${primaryColor(template)}`"/>
                                 <p class="text-xs tracking-widest uppercase font-medium mb-1"
                                    :style="`color: ${primaryColor(template)}; font-family: '${fontTitle(template)}', serif`">
-                                    {{ template.category.name }}
+                                    {{ tCat(template) }}
                                 </p>
                                 <p class="text-lg font-semibold text-stone-700 leading-tight"
                                    :style="`font-family: '${fontTitle(template)}', serif`">
@@ -175,7 +186,7 @@ const tiers = [
                             class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold"
                             :style="`background-color: ${tierConfig[template.tier].bg}; color: ${tierConfig[template.tier].color}`"
                         >
-                            {{ tierConfig[template.tier].label }}
+                            {{ tTier(template.tier) }}
                         </span>
 
                         <div class="absolute top-3 right-3 flex gap-1.5">
@@ -207,18 +218,18 @@ const tiers = [
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                Gunakan
+                                {{ t('Gunakan', 'Use') }}
                             </button>
                         </div>
                     </div>
 
                     <div class="p-4">
                         <div class="flex items-start justify-between gap-2 mb-1">
-                            <p class="text-sm font-semibold text-stone-800 leading-tight">{{ template.name }}</p>
-                            <span class="text-xs text-stone-400 flex-shrink-0">{{ template.category.name }}</span>
+                            <p class="text-sm font-semibold text-stone-800 leading-tight">{{ tName(template) }}</p>
+                            <span class="text-xs text-stone-400 flex-shrink-0">{{ tCat(template) }}</span>
                         </div>
                         <p v-if="template.description" class="text-xs text-stone-400 leading-relaxed line-clamp-2 mb-3">
-                            {{ template.description }}
+                            {{ tDesc(template) }}
                         </p>
                         <div class="flex gap-2">
                             <button
@@ -232,7 +243,7 @@ const tiers = [
                                 class="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
                                 :style="`background-color: ${primaryColor(template)}`"
                             >
-                                Gunakan
+                                {{ t('Gunakan', 'Use') }}
                             </button>
                         </div>
                     </div>
@@ -241,14 +252,14 @@ const tiers = [
 
             <div v-else class="py-24 text-center">
                 <div class="text-5xl mb-4">🎨</div>
-                <p class="text-sm font-medium text-stone-600 mb-1">Tidak ada template ditemukan</p>
-                <p class="text-xs text-stone-400">Coba ubah filter kategori atau tier.</p>
+                <p class="text-sm font-medium text-stone-600 mb-1">{{ t('Tidak ada template ditemukan', 'No templates found') }}</p>
+                <p class="text-xs text-stone-400">{{ t('Coba ubah filter kategori atau tier.', 'Try changing the category or tier filter.') }}</p>
                 <button
                     @click="activeCategory = 'all'; activeTier = 'all'; applyFilters()"
                     class="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
                     style="background-color: #D4A373"
                 >
-                    Reset Filter
+                    {{ t('Reset Filter', 'Reset Filter') }}
                 </button>
             </div>
         </div>

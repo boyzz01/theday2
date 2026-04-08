@@ -2,11 +2,14 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import NavbarUserMenu from '@/Components/NavbarUserMenu.vue';
+import { useLocale } from '@/Composables/useLocale';
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
 const user = computed(() => auth.value?.user ?? null);
 const isGuest = computed(() => auth.value?.isGuest ?? true);
+
+const { locale, toggleLocale, t } = useLocale();
 </script>
 
 <template>
@@ -27,11 +30,22 @@ const isGuest = computed(() => auth.value?.isGuest ?? true);
             <!-- Nav links -->
             <div class="hidden md:flex items-center gap-6 text-sm text-stone-500">
                 <Link href="/templates" class="hover:text-stone-800 transition-colors">Template</Link>
-                <Link href="/#harga" class="hover:text-stone-800 transition-colors">Harga</Link>
+                <Link href="/#harga" class="hover:text-stone-800 transition-colors">{{ t('Harga', 'Pricing') }}</Link>
             </div>
 
             <!-- Auth actions -->
             <div class="flex items-center gap-3">
+                <!-- Language Toggle -->
+                <button
+                    @click="toggleLocale"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all hover:bg-stone-50"
+                    style="border-color: rgba(200,162,107,0.4); color: #A0754A"
+                    :aria-label="locale === 'id' ? 'Switch to English' : 'Ganti ke Indonesia'"
+                >
+                    <span>{{ locale === 'id' ? '🇮🇩' : '🇬🇧' }}</span>
+                    <span>{{ locale === 'id' ? 'ID' : 'EN' }}</span>
+                </button>
+
                 <!-- Authenticated -->
                 <NavbarUserMenu v-if="!isGuest && user" :user="user" />
 
@@ -41,14 +55,14 @@ const isGuest = computed(() => auth.value?.isGuest ?? true);
                         href="/login"
                         class="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors px-3 py-2"
                     >
-                        Masuk
+                        {{ t('Masuk', 'Login') }}
                     </Link>
                     <Link
                         href="/register"
                         class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                         style="background-color: #C8A26B"
                     >
-                        Daftar
+                        {{ t('Daftar', 'Register') }}
                     </Link>
                 </template>
             </div>

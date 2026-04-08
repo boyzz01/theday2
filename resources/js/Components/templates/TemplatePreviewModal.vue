@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue';
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
+import { useLocale } from '@/Composables/useLocale';
 
 // ── Premium template components ───────────────────────────────────────────────
 import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTemplate.vue';
@@ -8,6 +9,8 @@ import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTempla
 const PREMIUM_TEMPLATE_MAP = {
     'nusantara': NusantaraTemplate,
 };
+
+const { locale, t } = useLocale();
 
 const props = defineProps({
     isOpen:   { type: Boolean, required: true },
@@ -70,18 +73,32 @@ const demoInvitation = computed(() => {
 });
 
 const tierBadge = {
-    free:    { label: 'Gratis',  bg: '#D1FAE5', color: '#065F46' },
-    premium: { label: 'Premium', bg: '#FEF3C7', color: '#92400E' },
+    free:    { bg: '#D1FAE5', color: '#065F46' },
+    premium: { bg: '#FEF3C7', color: '#92400E' },
 };
 
-const features = [
-    { label: 'Animasi scroll halus'   },
-    { label: 'Formulir RSVP interaktif' },
-    { label: 'Gallery foto lightbox'  },
-    { label: 'Hitung mundur acara'    },
-    { label: 'Ucapan & doa tamu'      },
-    { label: 'Berbagi via WhatsApp'   },
-];
+const features = computed(() => [
+    { label: t('Animasi scroll halus',     'Smooth scroll animation')   },
+    { label: t('Formulir RSVP interaktif', 'Interactive RSVP form')     },
+    { label: t('Gallery foto lightbox',    'Lightbox photo gallery')    },
+    { label: t('Hitung mundur acara',      'Event countdown timer')     },
+    { label: t('Ucapan & doa tamu',        'Guest wishes & prayers')    },
+    { label: t('Berbagi via WhatsApp',     'Share via WhatsApp')        },
+]);
+
+const tName = computed(() =>
+    locale.value === 'en' ? (props.template?.name_en || props.template?.name) : props.template?.name
+);
+const tDesc = computed(() =>
+    locale.value === 'en'
+        ? (props.template?.description_en || props.template?.description)
+        : props.template?.description
+);
+const tCatName = computed(() =>
+    locale.value === 'en'
+        ? (props.template?.category?.name_en || props.template?.category?.name)
+        : props.template?.category?.name
+);
 
 // ── Demo content derivation ───────────────────────────────────────────────────
 const isWedding = computed(() =>
@@ -145,10 +162,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     class="px-2.5 py-1 rounded-full text-xs font-semibold"
                                     :style="`background:${tierBadge[tier].bg};color:${tierBadge[tier].color}`"
                                 >
-                                    {{ tierBadge[tier].label }}
+                                    {{ tier === 'free' ? t('Gratis', 'Free') : 'Premium' }}
                                 </span>
-                                <h3 class="text-base font-semibold text-stone-800">{{ template.name }}</h3>
-                                <span class="text-xs text-stone-400 hidden sm:inline">· {{ template.category?.name }}</span>
+                                <h3 class="text-base font-semibold text-stone-800">{{ tName }}</h3>
+                                <span class="text-xs text-stone-400 hidden sm:inline">· {{ tCatName }}</span>
                             </div>
                             <button
                                 @click="emit('close')"
@@ -161,12 +178,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                         </div>
 
                         <!-- ── Body ───────────────────────────────────────────── -->
-                        <div class="flex-1 min-h-0 flex flex-col md:flex-row">
+                        <div class="flex-1 min-h-0 overflow-y-auto">
+                        <div class="flex flex-col md:flex-row md:items-start">
 
-                            <!-- Left: phone mockup — hidden on mobile, visible on md+ -->
+                            <!-- Left: phone mockup — hidden on mobile, sticky on desktop -->
                             <div
-                                class="hidden md:flex items-center justify-center p-8 flex-shrink-0"
-                                :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22)`"
+                                class="hidden md:flex items-center justify-center p-8 flex-shrink-0 md:sticky md:top-0"
+                                :style="`background: linear-gradient(150deg, ${secondary}ee, ${primary}22); min-height: 100%`"
                             >
                                 <PhoneMockup v-if="premiumComponent">
                                     <component
@@ -187,7 +205,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                              :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`">
                                             <div class="w-12 h-0.5 mb-5 rounded-full" :style="`background:${primary}`"/>
                                             <p class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2" :style="`color:${primary}`">
-                                                {{ isWedding ? 'Undangan Pernikahan' : 'Undangan Ulang Tahun' }}
+                                                {{ isWedding ? t('Undangan Pernikahan', 'Wedding Invitation') : t('Undangan Ulang Tahun', 'Birthday Invitation') }}
                                             </p>
                                             <template v-if="isWedding">
                                                 <p class="text-3xl font-bold leading-tight text-stone-800 mb-1"
@@ -204,7 +222,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                                 <p class="text-3xl font-bold leading-tight text-stone-800"
                                                    :style="`font-family: '${fontTitle}', serif`">{{ bdayName }}</p>
                                                 <p class="text-sm mt-1 font-medium" :style="`color:${primary}`">
-                                                    Ulang Tahun ke-{{ bdayAge }}
+                                                    {{ t('Ulang Tahun ke-', 'Birthday #') }}{{ bdayAge }}
                                                 </p>
                                             </template>
                                             <div class="w-12 h-0.5 mt-5 rounded-full" :style="`background:${primary}`"/>
@@ -215,7 +233,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             </p>
                                         </div>
                                         <div v-if="events.length" class="px-4 pb-4 space-y-3">
-                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">Waktu &amp; Lokasi</p>
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ t('Waktu & Lokasi', 'Date & Location') }}</p>
                                             <div v-for="(ev, i) in events" :key="i" class="rounded-2xl p-3.5"
                                                  :style="`background:${primary}12; border:1px solid ${primary}25`">
                                                 <p class="text-xs font-bold text-stone-800 mb-1">{{ ev.event_name }}</p>
@@ -227,7 +245,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             </div>
                                         </div>
                                         <div v-if="gallery.length" class="px-4 pb-5">
-                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">Galeri Foto</p>
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ t('Galeri Foto', 'Photo Gallery') }}</p>
                                             <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
                                                 <img v-for="(src, i) in gallery" :key="i" :src="src"
                                                      class="w-20 h-24 object-cover rounded-xl flex-shrink-0"
@@ -237,32 +255,32 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                         </div>
                                         <div class="px-5 pb-8 text-center">
                                             <button class="w-full py-3 rounded-2xl text-xs font-bold text-white shadow-sm" :style="`background:${primary}`">
-                                                Konfirmasi Kehadiran
+                                                {{ t('Konfirmasi Kehadiran', 'Confirm Attendance') }}
                                             </button>
-                                            <p class="mt-4 text-[10px] text-stone-300">Dibuat dengan TheDay</p>
+                                            <p class="mt-4 text-[10px] text-stone-300">{{ t('Dibuat dengan TheDay', 'Made with TheDay') }}</p>
                                         </div>
                                     </div>
                                 </PhoneMockup>
                             </div>
 
                             <!-- Right: info panel — full width on mobile, sidebar on md+ -->
-                            <div class="flex-1 overflow-y-auto flex flex-col md:border-l border-stone-100">
+                            <div class="flex-1 flex flex-col md:border-l border-stone-100">
                                 <div class="flex-1 p-5 md:p-6 space-y-5">
 
                                     <!-- Name + desc -->
                                     <div>
                                         <h2 class="text-xl font-bold text-stone-900 mb-1"
-                                            :style="`font-family: '${fontTitle}', serif`">{{ template.name }}</h2>
+                                            :style="`font-family: '${fontTitle}', serif`">{{ tName }}</h2>
                                         <p class="text-sm text-stone-500 leading-relaxed">
-                                            {{ template.description ?? 'Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.' }}
+                                            {{ tDesc ?? t('Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.', 'An elegant template fully customizable to your needs.') }}
                                         </p>
                                     </div>
 
                                     <!-- Color palette -->
                                     <div>
-                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Palet Warna</p>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('Palet Warna', 'Color Palette') }}</p>
                                         <div class="flex items-center gap-2">
-                                            <div v-for="([label, color]) in [['Primer', primary], ['Sekunder', secondary], ['Aksen', accent]]"
+                                            <div v-for="([label, color]) in [[t('Primer','Primary'), primary], [t('Sekunder','Secondary'), secondary], [t('Aksen','Accent'), accent]]"
                                                  :key="label" class="flex flex-col items-center gap-1">
                                                 <div class="w-9 h-9 rounded-xl border border-stone-100 shadow-sm" :style="`background:${color}`"/>
                                                 <span class="text-[10px] text-stone-400">{{ label }}</span>
@@ -276,7 +294,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 
                                     <!-- Features -->
                                     <div>
-                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Fitur Tersedia</p>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('Fitur Tersedia', 'Available Features') }}</p>
                                         <ul class="space-y-1.5">
                                             <li v-for="f in features" :key="f.label" class="flex items-center gap-2 text-sm text-stone-600">
                                                 <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
@@ -300,15 +318,16 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                         </svg>
-                                        Lihat Demo Lengkap
+                                        {{ t('Lihat Demo Lengkap', 'View Full Demo') }}
                                     </a>
                                     <button @click="emit('use-template', template.id)"
                                             class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                                             :style="`background:${primary}`">
-                                        Gunakan Template Ini
+                                        {{ t('Gunakan Template Ini', 'Use This Template') }}
                                     </button>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </Transition>

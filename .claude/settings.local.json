@@ -18,7 +18,9 @@
       "Read(//c/laragon/bin/apache/httpd-2.4.62-240904-win64-VS17/conf/**)",
       "Read(//c/laragon/bin/apache/**)",
       "Read(//c/laragon/www/**)",
-      "Read(//c/laragon/**)"
+      "Read(//c/laragon/**)",
+      "Bash(ls -la /c/laragon/www/theday/resources/lang*)",
+      "Bash(grep -r \"locale\\\\|APP_LOCALE\" /c/laragon/www/theday/.env*)"
     ]
   }
 }

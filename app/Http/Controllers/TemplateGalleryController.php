@@ -19,10 +19,10 @@ class TemplateGalleryController extends Controller
     {
         $categories = TemplateCategory::active()
             ->ordered()
-            ->get(['id', 'name', 'slug']);
+            ->get(['id', 'name', 'name_en', 'slug']);
 
         $templates = Template::active()
-            ->with('category:id,name,slug')
+            ->with('category:id,name,name_en,slug')
             ->when($request->category, fn ($q) => $q->whereHas(
                 'category',
                 fn ($q) => $q->where('slug', $request->category)
@@ -33,15 +33,18 @@ class TemplateGalleryController extends Controller
             ->map(fn ($t) => [
                 'id'             => $t->id,
                 'name'           => $t->name,
+                'name_en'        => $t->name_en ?? $t->name,
                 'slug'           => $t->slug,
                 'thumbnail_url'  => $t->thumbnail_url,
                 'description'    => $t->description,
+                'description_en' => $t->description_en ?? $t->description,
                 'tier'           => $t->tier->value,
                 'default_config' => $t->default_config,
                 'demo_data'      => $t->demo_data,
                 'category'       => [
-                    'name' => $t->category->name,
-                    'slug' => $t->category->slug,
+                    'name'    => $t->category->name,
+                    'name_en' => $t->category->name_en ?? $t->category->name,
+                    'slug'    => $t->category->slug,
                 ],
             ]);
 

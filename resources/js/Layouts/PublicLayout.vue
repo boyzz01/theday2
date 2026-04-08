@@ -1,5 +1,8 @@
 <script setup>
 import AppNavbar from '@/Components/AppNavbar.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 </script>
 
 <template>
@@ -14,7 +17,7 @@ import AppNavbar from '@/Components/AppNavbar.vue';
 
         <!-- Footer -->
         <footer class="border-t border-stone-100 py-6 text-center text-xs text-stone-400">
-            © {{ new Date().getFullYear() }} TheDay. Dibuat dengan ❤️ di Indonesia.
+            © {{ new Date().getFullYear() }} TheDay. {{ t('Dibuat dengan ❤️ di Indonesia.', 'Made with ❤️ in Indonesia.') }}
         </footer>
     </div>
 </template>
