@@ -22,6 +22,9 @@ watch([activeCategory, activeTier], ([cat, tier]) => {
     );
 });
 
+// ── Template selection ────────────────────────────────────────────
+const creatingId = ref(null);
+
 // ── Preview modal ─────────────────────────────────────────────────
 const previewTemplate = ref(null);
 const showPreview     = ref(false);
@@ -50,12 +53,13 @@ const accentColor    = (t) => t.default_config?.accent_color    ?? '#CCD5AE';
 const fontTitle      = (t) => t.default_config?.font_title      ?? 'serif';
 
 const useTemplate = (templateId) => {
-    try {
-        router.visit(route('dashboard.invitations.create', { template: templateId }));
-    } catch {
-        // Fallback if Ziggy doesn't have the route yet (needs cache clear)
-        window.location.href = `/dashboard/invitations/create?template=${templateId}`;
-    }
+    if (creatingId.value) return;
+    creatingId.value = templateId;
+    router.post(
+        route('dashboard.invitations.from-template'),
+        { template_id: templateId },
+        { onFinish: () => { creatingId.value = null; } }
+    );
 };
 
 const allCategories = computed(() => [
@@ -218,10 +222,15 @@ const filteredCount = computed(() => props.templates.length);
                             </button>
                             <button
                                 @click="useTemplate(template.id)"
-                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-md transition-all hover:opacity-90"
+                                :disabled="!!creatingId"
+                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-md transition-all hover:opacity-90 disabled:opacity-60"
                                 :style="`background-color: ${primaryColor(template)}`"
                             >
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg v-if="creatingId === template.id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
                                 Gunakan
@@ -248,10 +257,15 @@ const filteredCount = computed(() => props.templates.length);
                             </button>
                             <button
                                 @click="useTemplate(template.id)"
-                                class="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
+                                :disabled="!!creatingId"
+                                class="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-1.5"
                                 :style="`background-color: ${primaryColor(template)}`"
                             >
-                                Gunakan Template
+                                <svg v-if="creatingId === template.id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                {{ creatingId === template.id ? 'Membuat…' : 'Gunakan Template' }}
                             </button>
                         </div>
                     </div>
@@ -299,11 +313,16 @@ const filteredCount = computed(() => props.templates.length);
                             </div>
                             <div class="flex items-center gap-2">
                                 <button
-                                    @click="useTemplate(previewTemplate.id); closePreview()"
-                                    class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                                    @click="useTemplate(previewTemplate.id)"
+                                    :disabled="!!creatingId"
+                                    class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
                                     :style="`background-color: ${primaryColor(previewTemplate)}`"
                                 >
-                                    Gunakan Template
+                                    <svg v-if="creatingId === previewTemplate.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                    {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template' }}
                                 </button>
                                 <button
                                     @click="closePreview"
@@ -438,11 +457,16 @@ const filteredCount = computed(() => props.templates.length);
                                 </div>
 
                                 <button
-                                    @click="useTemplate(previewTemplate.id); closePreview()"
-                                    class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                                    @click="useTemplate(previewTemplate.id)"
+                                    :disabled="!!creatingId"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
                                     :style="`background-color: ${primaryColor(previewTemplate)}`"
                                 >
-                                    Gunakan Template Ini
+                                    <svg v-if="creatingId === previewTemplate.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                    {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template Ini' }}
                                 </button>
                             </div>
                         </div>

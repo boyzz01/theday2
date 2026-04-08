@@ -66,6 +66,123 @@ class InvitationController extends Controller
         ]);
     }
 
+    public function createFromTemplate(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $data = $request->validate([
+            'template_id' => 'required|uuid|exists:templates,id',
+        ]);
+
+        $template = Template::findOrFail($data['template_id']);
+
+        $eventType = $template->category?->slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan';
+
+        $invitation = Invitation::create([
+            'user_id'     => Auth::id(),
+            'template_id' => $template->id,
+            'title'       => $template->name,
+            'event_type'  => $eventType,
+            'slug'        => $this->generateUniqueSlug($template->name),
+            'status'      => 'draft',
+        ]);
+
+        $invitation->details()->create(['invitation_id' => $invitation->id]);
+
+        return redirect()->route('dashboard.invitations.edit', $invitation);
+    }
+
+    public function edit(Invitation $invitation): Response
+    {
+        $this->authorizeOwner($invitation);
+
+        $invitation->load(['template.category', 'details', 'events', 'galleries', 'music']);
+
+        $template = $invitation->template;
+
+        $defaultMusic = [
+            ['id' => 'canon-d',          'title' => 'Canon in D — Pachelbel',              'file_url' => null],
+            ['id' => 'thousand-years',   'title' => 'A Thousand Years — Christina Perri',  'file_url' => null],
+            ['id' => 'perfect',          'title' => 'Perfect — Ed Sheeran',                'file_url' => null],
+            ['id' => 'cant-help',        'title' => "Can't Help Falling in Love — Elvis",  'file_url' => null],
+            ['id' => 'all-of-me',        'title' => 'All of Me — John Legend',             'file_url' => null],
+            ['id' => 'marry-you',        'title' => 'Marry You — Bruno Mars',              'file_url' => null],
+            ['id' => 'thinking-out-loud','title' => 'Thinking Out Loud — Ed Sheeran',      'file_url' => null],
+        ];
+
+        $fonts = [
+            ['value' => 'Playfair Display',   'label' => 'Playfair Display',   'category' => 'Serif'],
+            ['value' => 'Cormorant Garamond', 'label' => 'Cormorant Garamond', 'category' => 'Serif'],
+            ['value' => 'Great Vibes',        'label' => 'Great Vibes',        'category' => 'Script'],
+            ['value' => 'Dancing Script',     'label' => 'Dancing Script',     'category' => 'Script'],
+            ['value' => 'Parisienne',         'label' => 'Parisienne',         'category' => 'Script'],
+            ['value' => 'Cinzel',             'label' => 'Cinzel',             'category' => 'Display'],
+            ['value' => 'Lato',               'label' => 'Lato',               'category' => 'Sans-serif'],
+            ['value' => 'Montserrat',         'label' => 'Montserrat',         'category' => 'Sans-serif'],
+        ];
+
+        $details = $invitation->details;
+
+        return Inertia::render('Dashboard/Invitations/Create', [
+            'template' => [
+                'id'             => $template->id,
+                'name'           => $template->name,
+                'slug'           => $template->slug,
+                'thumbnail_url'  => $template->thumbnail_url,
+                'tier'           => $template->tier->value,
+                'default_config' => $template->default_config ?? [],
+                'category'       => [
+                    'name' => $template->category->name,
+                    'slug' => $template->category->slug,
+                ],
+            ],
+            'invitation' => [
+                'id'                   => $invitation->id,
+                'title'                => $invitation->title,
+                'event_type'           => $invitation->event_type,
+                'slug'                 => $invitation->slug,
+                'status'               => $invitation->status,
+                'is_password_protected'=> $invitation->is_password_protected,
+                'expires_at'           => $invitation->expires_at?->format('Y-m-d'),
+                'custom_config'        => $invitation->custom_config ?? [],
+                'details'              => $details ? [
+                    'groom_name'           => $details->groom_name,
+                    'bride_name'           => $details->bride_name,
+                    'groom_parent_names'   => $details->groom_parent_names,
+                    'bride_parent_names'   => $details->bride_parent_names,
+                    'groom_photo_url'      => $details->groom_photo_url,
+                    'bride_photo_url'      => $details->bride_photo_url,
+                    'birthday_person_name' => $details->birthday_person_name,
+                    'birthday_age'         => $details->birthday_age,
+                    'birthday_photo_url'   => $details->birthday_photo_url,
+                    'opening_text'         => $details->opening_text,
+                    'closing_text'         => $details->closing_text,
+                    'cover_photo_url'      => $details->cover_photo_url,
+                ] : null,
+                'events'    => $invitation->events->map(fn ($e) => [
+                    'id'           => $e->id,
+                    'event_name'   => $e->event_name,
+                    'event_date'   => $e->event_date?->format('Y-m-d'),
+                    'start_time'   => $e->start_time,
+                    'end_time'     => $e->end_time,
+                    'venue_name'   => $e->venue_name,
+                    'venue_address'=> $e->venue_address,
+                    'maps_url'     => $e->maps_url,
+                    'sort_order'   => $e->sort_order,
+                ])->values(),
+                'galleries' => $invitation->galleries->map(fn ($g) => [
+                    'id'        => $g->id,
+                    'image_url' => $g->image_url,
+                    'caption'   => $g->caption,
+                ])->values(),
+                'music'     => $invitation->music->map(fn ($m) => [
+                    'title'    => $m->title,
+                    'file_url' => $m->file_url,
+                ])->values(),
+            ],
+            'defaultMusic' => $defaultMusic,
+            'fonts'        => $fonts,
+        ]);
+    }
+
     // ─── API – Invitation ─────────────────────────────────────────────
 
     public function store(Request $request): JsonResponse

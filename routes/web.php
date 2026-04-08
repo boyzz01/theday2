@@ -24,8 +24,10 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates');
 
-    // Invitation wizard (create page)
-    Route::get('/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
+    // Invitation wizard
+    Route::get( '/invitations/create',             [InvitationController::class, 'create'])->name('invitations.create');
+    Route::get( '/invitations/{invitation}/edit',  [InvitationController::class, 'edit'])->name('invitations.edit');
+    Route::post('/invitations/from-template',      [InvitationController::class, 'createFromTemplate'])->name('invitations.from-template');
 
     // Invitation CRUD API
     Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');

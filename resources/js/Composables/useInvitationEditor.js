@@ -118,7 +118,7 @@ export function useInvitationEditor(template, invitation = null) {
         expires_at:            invitation?.expires_at            ?? '',
     });
 
-    // ── Infer lastSavedStep from existing data ────────────────────
+    // ── Infer lastSavedStep + currentStep from existing data ─────
     if (invitation?.id) {
         let step = 1;
         if (invitation.events?.length)    step = Math.max(step, 2);
@@ -126,6 +126,7 @@ export function useInvitationEditor(template, invitation = null) {
         if (invitation.music?.length)     step = Math.max(step, 4);
         if (invitation.custom_config && Object.keys(invitation.custom_config).length) step = Math.max(step, 5);
         lastSavedStep.value = step;
+        currentStep.value   = Math.min(step + 1, 6);
     }
 
     // ── API helpers ───────────────────────────────────────────────
@@ -221,6 +222,11 @@ export function useInvitationEditor(template, invitation = null) {
                 });
                 invitationId.value = res.data.data.id;
                 publish.slug       = res.data.data.slug;
+                // Update URL so refresh lands on the edit page with correct data
+                window.history.replaceState(
+                    null, '',
+                    `/dashboard/invitations/${invitationId.value}/edit`
+                );
             } else {
                 // Update basic fields
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
