@@ -97,14 +97,14 @@ async function submit() {
     loading.value = true;
     try {
         await axios.get('/sanctum/csrf-cookie');
-        await axios.post('/register', {
+        const res = await axios.post('/register', {
             name:                  form.name,
             phone:                 form.phone,
             email:                 form.email,
             password:              form.password,
             password_confirmation: form.password_confirmation,
         });
-        emit('authenticated');
+        emit('authenticated', res.data?.redirect ?? null);
     } catch (e) {
         const errs = e.response?.data?.errors ?? {};
         Object.assign(errors, errs);

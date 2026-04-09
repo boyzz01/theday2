@@ -22,8 +22,8 @@ function onKeydown(e) {
 onMounted(()  => window.addEventListener('keydown', onKeydown));
 onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
-function onAuthenticated() {
-    emit('authenticated');
+function onAuthenticated(redirectUrl = null) {
+    emit('authenticated', redirectUrl);
 }
 </script>
 

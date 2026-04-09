@@ -37,9 +37,10 @@ export function useAuthWall() {
      * Performs a FULL page reload (no `only` restriction) so that page-level
      * props like `isGuest` are also refreshed from the server.
      */
-    function onAuthenticated() {
+    function onAuthenticated(redirectUrl = null) {
         isAuthModalOpen.value = false;
-        router.reload({
+        const nav = redirectUrl ? router.visit.bind(router, redirectUrl) : router.reload.bind(router);
+        nav({
             onSuccess: (page) => {
                 const user = page.props.auth?.user ?? true;
                 if (_resolve) { _resolve(user); _resolve = null; }

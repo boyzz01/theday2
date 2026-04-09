@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\ConvertGuestDraftAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class AuthenticatedSessionController extends Controller
     public function store(
         LoginRequest $request,
         ConvertGuestDraftAction $convertGuestDraft,
-    ): RedirectResponse {
+    ): RedirectResponse|JsonResponse {
         $request->authenticate();
 
         $request->session()->regenerate();
@@ -40,14 +41,19 @@ class AuthenticatedSessionController extends Controller
             $invitation = $convertGuestDraft->execute($request->user(), $sessionId);
 
             if ($invitation) {
-                return redirect()->intended(route('dashboard', absolute: false))->with(
-                    'flash',
-                    ['type' => 'success', 'message' => 'Selamat datang kembali! Undanganmu berhasil dipulihkan.']
-                );
+                $url = route('dashboard.invitations.edit', $invitation);
+                if ($request->wantsJson()) {
+                    return response()->json(['redirect' => $url]);
+                }
+                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Selamat datang kembali! Undanganmu berhasil dipulihkan.']);
             }
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $fallback = route('dashboard', absolute: false);
+        if ($request->wantsJson()) {
+            return response()->json(['redirect' => $fallback]);
+        }
+        return redirect()->intended($fallback);
     }
 
     public function destroy(Request $request): RedirectResponse

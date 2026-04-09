@@ -12,6 +12,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,7 @@ class RegisteredUserController extends Controller
         Request $request,
         AssignFreeSubscriptionAction $assignFreeSubscription,
         ConvertGuestDraftAction $convertGuestDraft,
-    ): RedirectResponse {
+    ): RedirectResponse|JsonResponse {
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'phone'    => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
@@ -59,16 +60,18 @@ class RegisteredUserController extends Controller
             $invitation = $convertGuestDraft->execute($user, $sessionId);
 
             if ($invitation) {
-                return redirect()->route('dashboard')->with(
-                    'flash',
-                    ['type' => 'success', 'message' => 'Akun dibuat! Undanganmu berhasil disimpan. Lanjutkan mengedit.']
-                );
+                $url = route('dashboard.invitations.edit', $invitation);
+                if ($request->wantsJson()) {
+                    return response()->json(['redirect' => $url]);
+                }
+                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Akun dibuat! Undanganmu berhasil disimpan. Lanjutkan mengedit.']);
             }
         }
 
-        return redirect()->route('dashboard')->with(
-            'flash',
-            ['type' => 'success', 'message' => 'Selamat datang di TheDay! 🎉']
-        );
+        $fallback = route('dashboard');
+        if ($request->wantsJson()) {
+            return response()->json(['redirect' => $fallback]);
+        }
+        return redirect($fallback)->with('flash', ['type' => 'success', 'message' => 'Selamat datang di TheDay! 🎉']);
     }
 }
