@@ -26,6 +26,44 @@ use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
+    // ─── GET /api/invitations/check-slug ─────────────────────────
+
+    public function checkSlug(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slug'       => ['required', 'string', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'exclude_id' => ['nullable', 'uuid'],
+        ]);
+
+        $slug      = $request->slug;
+        $excludeId = $request->exclude_id;
+
+        $taken = \App\Models\Invitation::where('slug', $slug)
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
+
+        $suggestion = null;
+        if ($taken) {
+            // Try with year suffix first, then increment
+            $year = now()->year;
+            $candidates = ["{$slug}-{$year}", "{$slug}-2", "{$slug}-3", "{$slug}-4"];
+            foreach ($candidates as $candidate) {
+                $exists = \App\Models\Invitation::where('slug', $candidate)
+                    ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+                    ->exists();
+                if (!$exists) {
+                    $suggestion = $candidate;
+                    break;
+                }
+            }
+        }
+
+        return response()->json([
+            'available'  => !$taken,
+            'suggestion' => $suggestion,
+        ]);
+    }
+
     // ─── POST /api/invitations ────────────────────────────────────
 
     public function store(StoreInvitationRequest $request): JsonResponse

@@ -125,7 +125,7 @@ class InvitationController extends Controller
                 'template_id' => $template->id,
                 'title'       => '',
                 'event_type'  => $eventType,
-                'slug'        => $this->generateUniqueSlug($template->name),
+                'slug'        => $this->generateUniqueSlug(Str::random(8)),
                 'status'      => 'draft',
             ]);
             $invitation->details()->create(['invitation_id' => $invitation->id]);
@@ -181,7 +181,7 @@ class InvitationController extends Controller
                 'id'                   => $invitation->id,
                 'title'                => $invitation->title,
                 'event_type'           => $invitation->event_type,
-                'slug'                 => $invitation->slug,
+                'slug'                 => ($invitation->current_step ?? 0) >= 6 ? $invitation->slug : '',
                 'status'               => $invitation->status,
                 'current_step'         => $invitation->current_step ?? 0,
                 'is_password_protected' => $invitation->is_password_protected,

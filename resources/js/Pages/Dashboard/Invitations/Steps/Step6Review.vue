@@ -1,18 +1,96 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 const props = defineProps({
     publish:      { type: Object,   required: true },
-    invitationId: { type: Object,   required: true }, // ref
+    invitationId: { type: String,   default: null },
     isSaving:     { type: Boolean,  default: false },
     saveStep6:    { type: Function, required: true },
     template:     { type: Object,   required: true },
     basic:        { type: Object,   required: true },
+    details:      { type: Object,   default: null },
 });
 
 const publishStatus = ref(null); // 'draft' | 'published'
 const publishError  = ref(null);
+
+// ── Slug availability ─────────────────────────────────────────────
+const slugStatus    = ref(null); // null | 'checking' | 'available' | 'taken'
+const slugSuggestion = ref(null);
+let   slugCheckTimer = null;
+
+function toSlug(str) {
+    return (str ?? '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+function generateDefaultSlug() {
+    if (props.basic.event_type === 'pernikahan') {
+        const bride = toSlug(props.details?.bride_name ?? '');
+        const groom = toSlug(props.details?.groom_name ?? '');
+        if (bride && groom) return `${bride}-${groom}`;
+        return bride || groom;
+    } else {
+        return toSlug(props.details?.birthday_person_name ?? '');
+    }
+}
+
+async function checkSlug(slug) {
+    if (!slug || !props.invitationId) { slugStatus.value = null; return; }
+    slugStatus.value    = 'checking';
+    slugSuggestion.value = null;
+    try {
+        const res = await axios.get('/api/invitations/check-slug', {
+            params: { slug, exclude_id: props.invitationId },
+        });
+        slugStatus.value     = res.data.available ? 'available' : 'taken';
+        slugSuggestion.value = res.data.suggestion ?? null;
+
+        // If taken, also try reversed order (groom-bride)
+        if (!res.data.available && props.basic.event_type === 'pernikahan') {
+            const groom = toSlug(props.details?.groom_name ?? '');
+            const bride = toSlug(props.details?.bride_name ?? '');
+            const reversed = `${groom}-${bride}`;
+            if (reversed !== slug && groom && bride) {
+                const res2 = await axios.get('/api/invitations/check-slug', {
+                    params: { slug: reversed, exclude_id: props.invitationId },
+                });
+                if (res2.data.available) {
+                    slugSuggestion.value = reversed;
+                }
+            }
+        }
+    } catch {
+        slugStatus.value = null;
+    }
+}
+
+// Debounce check on manual input
+watch(() => props.publish.slug, (val) => {
+    slugStatus.value = null;
+    clearTimeout(slugCheckTimer);
+    if (!val) return;
+    slugCheckTimer = setTimeout(() => checkSlug(val), 500);
+});
+
+// Only check existing slug on mount (no auto-generate)
+onMounted(async () => {
+    if (props.publish.slug) await checkSlug(props.publish.slug);
+});
+
+function applySuggestion() {
+    if (slugSuggestion.value) {
+        props.publish.slug = slugSuggestion.value;
+        slugSuggestion.value = null;
+    }
+}
 
 const invitationUrl = computed(() => {
     if (!props.publish.slug) return null;
@@ -127,7 +205,11 @@ function goToDashboard() {
             <!-- Slug / URL -->
             <div class="space-y-1.5">
                 <label class="block text-sm font-medium text-stone-700">URL Undangan</label>
-                <div class="flex rounded-xl border border-stone-200 overflow-hidden focus-within:ring-2 focus-within:ring-amber-300">
+                <div :class="[
+                    'flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-amber-300',
+                    slugStatus === 'taken'     ? 'border-red-300'   :
+                    slugStatus === 'available' ? 'border-green-300' : 'border-stone-200',
+                ]">
                     <span class="flex items-center px-3 bg-stone-50 border-r border-stone-200 text-xs text-stone-400 whitespace-nowrap">
                         {{ window?.location?.origin ?? '' }}/i/
                     </span>
@@ -137,8 +219,32 @@ function goToDashboard() {
                         placeholder="nama-undangan-anda"
                         class="flex-1 px-3 py-2.5 text-sm bg-white focus:outline-none"
                     />
+                    <!-- Status icon -->
+                    <span class="flex items-center pr-3">
+                        <svg v-if="slugStatus === 'checking'" class="w-4 h-4 text-stone-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        <svg v-else-if="slugStatus === 'available'" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <svg v-else-if="slugStatus === 'taken'" class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </span>
                 </div>
-                <p class="text-xs text-stone-400">Hanya huruf, angka, dan tanda hubung. Contoh: budi-dan-ani-2025</p>
+
+                <!-- Status messages -->
+                <p v-if="slugStatus === 'available'" class="text-xs text-green-600">URL tersedia</p>
+                <div v-else-if="slugStatus === 'taken'" class="flex items-center gap-2 flex-wrap">
+                    <p class="text-xs text-red-500">URL sudah dipakai.</p>
+                    <button v-if="slugSuggestion"
+                            @click="applySuggestion"
+                            class="text-xs font-semibold text-amber-700 underline hover:text-amber-900 transition-colors">
+                        Pakai "/{{ slugSuggestion }}"
+                    </button>
+                </div>
+                <p v-else class="text-xs text-stone-400">Hanya huruf, angka, dan tanda hubung. Contoh: budi-dan-ani-2025</p>
             </div>
 
             <!-- Password protection -->

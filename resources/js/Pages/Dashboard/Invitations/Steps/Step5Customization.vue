@@ -1,10 +1,30 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, watch, onMounted } from 'vue';
 
 const props = defineProps({
     customConfig: { type: Object, required: true },
     fonts:        { type: Array,  default: () => [] },
 });
+
+const loadedFonts = new Set();
+
+function loadGoogleFont(fontFamily) {
+    if (!fontFamily || loadedFonts.has(fontFamily)) return;
+    loadedFonts.add(fontFamily);
+    const id = `gfont-${fontFamily.replace(/\s+/g, '-')}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id   = id;
+    link.rel  = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;600&display=swap`;
+    document.head.appendChild(link);
+}
+
+// Load all fonts on mount so tiles render correctly
+onMounted(() => props.fonts.forEach(f => loadGoogleFont(f.value)));
+
+// Load selected font immediately on change
+watch(() => props.customConfig.font, loadGoogleFont, { immediate: true });
 
 const colorPresets = [
     { label: 'Golden Sand',  value: '#D4A373' },

@@ -184,6 +184,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :save-step6="editor.saveStep6"
                         :template="template"
                         :basic="editor.basic"
+                        :details="editor.details"
                     />
                 </Transition>
 

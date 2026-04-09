@@ -137,8 +137,8 @@ export function useInvitationEditor(template, invitation = null) {
         try {
             return await fn();
         } catch (e) {
-            const msg = e.response?.data?.message
-                ?? Object.values(e.response?.data?.errors ?? {})[0]?.[0]
+            const msg = Object.values(e.response?.data?.errors ?? {})[0]?.[0]
+                ?? e.response?.data?.message
                 ?? 'Terjadi kesalahan. Coba lagi.';
             saveError.value = msg;
             throw e;

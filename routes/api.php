@@ -41,6 +41,9 @@ Route::middleware(['auth:sanctum', 'guest.session'])->group(function () {
 // ── Authenticated Routes ───────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
+    // ── Slug availability check ───────────────────────────────────
+    Route::get('/invitations/check-slug', [InvitationController::class, 'checkSlug']);
+
     // ── Invitation ────────────────────────────────────────────────
     Route::post(   '/invitations',               [InvitationController::class, 'store']);
     Route::put(    '/invitations/{invitation}',   [InvitationController::class, 'update']);
