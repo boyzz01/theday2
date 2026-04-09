@@ -20,7 +20,7 @@ const uploadError = ref(null);
 const MUSIC_BASE_URL = '/music/'; // adjust to match your storage path
 
 function isSelected(music) {
-    return props.selectedMusic.value?.title === music.title;
+    return props.selectedMusic?.title === music.title;
 }
 
 function selectDefault(music) {
@@ -53,6 +53,11 @@ function stopPlay() {
 async function handleAudioUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+        uploadError.value = 'Ukuran file maksimal 4 MB.';
+        e.target.value = '';
+        return;
+    }
     if (!props.invitationId) {
         uploadError.value = 'Simpan informasi dasar terlebih dahulu.';
         return;
@@ -83,7 +88,7 @@ async function handleAudioUpload(e) {
         </div>
 
         <!-- Selected indicator -->
-        <div v-if="selectedMusic.value"
+        <div v-if="selectedMusic"
              class="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-sm">
             <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13"/>
@@ -91,7 +96,7 @@ async function handleAudioUpload(e) {
                 <circle cx="18" cy="15" r="3" stroke="currentColor" stroke-width="2"/>
             </svg>
             <div class="flex-1 min-w-0">
-                <p class="font-medium text-green-800 truncate">{{ selectedMusic.value.title }}</p>
+                <p class="font-medium text-green-800 truncate">{{ selectedMusic.title }}</p>
                 <p class="text-xs text-green-600">Musik terpilih</p>
             </div>
             <button @click="emit('select', null)" class="text-green-400 hover:text-green-600 transition-colors">
@@ -181,7 +186,7 @@ async function handleAudioUpload(e) {
                     <p class="text-sm font-medium text-stone-700">
                         {{ isUploading ? 'Mengunggah audio…' : 'Upload file musik' }}
                     </p>
-                    <p class="text-xs text-stone-400">MP3, WAV, OGG · maks 10 MB</p>
+                    <p class="text-xs text-stone-400">MP3, WAV, OGG · maks 4 MB</p>
                 </div>
                 <input type="file" accept="audio/*" class="sr-only"
                        :disabled="isUploading || !invitationId"

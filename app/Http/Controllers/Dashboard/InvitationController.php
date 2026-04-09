@@ -29,7 +29,7 @@ class InvitationController extends Controller
             ->withCount(['rsvps', 'views'])
             ->latest()
             ->get()
-            ->map(fn ($inv) => [
+            ->map(fn($inv) => [
                 'id'          => $inv->id,
                 'title'       => $inv->title,
                 'slug'        => $inv->slug,
@@ -58,13 +58,12 @@ class InvitationController extends Controller
             ->findOrFail($request->get('template'));
 
         $defaultMusic = [
-            ['id' => 'canon-d',          'title' => 'Canon in D — Pachelbel',              'file_url' => null],
-            ['id' => 'thousand-years',   'title' => 'A Thousand Years — Christina Perri',  'file_url' => null],
-            ['id' => 'perfect',          'title' => 'Perfect — Ed Sheeran',                'file_url' => null],
-            ['id' => 'cant-help',        'title' => "Can't Help Falling in Love — Elvis",  'file_url' => null],
-            ['id' => 'all-of-me',        'title' => 'All of Me — John Legend',             'file_url' => null],
-            ['id' => 'marry-you',        'title' => 'Marry You — Bruno Mars',              'file_url' => null],
-            ['id' => 'thinking-out-loud','title' => 'Thinking Out Loud — Ed Sheeran',      'file_url' => null],
+            ['id' => 'canon-d',           'title' => 'Canon in D — Pachelbel',             'file_url' => '/music/Canon-in-D-Pachelbels-Canon-Cell.mp3'],
+            ['id' => 'thousand-years',    'title' => 'A Thousand Years — Christina Perri', 'file_url' => '/music/Brooklyn-Duo-A-Thousand-Years-WE.mp3'],
+            ['id' => 'perfect',           'title' => 'Perfect — Ed Sheeran',               'file_url' => '/music/Perfect-Ed-Sheeran-Wedding-Versi.mp3'],
+            ['id' => 'cant-help',         'title' => "Can't Help Falling in Love — Elvis", 'file_url' => '/music/Elvis-Presley-Cant-Help-Falling.mp3'],
+            ['id' => 'marry-you',         'title' => 'Marry You — Bruno Mars',             'file_url' => '/music/Bruno-Mars-Marry-You-Official-Ly.mp3'],
+            ['id' => 'beautiful-in-white','title' => 'Beautiful In White — Westlife',      'file_url' => '/music/Westlife-Beautiful-in-white-Lyri.mp3'],
         ];
 
         $fonts = [
@@ -144,13 +143,12 @@ class InvitationController extends Controller
         $template = $invitation->template;
 
         $defaultMusic = [
-            ['id' => 'canon-d',          'title' => 'Canon in D — Pachelbel',              'file_url' => null],
-            ['id' => 'thousand-years',   'title' => 'A Thousand Years — Christina Perri',  'file_url' => null],
-            ['id' => 'perfect',          'title' => 'Perfect — Ed Sheeran',                'file_url' => null],
-            ['id' => 'cant-help',        'title' => "Can't Help Falling in Love — Elvis",  'file_url' => null],
-            ['id' => 'all-of-me',        'title' => 'All of Me — John Legend',             'file_url' => null],
-            ['id' => 'marry-you',        'title' => 'Marry You — Bruno Mars',              'file_url' => null],
-            ['id' => 'thinking-out-loud','title' => 'Thinking Out Loud — Ed Sheeran',      'file_url' => null],
+            ['id' => 'canon-d',           'title' => 'Canon in D — Pachelbel',             'file_url' => '/music/Canon-in-D-Pachelbels-Canon-Cell.mp3'],
+            ['id' => 'thousand-years',    'title' => 'A Thousand Years — Christina Perri', 'file_url' => '/music/Brooklyn-Duo-A-Thousand-Years-WE.mp3'],
+            ['id' => 'perfect',           'title' => 'Perfect — Ed Sheeran',               'file_url' => '/music/Perfect-Ed-Sheeran-Wedding-Versi.mp3'],
+            ['id' => 'cant-help',         'title' => "Can't Help Falling in Love — Elvis", 'file_url' => '/music/Elvis-Presley-Cant-Help-Falling.mp3'],
+            ['id' => 'marry-you',         'title' => 'Marry You — Bruno Mars',             'file_url' => '/music/Bruno-Mars-Marry-You-Official-Ly.mp3'],
+            ['id' => 'beautiful-in-white','title' => 'Beautiful In White — Westlife',      'file_url' => '/music/Westlife-Beautiful-in-white-Lyri.mp3'],
         ];
 
         $fonts = [
@@ -186,7 +184,7 @@ class InvitationController extends Controller
                 'slug'                 => $invitation->slug,
                 'status'               => $invitation->status,
                 'current_step'         => $invitation->current_step ?? 0,
-                'is_password_protected'=> $invitation->is_password_protected,
+                'is_password_protected' => $invitation->is_password_protected,
                 'expires_at'           => $invitation->expires_at?->format('Y-m-d'),
                 'custom_config'        => $invitation->custom_config ?? [],
                 'details'              => $details ? [
@@ -203,23 +201,23 @@ class InvitationController extends Controller
                     'closing_text'         => $details->closing_text,
                     'cover_photo_url'      => $details->cover_photo_url,
                 ] : null,
-                'events'    => $invitation->events->map(fn ($e) => [
+                'events'    => $invitation->events->map(fn($e) => [
                     'id'           => $e->id,
                     'event_name'   => $e->event_name,
                     'event_date'   => $e->event_date?->format('Y-m-d'),
                     'start_time'   => $e->start_time,
                     'end_time'     => $e->end_time,
                     'venue_name'   => $e->venue_name,
-                    'venue_address'=> $e->venue_address,
+                    'venue_address' => $e->venue_address,
                     'maps_url'     => $e->maps_url,
                     'sort_order'   => $e->sort_order,
                 ])->values(),
-                'galleries' => $invitation->galleries->map(fn ($g) => [
+                'galleries' => $invitation->galleries->map(fn($g) => [
                     'id'        => $g->id,
                     'image_url' => $g->image_url,
                     'caption'   => $g->caption,
                 ])->values(),
-                'music'     => $invitation->music->map(fn ($m) => [
+                'music'     => $invitation->music->map(fn($m) => [
                     'title'    => $m->title,
                     'file_url' => $m->file_url,
                 ])->values(),
@@ -328,7 +326,7 @@ class InvitationController extends Controller
             ]);
         }
 
-        $synced = $invitation->events()->get()->map(fn ($e) => [
+        $synced = $invitation->events()->get()->map(fn($e) => [
             'id'            => $e->id,
             'event_name'    => $e->event_name,
             'event_date'    => $e->event_date?->format('Y-m-d'),

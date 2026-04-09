@@ -21,13 +21,12 @@ class EditorController extends Controller
             ->findOrFail($request->get('template'));
 
         $defaultMusic = [
-            ['id' => 'canon-d',          'title' => 'Canon in D — Pachelbel',             'file_url' => null],
-            ['id' => 'thousand-years',   'title' => 'A Thousand Years — Christina Perri', 'file_url' => null],
-            ['id' => 'perfect',          'title' => 'Perfect — Ed Sheeran',               'file_url' => null],
-            ['id' => 'cant-help',        'title' => "Can't Help Falling in Love — Elvis", 'file_url' => null],
-            ['id' => 'all-of-me',        'title' => 'All of Me — John Legend',            'file_url' => null],
-            ['id' => 'marry-you',        'title' => 'Marry You — Bruno Mars',             'file_url' => null],
-            ['id' => 'thinking-out-loud','title' => 'Thinking Out Loud — Ed Sheeran',     'file_url' => null],
+            ['id' => 'canon-d',           'title' => 'Canon in D — Pachelbel',             'file_url' => '/music/Canon-in-D-Pachelbels-Canon-Cell.mp3'],
+            ['id' => 'thousand-years',    'title' => 'A Thousand Years — Christina Perri', 'file_url' => '/music/Brooklyn-Duo-A-Thousand-Years-WE.mp3'],
+            ['id' => 'perfect',           'title' => 'Perfect — Ed Sheeran',               'file_url' => '/music/Perfect-Ed-Sheeran-Wedding-Versi.mp3'],
+            ['id' => 'cant-help',         'title' => "Can't Help Falling in Love — Elvis", 'file_url' => '/music/Elvis-Presley-Cant-Help-Falling.mp3'],
+            ['id' => 'marry-you',         'title' => 'Marry You — Bruno Mars',             'file_url' => '/music/Bruno-Mars-Marry-You-Official-Ly.mp3'],
+            ['id' => 'beautiful-in-white','title' => 'Beautiful In White — Westlife',      'file_url' => '/music/Westlife-Beautiful-in-white-Lyri.mp3'],
         ];
 
         $fonts = [
