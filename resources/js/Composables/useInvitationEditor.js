@@ -118,15 +118,11 @@ export function useInvitationEditor(template, invitation = null) {
         expires_at:            invitation?.expires_at            ?? '',
     });
 
-    // ── Infer lastSavedStep + currentStep from existing data ─────
+    // ── Restore step from DB ──────────────────────────────────────
     if (invitation?.id) {
-        let step = 1;
-        if (invitation.events?.length)    step = Math.max(step, 2);
-        if (invitation.galleries?.length) step = Math.max(step, 3);
-        if (invitation.music?.length)     step = Math.max(step, 4);
-        if (invitation.custom_config && Object.keys(invitation.custom_config).length) step = Math.max(step, 5);
-        lastSavedStep.value = step;
-        currentStep.value   = Math.min(step + 1, 6);
+        const saved = invitation.current_step ?? 0;
+        lastSavedStep.value = saved;
+        currentStep.value   = saved > 0 ? Math.min(saved + 1, 6) : 1;
     }
 
     // ── API helpers ───────────────────────────────────────────────
@@ -227,11 +223,13 @@ export function useInvitationEditor(template, invitation = null) {
                     null, '',
                     `/dashboard/invitations/${invitationId.value}/edit`
                 );
+                await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: 1 });
             } else {
                 // Update basic fields
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                    title:      basic.title,
-                    event_type: basic.event_type,
+                    title:        basic.title,
+                    event_type:   basic.event_type,
+                    current_step: Math.max(lastSavedStep.value, 1),
                 });
             }
 
@@ -296,6 +294,7 @@ export function useInvitationEditor(template, invitation = null) {
                 }
             }
 
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 2) });
             lastSavedStep.value = Math.max(lastSavedStep.value, 2);
         });
     }
@@ -316,6 +315,7 @@ export function useInvitationEditor(template, invitation = null) {
                 );
             }
 
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 3) });
             lastSavedStep.value = Math.max(lastSavedStep.value, 3);
         });
     }
@@ -331,6 +331,7 @@ export function useInvitationEditor(template, invitation = null) {
                     file_url: selectedMusic.value.file_url ?? '',
                 }
             );
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 4) });
             lastSavedStep.value = Math.max(lastSavedStep.value, 4);
         });
     }
@@ -340,6 +341,7 @@ export function useInvitationEditor(template, invitation = null) {
         return apiCall(async () => {
             await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
                 custom_config: { ...customConfig },
+                current_step:  Math.max(lastSavedStep.value, 5),
             });
             lastSavedStep.value = Math.max(lastSavedStep.value, 5);
         });

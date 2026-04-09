@@ -21,6 +21,36 @@ class InvitationController extends Controller
 {
     // ─── Pages ───────────────────────────────────────────────────────
 
+    public function index(Request $request): Response
+    {
+        $invitations = $request->user()
+            ->invitations()
+            ->with('template')
+            ->withCount(['rsvps', 'views'])
+            ->latest()
+            ->get()
+            ->map(fn ($inv) => [
+                'id'          => $inv->id,
+                'title'       => $inv->title,
+                'slug'        => $inv->slug,
+                'event_type'  => $inv->event_type->value,
+                'status'      => $inv->status->value,
+                'view_count'  => $inv->view_count,
+                'rsvps_count' => $inv->rsvps_count,
+                'published_at' => $inv->published_at?->format('d M Y'),
+                'expires_at'  => $inv->expires_at?->format('d M Y'),
+                'template'    => $inv->template ? [
+                    'name'           => $inv->template->name,
+                    'thumbnail_url'  => $inv->template->thumbnail_url,
+                    'default_config' => $inv->template->default_config,
+                ] : null,
+            ]);
+
+        return Inertia::render('Dashboard/Invitations/Index', [
+            'invitations' => $invitations,
+        ]);
+    }
+
     public function create(Request $request): Response
     {
         $template = Template::active()
@@ -83,7 +113,7 @@ class InvitationController extends Controller
         if ($invitation) {
             $invitation->update([
                 'template_id' => $template->id,
-                'title'       => $template->name,
+                'title'       => '',
                 'event_type'  => $eventType,
             ]);
             $invitation->details()->updateOrCreate(
@@ -94,7 +124,7 @@ class InvitationController extends Controller
             $invitation = Invitation::create([
                 'user_id'     => Auth::id(),
                 'template_id' => $template->id,
-                'title'       => $template->name,
+                'title'       => '',
                 'event_type'  => $eventType,
                 'slug'        => $this->generateUniqueSlug($template->name),
                 'status'      => 'draft',
@@ -155,6 +185,7 @@ class InvitationController extends Controller
                 'event_type'           => $invitation->event_type,
                 'slug'                 => $invitation->slug,
                 'status'               => $invitation->status,
+                'current_step'         => $invitation->current_step ?? 0,
                 'is_password_protected'=> $invitation->is_password_protected,
                 'expires_at'           => $invitation->expires_at?->format('Y-m-d'),
                 'custom_config'        => $invitation->custom_config ?? [],

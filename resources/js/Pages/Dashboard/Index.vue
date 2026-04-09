@@ -83,7 +83,7 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                     </p>
                 </div>
                 <Link
-                    :href="route('dashboard')"
+                    :href="route('dashboard.templates')"
                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
                     style="background-color: #D4A373"
                 >
@@ -138,7 +138,7 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                     <p class="text-sm font-medium text-stone-600 mb-1">Belum ada undangan</p>
                     <p class="text-xs text-stone-400 mb-5">Buat undangan pertamamu sekarang!</p>
                     <Link
-                        :href="route('dashboard')"
+                        :href="route('dashboard.templates')"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
                         style="background-color: #D4A373"
                     >
@@ -241,7 +241,7 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                     <!-- "Buat baru" placeholder card (jika < 3 undangan) -->
                     <Link
                         v-if="recentInvitations.length < 3"
-                        :href="route('dashboard')"
+                        :href="route('dashboard.templates')"
                         class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-amber-300 hover:bg-amber-50/30 transition-all group min-h-[220px]"
                     >
                         <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-amber-100"

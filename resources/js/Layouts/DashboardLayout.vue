@@ -20,20 +20,20 @@ const navItems = [
     },
     {
         label: 'Undangan Saya',
-        route: 'dashboard',
+        route: 'dashboard.invitations.index',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
     },
     {
-        label: 'Buat Undangan',
+        label: 'Template',
         route: 'dashboard.templates',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4v16m8-8H4"/>`,
-        highlight: true,
+            d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>`,
     },
     {
         label: 'Paket & Langganan',
         route: 'dashboard',
+        noActive: true,
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
     },
@@ -45,7 +45,7 @@ const navItems = [
     },
 ];
 
-const isActive = (routeName) => route().current(routeName);
+const isActive = (item) => !item.noActive && route().current(item.route);
 
 const logout = async () => {
     await axios.post(route('logout'));
@@ -109,33 +109,17 @@ const avatarInitials = computed(() => {
             <!-- Nav Items -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <template v-for="item in navItems" :key="item.label">
-                    <!-- Highlight "Buat Undangan" differently -->
                     <Link
-                        v-if="item.highlight"
-                        :href="route(item.route)"
-                        :class="[
-                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
-                            'text-white shadow-sm',
-                            sidebarCollapsed ? 'justify-center' : '',
-                        ]"
-                        style="background-color: #D4A373"
-                    >
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
-                        <span v-if="!sidebarCollapsed">{{ item.label }}</span>
-                    </Link>
-
-                    <Link
-                        v-else
                         :href="route(item.route)"
                         :class="[
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
-                            isActive(item.route)
+                            isActive(item)
                                 ? 'text-amber-800 bg-amber-50'
                                 : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
                             sidebarCollapsed ? 'justify-center' : '',
                         ]"
                     >
-                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item.route) ? 'text-amber-600' : 'text-stone-400'"
+                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-amber-600' : 'text-stone-400'"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                         <span v-if="!sidebarCollapsed">{{ item.label }}</span>
                     </Link>

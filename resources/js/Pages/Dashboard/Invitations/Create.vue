@@ -12,11 +12,12 @@ import Step6Review         from './Steps/Step6Review.vue';
 
 const props = defineProps({
     template:     { type: Object, required: true },
+    invitation:   { type: Object, default: null },
     defaultMusic: { type: Array,  default: () => [] },
     fonts:        { type: Array,  default: () => [] },
 });
 
-const editor = useInvitationEditor(props.template);
+const editor = useInvitationEditor(props.template, props.invitation);
 const { currentStep, isSaving, saveError } = editor;
 
 const steps = [

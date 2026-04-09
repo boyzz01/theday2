@@ -31,6 +31,7 @@ class UpdateInvitationRequest extends FormRequest
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::unique('invitations', 'slug')->ignore($invitationId),
             ],
+            'current_step'                => ['sometimes', 'integer', 'min:0', 'max:6'],
             'custom_config'               => ['sometimes', 'array'],
             'custom_config.primary_color' => ['sometimes', 'nullable', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
             'custom_config.font'          => ['sometimes', 'nullable', 'string', 'max:100'],
