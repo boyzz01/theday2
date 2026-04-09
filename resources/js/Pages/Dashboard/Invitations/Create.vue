@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { useInvitationEditor } from '@/Composables/useInvitationEditor.js';
@@ -17,8 +17,7 @@ const props = defineProps({
     fonts:        { type: Array,  default: () => [] },
 });
 
-const editor = useInvitationEditor(props.template, props.invitation);
-const { currentStep, isSaving, saveError } = editor;
+const editor = reactive(useInvitationEditor(props.template, props.invitation));
 
 const steps = [
     { number: 1, label: 'Informasi',  shortLabel: '1' },
@@ -38,7 +37,7 @@ const stepSaveMap = {
 };
 
 async function next() {
-    const save = stepSaveMap[currentStep.value];
+    const save = stepSaveMap[editor.currentStep];
     if (save) {
         try {
             await save();
@@ -46,21 +45,20 @@ async function next() {
             return; // saveError already set
         }
     }
-    if (currentStep.value < 6) currentStep.value++;
+    if (editor.currentStep < 6) editor.currentStep++;
 }
 
 function back() {
-    if (currentStep.value > 1) currentStep.value--;
+    if (editor.currentStep > 1) editor.currentStep--;
 }
 
 function goTo(n) {
-    // Only allow jumping to completed steps + next
-    if (n <= editor.lastSavedStep.value + 1 || n <= currentStep.value) {
-        currentStep.value = n;
+    if (n <= editor.lastSavedStep + 1 || n <= editor.currentStep) {
+        editor.currentStep = n;
     }
 }
 
-const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) * 100));
+const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5) * 100));
 </script>
 
 <template>
@@ -96,22 +94,22 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
                         @click="goTo(step.number)"
                         :class="[
                             'flex flex-col items-center gap-1 transition-all duration-200',
-                            step.number <= (editor.lastSavedStep.value ?? 0) + 1
+                            step.number <= (editor.lastSavedStep ?? 0) + 1
                                 ? 'cursor-pointer'
                                 : 'cursor-default opacity-40 pointer-events-none',
                         ]"
                     >
                         <div :class="[
                             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 border-2',
-                            currentStep === step.number
+                            editor.currentStep === step.number
                                 ? 'border-amber-400 text-white'
-                                : (editor.lastSavedStep.value ?? 0) >= step.number
+                                : (editor.lastSavedStep ?? 0) >= step.number
                                     ? 'border-green-300 bg-green-50 text-green-700'
                                     : 'border-stone-200 bg-stone-50 text-stone-400',
                         ]"
-                        :style="currentStep === step.number ? 'background-color: #D4A373' : ''"
+                        :style="editor.currentStep === step.number ? 'background-color: #D4A373' : ''"
                         >
-                            <svg v-if="(editor.lastSavedStep.value ?? 0) >= step.number && currentStep !== step.number"
+                            <svg v-if="(editor.lastSavedStep ?? 0) >= step.number && editor.currentStep !== step.number"
                                  class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -119,7 +117,7 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
                         </div>
                         <span :class="[
                             'hidden sm:block text-xs font-medium',
-                            currentStep === step.number ? 'text-amber-700' : 'text-stone-400',
+                            editor.currentStep === step.number ? 'text-amber-700' : 'text-stone-400',
                         ]">{{ step.label }}</span>
                     </button>
                 </div>
@@ -130,20 +128,20 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
 
                 <!-- Error banner -->
                 <Transition name="slide-down">
-                    <div v-if="saveError"
+                    <div v-if="editor.saveError"
                          class="bg-red-50 border-b border-red-100 px-6 py-3 flex items-center gap-2 text-sm text-red-700">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        {{ saveError }}
+                        {{ editor.saveError }}
                     </div>
                 </Transition>
 
                 <!-- Step panels -->
                 <Transition name="step-fade" mode="out-in">
                     <Step1BasicInfo
-                        v-if="currentStep === 1"
+                        v-if="editor.currentStep === 1"
                         :basic="editor.basic"
                         :details="editor.details"
                         :template="template"
@@ -151,14 +149,14 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
                         :invitation-id="editor.invitationId"
                     />
                     <Step2Events
-                        v-else-if="currentStep === 2"
+                        v-else-if="editor.currentStep === 2"
                         :events="editor.events"
                         :add-event="editor.addEvent"
                         :remove-event="editor.removeEvent"
                         :move-event="editor.moveEvent"
                     />
                     <Step3Gallery
-                        v-else-if="currentStep === 3"
+                        v-else-if="editor.currentStep === 3"
                         :galleries="editor.galleries"
                         :invitation-id="editor.invitationId"
                         :upload-gallery-file="editor.uploadGalleryFile"
@@ -166,23 +164,23 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
                         :move-gallery="editor.moveGallery"
                     />
                     <Step4Music
-                        v-else-if="currentStep === 4"
+                        v-else-if="editor.currentStep === 4"
                         :selected-music="editor.selectedMusic"
                         :default-music="defaultMusic"
                         :invitation-id="editor.invitationId"
                         :upload-audio="editor.uploadAudio"
-                        @select="editor.selectedMusic.value = $event"
+                        @select="editor.selectedMusic = $event"
                     />
                     <Step5Customization
-                        v-else-if="currentStep === 5"
+                        v-else-if="editor.currentStep === 5"
                         :custom-config="editor.customConfig"
                         :fonts="fonts"
                     />
                     <Step6Review
-                        v-else-if="currentStep === 6"
+                        v-else-if="editor.currentStep === 6"
                         :publish="editor.publish"
                         :invitation-id="editor.invitationId"
-                        :is-saving="isSaving"
+                        :is-saving="editor.isSaving"
                         :save-step6="editor.saveStep6"
                         :template="template"
                         :basic="editor.basic"
@@ -190,10 +188,10 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
                 </Transition>
 
                 <!-- ── Footer nav ──────────────────────────────── -->
-                <div v-if="currentStep < 6"
+                <div v-if="editor.currentStep < 6"
                      class="border-t border-stone-100 px-6 py-4 flex items-center justify-between bg-stone-50/50">
                     <button
-                        v-if="currentStep > 1"
+                        v-if="editor.currentStep > 1"
                         @click="back"
                         class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-xl hover:bg-stone-100 transition-colors"
                     >
@@ -206,16 +204,16 @@ const progressPercent = computed(() => Math.round(((currentStep.value - 1) / 5) 
 
                     <button
                         @click="next"
-                        :disabled="isSaving"
+                        :disabled="editor.isSaving"
                         class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60"
                         style="background-color: #D4A373"
                     >
-                        <svg v-if="isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <svg v-if="editor.isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                         </svg>
-                        {{ isSaving ? 'Menyimpan…' : currentStep === 5 ? 'Lanjut ke Review' : 'Simpan & Lanjut' }}
-                        <svg v-if="!isSaving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {{ editor.isSaving ? 'Menyimpan…' : editor.currentStep === 5 ? 'Lanjut ke Review' : 'Simpan & Lanjut' }}
+                        <svg v-if="!editor.isSaving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </button>
