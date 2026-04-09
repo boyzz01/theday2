@@ -48,6 +48,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'translations' => [
+                'id' => require lang_path('id/auth.php'),
+                'en' => require lang_path('en/auth.php'),
+            ],
         ];
     }
 }

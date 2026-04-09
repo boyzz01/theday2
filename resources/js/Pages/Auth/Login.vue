@@ -1,11 +1,15 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { useLocale } from '@/Composables/useLocale';
 
 defineProps({
     canResetPassword: { type: Boolean, default: true },
     status:           { type: String,  default: null  },
 });
+
+const { locale, toggleLocale } = useLocale();
+const tr = computed(() => usePage().props.translations[locale.value]);
 
 const form = useForm({
     email:    '',
@@ -23,7 +27,7 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Masuk — TheDay" />
+    <Head :title="tr.login_title" />
 
     <div class="min-h-screen flex" style="background-color: #FFFCF7">
 
@@ -52,14 +56,10 @@ function submit() {
 
                 <!-- Center quote -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">Selamat datang kembali</p>
-                    <h1 class="text-white text-4xl font-bold leading-tight mb-6"
-                        style="font-family: 'Playfair Display', serif">
-                        Abadikan<br/>momen spesialmu<br/>bersama TheDay.
-                    </h1>
-                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">
-                        Buat undangan digital pernikahan & ulang tahun yang elegan dalam hitungan menit.
-                    </p>
+                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.welcome_back }}</p>
+                    <h1 class="text-white text-4xl font-bold leading-tight mb-6 whitespace-pre-line"
+                        style="font-family: 'Playfair Display', serif">{{ tr.login_headline }}</h1>
+                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">{{ tr.login_sub }}</p>
                 </div>
 
                 <!-- Decorative card preview -->
@@ -73,14 +73,14 @@ function submit() {
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-white text-xs font-semibold">Undangan Pernikahan</p>
+                                <p class="text-white text-xs font-semibold">{{ tr.card_invitation }}</p>
                                 <p class="text-white/40 text-xs">Rina &amp; Budi • 12 Juli 2026</p>
                             </div>
                         </div>
                         <div class="h-px bg-white/10 mb-3"/>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-white/50">Tamu dikonfirmasi</span>
-                            <span class="text-amber-300 font-semibold">142 orang</span>
+                            <span class="text-white/50">{{ tr.card_confirmed }}</span>
+                            <span class="text-amber-300 font-semibold">{{ tr.card_count }}</span>
                         </div>
                     </div>
                 </div>
@@ -88,7 +88,18 @@ function submit() {
         </div>
 
         <!-- ── Right panel — form ───────────────────────────────────── -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col relative">
+
+            <!-- Lang toggle -->
+            <div class="absolute top-4 right-4 z-10">
+                <button
+                    @click="toggleLocale"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors text-xs font-semibold text-stone-600 border border-stone-200"
+                >
+                    <span>{{ locale === 'en' ? '🇬🇧' : '🇮🇩' }}</span>
+                    <span>{{ locale === 'en' ? 'EN' : 'ID' }}</span>
+                </button>
+            </div>
 
             <!-- Mobile logo -->
             <div class="lg:hidden flex items-center gap-2.5 px-6 pt-6">
@@ -113,14 +124,14 @@ function submit() {
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold text-stone-900 mb-1.5"
                             style="font-family: 'Playfair Display', serif">
-                            Masuk ke akun kamu
+                            {{ tr.login_heading }}
                         </h2>
                         <p class="text-sm text-stone-500">
-                            Belum punya akun?
+                            {{ tr.no_account }}
                             <Link :href="route('register')"
                                   class="font-semibold hover:underline"
                                   style="color: #C8A26B">
-                                Daftar gratis
+                                {{ tr.register_free }}
                             </Link>
                         </p>
                     </div>
@@ -140,7 +151,7 @@ function submit() {
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Email
+                                {{ tr.email }}
                             </label>
                             <input
                                 id="email"
@@ -166,11 +177,11 @@ function submit() {
                         <!-- Password -->
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
-                                <label for="password" class="text-sm font-medium text-stone-700">Password</label>
+                                <label for="password" class="text-sm font-medium text-stone-700">{{ tr.password }}</label>
                                 <Link v-if="canResetPassword"
                                       :href="route('password.request')"
                                       class="text-xs text-stone-400 hover:text-stone-600 transition-colors">
-                                    Lupa password?
+                                    {{ tr.forgot_password }}
                                 </Link>
                             </div>
                             <div class="relative">
@@ -226,7 +237,7 @@ function submit() {
                                     </svg>
                                 </div>
                             </div>
-                            <span class="text-sm text-stone-500">Ingat saya di perangkat ini</span>
+                            <span class="text-sm text-stone-500">{{ tr.remember_me }}</span>
                         </label>
 
                         <!-- Submit -->
@@ -241,9 +252,9 @@ function submit() {
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                Masuk…
+                                {{ tr.login_submitting }}
                             </span>
-                            <span v-else>Masuk</span>
+                            <span v-else>{{ tr.login_submit }}</span>
                         </button>
 
                     </form>
@@ -251,13 +262,13 @@ function submit() {
                     <!-- Divider -->
                     <div class="my-6 flex items-center gap-3">
                         <div class="flex-1 h-px bg-stone-100"/>
-                        <span class="text-xs text-stone-400">atau</span>
+                        <span class="text-xs text-stone-400">{{ tr.or }}</span>
                         <div class="flex-1 h-px bg-stone-100"/>
                     </div>
 
                     <!-- Back to home -->
                     <p class="text-center text-xs text-stone-400">
-                        <a href="/" class="hover:text-stone-600 transition-colors">← Kembali ke beranda</a>
+                        <a href="/" class="hover:text-stone-600 transition-colors">{{ tr.back_home }}</a>
                     </p>
 
                 </div>

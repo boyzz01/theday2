@@ -1,6 +1,10 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { useLocale } from '@/Composables/useLocale';
+
+const { locale, toggleLocale } = useLocale();
+const tr = computed(() => usePage().props.translations[locale.value]);
 
 const form = useForm({
     name: '',
@@ -21,7 +25,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Daftar — TheDay" />
+    <Head :title="tr.register_title" />
 
     <div class="min-h-screen flex" style="background-color: #FFFCF7">
 
@@ -50,22 +54,15 @@ const submit = () => {
 
                 <!-- Center quote -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">Mulai perjalananmu</p>
-                    <h1 class="text-white text-4xl font-bold leading-tight mb-6"
-                        style="font-family: 'Playfair Display', serif">
-                        Buat undangan<br/>digital yang<br/>tak terlupakan.
-                    </h1>
-                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">
-                        Bergabung bersama 10.000+ pasangan yang telah mempercayakan momen spesial mereka kepada TheDay.
-                    </p>
+                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.start_journey }}</p>
+                    <h1 class="text-white text-4xl font-bold leading-tight mb-6 whitespace-pre-line"
+                        style="font-family: 'Playfair Display', serif">{{ tr.register_headline }}</h1>
+                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">{{ tr.register_sub }}</p>
 
                     <!-- Feature list -->
                     <div class="mt-8 space-y-3">
-                        <div v-for="item in [
-                            'Gratis selamanya untuk template dasar',
-                            'Konfirmasi kehadiran (RSVP) real-time',
-                            'Bagikan lewat WhatsApp dalam 1 klik',
-                        ]" :key="item" class="flex items-center gap-3">
+                        <div v-for="item in [tr.feature_free, tr.feature_rsvp, tr.feature_wa]"
+                             :key="item" class="flex items-center gap-3">
                             <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                                  style="background-color: rgba(212,163,115,0.25)">
                                 <svg class="w-3 h-3 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -103,7 +100,18 @@ const submit = () => {
         </div>
 
         <!-- ── Right panel — form ───────────────────────────────────── -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col relative">
+
+            <!-- Lang toggle -->
+            <div class="absolute top-4 right-4 z-10">
+                <button
+                    @click="toggleLocale"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors text-xs font-semibold text-stone-600 border border-stone-200"
+                >
+                    <span>{{ locale === 'en' ? '🇬🇧' : '🇮🇩' }}</span>
+                    <span>{{ locale === 'en' ? 'EN' : 'ID' }}</span>
+                </button>
+            </div>
 
             <!-- Mobile logo -->
             <div class="lg:hidden flex items-center gap-2.5 px-6 pt-6">
@@ -128,14 +136,14 @@ const submit = () => {
                     <div class="mb-7">
                         <h2 class="text-2xl font-bold text-stone-900 mb-1.5"
                             style="font-family: 'Playfair Display', serif">
-                            Buat akun gratis
+                            {{ tr.register_heading }}
                         </h2>
                         <p class="text-sm text-stone-500">
-                            Sudah punya akun?
+                            {{ tr.have_account }}
                             <Link :href="route('login')"
                                   class="font-semibold hover:underline"
                                   style="color: #C8A26B">
-                                Masuk di sini
+                                {{ tr.login_here }}
                             </Link>
                         </p>
                     </div>
@@ -146,7 +154,7 @@ const submit = () => {
                         <!-- Nama -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Nama Lengkap
+                                {{ tr.full_name }}
                             </label>
                             <input
                                 id="name"
@@ -155,7 +163,7 @@ const submit = () => {
                                 required
                                 autofocus
                                 autocomplete="name"
-                                placeholder="Nama kamu"
+                                :placeholder="tr.name_placeholder"
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="form.errors.name
                                     ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
@@ -172,7 +180,7 @@ const submit = () => {
                         <!-- Nomor HP -->
                         <div>
                             <label for="phone" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Nomor HP (WhatsApp)
+                                {{ tr.phone }}
                             </label>
                             <input
                                 id="phone"
@@ -180,7 +188,7 @@ const submit = () => {
                                 type="tel"
                                 required
                                 autocomplete="tel"
-                                placeholder="08xxxxxxxxxx"
+                                :placeholder="tr.phone_placeholder"
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="form.errors.phone
                                     ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
@@ -197,7 +205,7 @@ const submit = () => {
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Email
+                                {{ tr.email }}
                             </label>
                             <input
                                 id="email"
@@ -222,7 +230,7 @@ const submit = () => {
                         <!-- Password -->
                         <div>
                             <label for="password" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Password
+                                {{ tr.password }}
                             </label>
                             <div class="relative">
                                 <input
@@ -231,7 +239,7 @@ const submit = () => {
                                     :type="showPass ? 'text' : 'password'"
                                     required
                                     autocomplete="new-password"
-                                    placeholder="Min. 8 karakter"
+                                    :placeholder="tr.password_placeholder"
                                     class="w-full px-4 py-3 pr-11 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.password
                                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
@@ -262,7 +270,7 @@ const submit = () => {
                         <!-- Konfirmasi Password -->
                         <div>
                             <label for="password_confirmation" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                Konfirmasi Password
+                                {{ tr.confirm_password }}
                             </label>
                             <div class="relative">
                                 <input
@@ -271,7 +279,7 @@ const submit = () => {
                                     :type="showConfirm ? 'text' : 'password'"
                                     required
                                     autocomplete="new-password"
-                                    placeholder="Ulangi password"
+                                    :placeholder="tr.confirm_placeholder"
                                     class="w-full px-4 py-3 pr-11 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.password_confirmation
                                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
@@ -311,9 +319,9 @@ const submit = () => {
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                Mendaftar…
+                                {{ tr.register_submitting }}
                             </span>
-                            <span v-else>Buat Akun Gratis</span>
+                            <span v-else>{{ tr.register_submit }}</span>
                         </button>
 
                     </form>
@@ -322,7 +330,7 @@ const submit = () => {
                     <div class="mt-6 flex items-center gap-3">
                         <div class="flex-1 h-px bg-stone-100"/>
                         <p class="text-xs text-stone-400">
-                            <a href="/" class="hover:text-stone-600 transition-colors">← Kembali ke beranda</a>
+                            <a href="/" class="hover:text-stone-600 transition-colors">{{ tr.back_home }}</a>
                         </p>
                         <div class="flex-1 h-px bg-stone-100"/>
                     </div>
