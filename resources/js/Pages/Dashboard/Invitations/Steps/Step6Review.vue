@@ -117,9 +117,9 @@ function goToDashboard() {
                     </div>
                     <span :class="[
                         'ml-auto text-xs font-medium px-2.5 py-1 rounded-lg',
-                        invitationId.value ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-stone-100 text-stone-500',
+                        invitationId ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-stone-100 text-stone-500',
                     ]">
-                        {{ invitationId.value ? 'Tersimpan' : 'Belum disimpan' }}
+                        {{ invitationId ? 'Tersimpan' : 'Belum disimpan' }}
                     </span>
                 </div>
             </div>
@@ -192,7 +192,7 @@ function goToDashboard() {
             <div class="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                     @click="handleAction('draft')"
-                    :disabled="isSaving || !invitationId.value"
+                    :disabled="isSaving || !invitationId"
                     class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-all"
                 >
                     <svg v-if="isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -207,7 +207,7 @@ function goToDashboard() {
                 </button>
                 <button
                     @click="handleAction('publish')"
-                    :disabled="isSaving || !invitationId.value"
+                    :disabled="isSaving || !invitationId"
                     class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
                     style="background-color: #D4A373"
                 >

@@ -4,7 +4,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     selectedMusic: { type: Object,   required: true }, // ref(null)
     defaultMusic:  { type: Array,    default: () => [] },
-    invitationId:  { type: Object,   required: true }, // ref
+    invitationId:  { type: String,   default: null },
     uploadAudio:   { type: Function, required: true },
 });
 
@@ -53,7 +53,7 @@ function stopPlay() {
 async function handleAudioUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!props.invitationId.value) {
+    if (!props.invitationId) {
         uploadError.value = 'Simpan informasi dasar terlebih dahulu.';
         return;
     }
@@ -184,12 +184,12 @@ async function handleAudioUpload(e) {
                     <p class="text-xs text-stone-400">MP3, WAV, OGG · maks 10 MB</p>
                 </div>
                 <input type="file" accept="audio/*" class="sr-only"
-                       :disabled="isUploading || !invitationId.value"
+                       :disabled="isUploading || !invitationId"
                        @change="handleAudioUpload"/>
             </label>
 
             <p v-if="uploadError" class="mt-2 text-xs text-red-600">{{ uploadError }}</p>
-            <p v-if="!invitationId.value" class="mt-2 text-xs text-amber-600">
+            <p v-if="!invitationId" class="mt-2 text-xs text-amber-600">
                 Simpan informasi dasar terlebih dahulu untuk upload musik.
             </p>
         </div>

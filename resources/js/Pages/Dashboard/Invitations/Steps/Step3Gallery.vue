@@ -3,7 +3,7 @@ import { ref } from 'vue';
 
 const props = defineProps({
     galleries:         { type: Object,   required: true }, // ref([])
-    invitationId:      { type: Object,   required: true }, // ref
+    invitationId:      { type: String,   default: null },
     uploadGalleryFile: { type: Function, required: true },
     removeGallery:     { type: Function, required: true },
     moveGallery:       { type: Function, required: true },
@@ -15,7 +15,7 @@ const uploadError         = ref(null);
 const editingCaptionIndex = ref(null);
 
 async function handleFiles(files) {
-    if (!props.invitationId.value) {
+    if (!props.invitationId) {
         uploadError.value = 'Simpan informasi dasar (Step 1) terlebih dahulu sebelum upload foto.';
         return;
     }
@@ -99,7 +99,7 @@ function onCardDrop(i) {
                 </span>
             </template>
             <input type="file" accept="image/*" multiple class="sr-only"
-                   :disabled="isUploading || !invitationId.value"
+                   :disabled="isUploading || !invitationId"
                    @change="onFileInput"/>
         </label>
 
@@ -107,7 +107,7 @@ function onCardDrop(i) {
         <p v-if="uploadError" class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
             {{ uploadError }}
         </p>
-        <p v-else-if="!invitationId.value" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
+        <p v-else-if="!invitationId" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
             Simpan informasi dasar (Step 1) terlebih dahulu untuk dapat upload foto.
         </p>
 
