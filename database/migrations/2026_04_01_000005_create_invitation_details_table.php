@@ -22,11 +22,6 @@ return new class extends Migration
             $table->string('groom_parent_names')->nullable();
             $table->string('bride_parent_names')->nullable();
 
-            // Ulang tahun fields
-            $table->string('birthday_person_name')->nullable();
-            $table->string('birthday_photo_url')->nullable();
-            $table->unsignedTinyInteger('birthday_age')->nullable();
-
             // Common fields
             $table->text('opening_text')->nullable();
             $table->text('closing_text')->nullable();

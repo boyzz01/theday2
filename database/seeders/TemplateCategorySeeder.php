@@ -22,18 +22,13 @@ class TemplateCategorySeeder extends Seeder
                 'is_active'   => true,
                 'sort_order'  => 1,
             ],
-            [
-                'name'        => 'Ulang Tahun',
-                'slug'        => 'ulang-tahun',
-                'description' => 'Template undangan ulang tahun ceria dan penuh warna.',
-                'icon_url'    => null,
-                'is_active'   => true,
-                'sort_order'  => 2,
-            ],
         ];
 
         foreach ($categories as $category) {
             TemplateCategory::updateOrCreate(['slug' => $category['slug']], $category);
         }
+
+        // Remove any leftover non-wedding categories
+        TemplateCategory::where('slug', 'ulang-tahun')->delete();
     }
 }

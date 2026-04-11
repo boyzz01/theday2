@@ -1,6 +1,6 @@
 # Project Rules — TheDay
 
-You are working on "TheDay", a Laravel 11 SaaS application for creating digital invitations (wedding & birthday) in the Indonesian market.
+You are working on "TheDay", a Laravel 11 SaaS application for creating premium digital wedding invitations in the Indonesian market.
 
 ## CRITICAL: Read SKILL.md First
 Before making ANY changes, read the SKILL.md file in the project root. It contains the complete tech stack, architecture rules, naming conventions, and business rules. Follow them strictly.
@@ -49,9 +49,10 @@ npm run dev          # long-running
 - Vite for build
 
 ## Auth Flow
-This project uses value-first flow: users can create invitations before registering.
-Auth is requested via AuthWall modal when user tries to save/publish.
-Guest data stored in guest_drafts table, converted on registration/login.
+Registration-first flow: users must register before accessing the invitation editor.
+When an unauthenticated user clicks "Gunakan Template", they are redirected to /register.
+After registration/login, the selected template context is restored via session (pending_template)
+and the user is taken directly to the invitation editor with that template pre-selected.
 
 ## Code Style
 

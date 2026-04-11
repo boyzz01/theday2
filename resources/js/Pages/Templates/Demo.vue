@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Head }     from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import InvitationRenderer from '@/Components/invitation/InvitationRenderer.vue';
 
 const props = defineProps({
@@ -13,7 +13,7 @@ const props = defineProps({
 const primary = computed(() => props.invitation.config?.primary_color ?? '#D4A373');
 
 function useTemplate() {
-    window.location.href = `/editor?template=${props.template.id}`;
+    router.visit(`/use-template/${props.template.id}`);
 }
 </script>
 

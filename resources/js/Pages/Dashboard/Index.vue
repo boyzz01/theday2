@@ -59,7 +59,6 @@ const statusConfig = {
 
 const eventTypeLabel = {
     pernikahan: '💍 Pernikahan',
-    ulang_tahun: '🎂 Ulang Tahun',
 };
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
@@ -315,7 +314,7 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                  class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div
                     v-for="(tip, i) in [
-                        { icon: '🎨', title: 'Pilih Template', desc: 'Pilih dari 50+ template cantik untuk pernikahan & ulang tahun.' },
+                        { icon: '🎨', title: 'Pilih Template', desc: 'Pilih dari 50+ template undangan pernikahan yang elegan.' },
                         { icon: '✏️', title: 'Isi Detail Acara', desc: 'Masukkan nama, tanggal, lokasi, dan foto acaramu.' },
                         { icon: '🚀', title: 'Bagikan ke Tamu', desc: 'Publikasikan dan bagikan link via WhatsApp dalam detik.' },
                     ]"

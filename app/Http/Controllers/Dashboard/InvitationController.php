@@ -102,7 +102,7 @@ class InvitationController extends Controller
         ]);
 
         $template  = Template::findOrFail($data['template_id']);
-        $eventType = $template->category?->slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan';
+        $eventType = 'pernikahan';
 
         // Reuse existing draft if one exists (max 1 draft per user)
         $invitation = Invitation::where('user_id', Auth::id())
@@ -194,9 +194,6 @@ class InvitationController extends Controller
                     'bride_parent_names'   => $details->bride_parent_names,
                     'groom_photo_url'      => $details->groom_photo_url,
                     'bride_photo_url'      => $details->bride_photo_url,
-                    'birthday_person_name' => $details->birthday_person_name,
-                    'birthday_age'         => $details->birthday_age,
-                    'birthday_photo_url'   => $details->birthday_photo_url,
                     'opening_text'         => $details->opening_text,
                     'closing_text'         => $details->closing_text,
                     'cover_photo_url'      => $details->cover_photo_url,
@@ -234,7 +231,7 @@ class InvitationController extends Controller
         $data = $request->validate([
             'template_id' => 'required|uuid|exists:templates,id',
             'title'       => 'required|string|max:255',
-            'event_type'  => 'required|in:pernikahan,ulang_tahun',
+            'event_type'  => 'required|in:pernikahan',
         ]);
 
         $invitation = Invitation::create([
@@ -261,7 +258,7 @@ class InvitationController extends Controller
 
         $data = $request->validate([
             'title'      => 'sometimes|string|max:255',
-            'event_type' => 'sometimes|in:pernikahan,ulang_tahun',
+            'event_type' => 'sometimes|in:pernikahan',
             'slug'       => 'sometimes|string|max:100|alpha_dash|unique:invitations,slug,' . $invitation->id,
         ]);
 
@@ -283,9 +280,6 @@ class InvitationController extends Controller
             'bride_parent_names'   => 'nullable|string|max:255',
             'groom_photo_url'      => 'nullable|string|max:2048',
             'bride_photo_url'      => 'nullable|string|max:2048',
-            'birthday_person_name' => 'nullable|string|max:255',
-            'birthday_age'         => 'nullable|integer|min:1|max:200',
-            'birthday_photo_url'   => 'nullable|string|max:2048',
             'opening_text'         => 'nullable|string|max:2000',
             'closing_text'         => 'nullable|string|max:2000',
             'cover_photo_url'      => 'nullable|string|max:2048',

@@ -12,7 +12,7 @@ return [
     'login_title'    => 'Masuk — TheDay',
     'welcome_back'   => 'Selamat datang kembali',
     'login_headline' => "Abadikan\nmomen spesialmu\nbersama TheDay.",
-    'login_sub'      => 'Buat undangan digital pernikahan & ulang tahun yang elegan dalam hitungan menit.',
+    'login_sub'      => 'Buat undangan digital pernikahan yang elegan dan tak terlupakan dalam hitungan menit.',
 
     // Login — Right panel
     'login_heading'    => 'Masuk ke akun kamu',

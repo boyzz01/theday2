@@ -12,7 +12,7 @@ return [
     'login_title'    => 'Sign In — TheDay',
     'welcome_back'   => 'Welcome back',
     'login_headline' => "Capture your\nspecial moments\nwith TheDay.",
-    'login_sub'      => 'Create elegant digital wedding & birthday invitations in minutes.',
+    'login_sub'      => 'Create elegant, unforgettable digital wedding invitations in minutes.',
 
     // Login — Right panel
     'login_heading'    => 'Sign in to your account',

@@ -47,11 +47,10 @@ const demoInvitation = computed(() => {
     if (!premiumComponent.value || !props.template) return null;
     const d    = demo.value;
     const config = { ...(props.template.default_config ?? {}), ...(d.custom_config ?? {}) };
-    const isWedding = !!d.details?.groom_name;
     return {
         id:            'preview-demo',
         slug:          'demo',
-        event_type:    isWedding ? 'pernikahan' : 'ulang_tahun',
+        event_type:    'pernikahan',
         details:       d.details ?? {},
         events:        (d.events ?? []).map((e, i) => ({
             id:                   i + 1,
@@ -106,10 +105,8 @@ const isWedding = computed(() =>
     !! demo.value.details?.groom_name
 );
 
-const groomName = computed(() => demo.value.details?.groom_name        ?? 'Ahmad Rizky');
-const brideName = computed(() => demo.value.details?.bride_name        ?? 'Siti Nurhaliza');
-const bdayName  = computed(() => demo.value.details?.birthday_person_name ?? 'Arya');
-const bdayAge   = computed(() => demo.value.details?.birthday_age         ?? '');
+const groomName = computed(() => demo.value.details?.groom_name ?? 'Ahmad Rizky');
+const brideName = computed(() => demo.value.details?.bride_name ?? 'Siti Nurhaliza');
 
 const events  = computed(() => demo.value.events  ?? []);
 const gallery = computed(() => demo.value.gallery ?? []);
@@ -205,26 +202,17 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                              :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`">
                                             <div class="w-12 h-0.5 mb-5 rounded-full" :style="`background:${primary}`"/>
                                             <p class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2" :style="`color:${primary}`">
-                                                {{ isWedding ? t('Undangan Pernikahan', 'Wedding Invitation') : t('Undangan Ulang Tahun', 'Birthday Invitation') }}
+                                                {{ t('Undangan Pernikahan', 'Wedding Invitation') }}
                                             </p>
-                                            <template v-if="isWedding">
-                                                <p class="text-3xl font-bold leading-tight text-stone-800 mb-1"
-                                                   :style="`font-family: '${fontTitle}', serif`">{{ groomName }}</p>
-                                                <div class="flex items-center gap-3 my-1.5">
-                                                    <div class="w-8 h-px" :style="`background:${primary}`"/>
-                                                    <span class="text-sm" :style="`color:${primary}`">&amp;</span>
-                                                    <div class="w-8 h-px" :style="`background:${primary}`"/>
-                                                </div>
-                                                <p class="text-3xl font-bold leading-tight text-stone-800"
-                                                   :style="`font-family: '${fontTitle}', serif`">{{ brideName }}</p>
-                                            </template>
-                                            <template v-else>
-                                                <p class="text-3xl font-bold leading-tight text-stone-800"
-                                                   :style="`font-family: '${fontTitle}', serif`">{{ bdayName }}</p>
-                                                <p class="text-sm mt-1 font-medium" :style="`color:${primary}`">
-                                                    {{ t('Ulang Tahun ke-', 'Birthday #') }}{{ bdayAge }}
-                                                </p>
-                                            </template>
+                                            <p class="text-3xl font-bold leading-tight text-stone-800 mb-1"
+                                               :style="`font-family: '${fontTitle}', serif`">{{ groomName }}</p>
+                                            <div class="flex items-center gap-3 my-1.5">
+                                                <div class="w-8 h-px" :style="`background:${primary}`"/>
+                                                <span class="text-sm" :style="`color:${primary}`">&amp;</span>
+                                                <div class="w-8 h-px" :style="`background:${primary}`"/>
+                                            </div>
+                                            <p class="text-3xl font-bold leading-tight text-stone-800"
+                                               :style="`font-family: '${fontTitle}', serif`">{{ brideName }}</p>
                                             <div class="w-12 h-0.5 mt-5 rounded-full" :style="`background:${primary}`"/>
                                         </div>
                                         <div v-if="demo.details?.opening_text" class="px-6 py-5 text-center">

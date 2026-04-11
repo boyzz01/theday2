@@ -32,14 +32,10 @@ function toSlug(str) {
 }
 
 function generateDefaultSlug() {
-    if (props.basic.event_type === 'pernikahan') {
-        const bride = toSlug(props.details?.bride_name ?? '');
-        const groom = toSlug(props.details?.groom_name ?? '');
-        if (bride && groom) return `${bride}-${groom}`;
-        return bride || groom;
-    } else {
-        return toSlug(props.details?.birthday_person_name ?? '');
-    }
+    const bride = toSlug(props.details?.bride_name ?? '');
+    const groom = toSlug(props.details?.groom_name ?? '');
+    if (bride && groom) return `${bride}-${groom}`;
+    return bride || groom;
 }
 
 async function checkSlug(slug) {
@@ -191,7 +187,7 @@ function goToDashboard() {
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-stone-800">{{ basic.title || 'Judul Undangan' }}</p>
-                        <p class="text-xs text-stone-400">{{ template.name }} · {{ basic.event_type === 'pernikahan' ? 'Pernikahan' : 'Ulang Tahun' }}</p>
+                        <p class="text-xs text-stone-400">{{ template.name }} · Pernikahan</p>
                     </div>
                     <span :class="[
                         'ml-auto text-xs font-medium px-2.5 py-1 rounded-lg',

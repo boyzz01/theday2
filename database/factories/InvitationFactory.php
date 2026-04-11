@@ -21,17 +21,14 @@ class InvitationFactory extends Factory
 {
     public function definition(): array
     {
-        $eventType = fake()->randomElement(EventType::cases());
-        $status    = fake()->randomElement(InvitationStatus::cases());
+        $status = fake()->randomElement(InvitationStatus::cases());
 
         return [
             'user_id'              => User::factory(),
             'template_id'          => Template::factory(),
             'slug'                 => Str::slug(fake()->unique()->words(3, true)),
-            'title'                => $eventType === EventType::Pernikahan
-                ? 'Pernikahan ' . fake()->firstName() . ' & ' . fake()->firstName()
-                : 'Ulang Tahun ke-' . fake()->numberBetween(1, 50) . ' ' . fake()->firstName(),
-            'event_type'           => $eventType,
+            'title'                => 'Pernikahan ' . fake()->firstName() . ' & ' . fake()->firstName(),
+            'event_type'           => EventType::Pernikahan,
             'custom_config'        => null,
             'status'               => $status,
             'published_at'         => $status !== InvitationStatus::Draft ? now()->subDays(fake()->numberBetween(1, 30)) : null,
@@ -73,14 +70,6 @@ class InvitationFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'event_type' => EventType::Pernikahan,
             'title'      => 'Pernikahan ' . fake()->firstName() . ' & ' . fake()->firstName(),
-        ]);
-    }
-
-    public function forUlangTahun(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'event_type' => EventType::UlangTahun,
-            'title'      => 'Ulang Tahun ke-' . fake()->numberBetween(1, 50) . ' ' . fake()->firstName(),
         ]);
     }
 

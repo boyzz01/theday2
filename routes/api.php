@@ -5,7 +5,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\InvitationController;
-use App\Http\Controllers\GuestDraftController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,17 +24,6 @@ Route::post('/auth/check-email', function (Request $request) {
     return response()->json([
         'available' => ! User::where('email', $request->email)->exists(),
     ]);
-});
-
-// ── Guest Draft Routes ────────────────────────────────────────────────────
-Route::middleware('guest.session')->group(function () {
-    Route::post(  '/guest/drafts',         [GuestDraftController::class, 'upsert']);
-    Route::get(   '/guest/drafts/current', [GuestDraftController::class, 'current']);
-    Route::delete('/guest/drafts/current', [GuestDraftController::class, 'destroy']);
-});
-
-Route::middleware(['auth:sanctum', 'guest.session'])->group(function () {
-    Route::post('/guest/drafts/convert', [GuestDraftController::class, 'convert']);
 });
 
 // ── Authenticated Routes ───────────────────────────────────────────────────

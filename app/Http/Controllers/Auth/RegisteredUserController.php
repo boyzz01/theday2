@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\AssignFreeSubscriptionAction;
-use App\Actions\ConvertGuestDraftAction;
+use App\Actions\CreateInvitationFromTemplateAction;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     public function store(
         Request $request,
         AssignFreeSubscriptionAction $assignFreeSubscription,
-        ConvertGuestDraftAction $convertGuestDraft,
+        CreateInvitationFromTemplateAction $createInvitation,
     ): RedirectResponse|JsonResponse {
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
@@ -54,17 +54,17 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        $sessionId = $request->cookie('guest_session_id');
+        $pendingTemplate = session()->pull('pending_template');
 
-        if ($sessionId) {
-            $invitation = $convertGuestDraft->execute($user, $sessionId);
+        if ($pendingTemplate) {
+            $invitation = $createInvitation->execute($user, $pendingTemplate);
 
             if ($invitation) {
                 $url = route('dashboard.invitations.edit', $invitation);
                 if ($request->wantsJson()) {
                     return response()->json(['redirect' => $url]);
                 }
-                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Akun dibuat! Undanganmu berhasil disimpan. Lanjutkan mengedit.']);
+                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Akun dibuat! Template sudah dipilih. Mulai buat undanganmu.']);
             }
         }
 
@@ -72,6 +72,6 @@ class RegisteredUserController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['redirect' => $fallback]);
         }
-        return redirect($fallback)->with('flash', ['type' => 'success', 'message' => 'Selamat datang di TheDay! 🎉']);
+        return redirect($fallback)->with('flash', ['type' => 'success', 'message' => 'Selamat datang di TheDay!']);
     }
 }

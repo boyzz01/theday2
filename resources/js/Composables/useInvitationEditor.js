@@ -16,9 +16,6 @@ function defaultDetails() {
         bride_parent_names:   '',
         groom_photo_url:      '',
         bride_photo_url:      '',
-        birthday_person_name: '',
-        birthday_age:         '',
-        birthday_photo_url:   '',
         opening_text:         '',
         closing_text:         '',
         cover_photo_url:      '',
@@ -60,8 +57,7 @@ export function useInvitationEditor(template, invitation = null) {
     // ── Step 1 — Basic info ──────────────────────────────────────
     const basic = reactive({
         title:      invitation?.title ?? '',
-        event_type: invitation?.event_type
-            ?? (template?.category?.slug === 'ulang-tahun' ? 'ulang_tahun' : 'pernikahan'),
+        event_type: invitation?.event_type ?? 'pernikahan',
     });
 
     const details = reactive({
@@ -474,21 +470,13 @@ export function useInvitationEditor(template, invitation = null) {
     // ── Internal helpers ──────────────────────────────────────────
 
     function sanitizedDetailsPayload() {
-        if (basic.event_type === 'pernikahan') {
-            return {
-                groom_name:         details.groom_name         || null,
-                bride_name:         details.bride_name         || null,
-                groom_parent_names: details.groom_parent_names || null,
-                bride_parent_names: details.bride_parent_names || null,
-                opening_text:       details.opening_text       || null,
-                closing_text:       details.closing_text       || null,
-            };
-        }
         return {
-            birthday_person_name: details.birthday_person_name || null,
-            birthday_age:         details.birthday_age         || null,
-            opening_text:         details.opening_text         || null,
-            closing_text:         details.closing_text         || null,
+            groom_name:         details.groom_name         || null,
+            bride_name:         details.bride_name         || null,
+            groom_parent_names: details.groom_parent_names || null,
+            bride_parent_names: details.bride_parent_names || null,
+            opening_text:       details.opening_text       || null,
+            closing_text:       details.closing_text       || null,
         };
     }
 

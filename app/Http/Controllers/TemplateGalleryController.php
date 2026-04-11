@@ -67,8 +67,7 @@ class TemplateGalleryController extends Controller
             $demo['custom_config']            ?? []
         );
 
-        $isWedding = isset($demo['details']['groom_name']);
-        $eventType = $isWedding ? 'pernikahan' : 'ulang_tahun';
+        $eventType = 'pernikahan';
 
         // Format events to match invitation shape expected by section components
         $events = collect($demo['events'] ?? [])->map(function ($e, $i) {
@@ -114,9 +113,7 @@ class TemplateGalleryController extends Controller
             ],
             'invitation' => [
                 'id'         => 'demo',
-                'title'      => $isWedding
-                    ? (($demo['details']['groom_name'] ?? '') . ' & ' . ($demo['details']['bride_name'] ?? ''))
-                    : ('Ulang Tahun ' . ($demo['details']['birthday_person_name'] ?? '')),
+                'title'      => ($demo['details']['groom_name'] ?? '') . ' & ' . ($demo['details']['bride_name'] ?? ''),
                 'slug'       => 'demo',
                 'event_type' => $eventType,
                 'details'    => $demo['details'] ?? null,

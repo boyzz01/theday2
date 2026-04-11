@@ -35,7 +35,7 @@ const openingText = details.opening_text
             <!-- Bismillah / event opener label -->
             <div>
                 <p class="text-xs tracking-[0.3em] uppercase mb-4" :style="{ color: primaryColor }">
-                    {{ isWedding ? 'Undangan Pernikahan' : 'Undangan Ulang Tahun' }}
+                    Undangan Pernikahan
                 </p>
                 <p class="text-base text-stone-600 leading-relaxed italic" :style="{ fontFamily }">
                     {{ openingText }}

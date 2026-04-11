@@ -6,10 +6,9 @@ const props = defineProps({
 });
 
 const details = props.invitation.details ?? {};
-const isWedding = props.invitation.event_type === 'pernikahan';
 
 const coverPhoto = details.cover_photo_url
-    ?? (isWedding ? details.groom_photo_url : details.birthday_photo_url)
+    ?? details.groom_photo_url
     ?? null;
 
 const firstEvent = props.invitation.events?.[0] ?? null;
@@ -49,8 +48,8 @@ const firstEvent = props.invitation.events?.[0] ?? null;
         <!-- Content -->
         <div class="relative z-10 text-center px-8 space-y-5 w-full max-w-sm mx-auto">
 
-            <!-- Couple / birthday photos -->
-            <template v-if="isWedding && (details.groom_photo_url || details.bride_photo_url)">
+            <!-- Couple photos -->
+            <template v-if="details.groom_photo_url || details.bride_photo_url">
                 <div class="flex items-end justify-center gap-3 mb-4">
                     <div v-if="details.groom_photo_url"
                          class="w-28 h-36 rounded-2xl overflow-hidden border-4 border-white/80 shadow-xl">
@@ -72,35 +71,22 @@ const firstEvent = props.invitation.events?.[0] ?? null;
             <div>
                 <p class="text-xs tracking-[0.25em] uppercase mb-2"
                    :style="{ color: coverPhoto ? 'rgba(255,255,255,0.75)' : primaryColor }">
-                    {{ isWedding ? 'Pernikahan' : 'Ulang Tahun' }}
+                    Pernikahan
                 </p>
-                <template v-if="isWedding">
-                    <h1 class="text-5xl font-semibold leading-tight"
-                        :style="{ fontFamily, color: coverPhoto ? 'white' : '#292524' }">
-                        {{ details.groom_name ?? '—' }}
-                    </h1>
-                    <div class="flex items-center justify-center gap-3 my-2">
-                        <div class="h-px w-12" :style="{ backgroundColor: coverPhoto ? 'rgba(255,255,255,0.5)' : primaryColor }"/>
-                        <span class="text-2xl font-light"
-                              :style="{ color: coverPhoto ? 'rgba(255,255,255,0.7)' : primaryColor }">&amp;</span>
-                        <div class="h-px w-12" :style="{ backgroundColor: coverPhoto ? 'rgba(255,255,255,0.5)' : primaryColor }"/>
-                    </div>
-                    <h1 class="text-5xl font-semibold leading-tight"
-                        :style="{ fontFamily, color: coverPhoto ? 'white' : '#292524' }">
-                        {{ details.bride_name ?? '—' }}
-                    </h1>
-                </template>
-                <template v-else>
-                    <h1 class="text-5xl font-semibold leading-tight"
-                        :style="{ fontFamily, color: coverPhoto ? 'white' : '#292524' }">
-                        {{ details.birthday_person_name ?? '—' }}
-                    </h1>
-                    <p v-if="details.birthday_age"
-                       class="text-xl mt-2"
-                       :style="{ color: coverPhoto ? 'rgba(255,255,255,0.8)' : primaryColor }">
-                        {{ details.birthday_age }} Tahun
-                    </p>
-                </template>
+                <h1 class="text-5xl font-semibold leading-tight"
+                    :style="{ fontFamily, color: coverPhoto ? 'white' : '#292524' }">
+                    {{ details.groom_name ?? '—' }}
+                </h1>
+                <div class="flex items-center justify-center gap-3 my-2">
+                    <div class="h-px w-12" :style="{ backgroundColor: coverPhoto ? 'rgba(255,255,255,0.5)' : primaryColor }"/>
+                    <span class="text-2xl font-light"
+                          :style="{ color: coverPhoto ? 'rgba(255,255,255,0.7)' : primaryColor }">&amp;</span>
+                    <div class="h-px w-12" :style="{ backgroundColor: coverPhoto ? 'rgba(255,255,255,0.5)' : primaryColor }"/>
+                </div>
+                <h1 class="text-5xl font-semibold leading-tight"
+                    :style="{ fontFamily, color: coverPhoto ? 'white' : '#292524' }">
+                    {{ details.bride_name ?? '—' }}
+                </h1>
             </div>
 
             <!-- Event date -->

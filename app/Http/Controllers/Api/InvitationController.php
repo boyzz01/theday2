@@ -119,7 +119,7 @@ class InvitationController extends Controller
         $payload   = [];
 
         // Handle file uploads via Storage
-        foreach (['groom_photo', 'bride_photo', 'birthday_photo', 'cover_photo'] as $field) {
+        foreach (['groom_photo', 'bride_photo', 'cover_photo'] as $field) {
             if ($request->hasFile($field)) {
                 $path = $request->file($field)->store(
                     "invitations/{$invitation->id}/photos",
@@ -133,7 +133,7 @@ class InvitationController extends Controller
         // Merge remaining text fields
         foreach ($validated as $key => $value) {
             // Skip the file fields already handled above
-            if (in_array($key, ['groom_photo', 'bride_photo', 'birthday_photo', 'cover_photo'])) {
+            if (in_array($key, ['groom_photo', 'bride_photo', 'cover_photo'])) {
                 continue;
             }
             $payload[$key] = $value;

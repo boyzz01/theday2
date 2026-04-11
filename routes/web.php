@@ -13,8 +13,8 @@ use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
-use App\Http\Controllers\EditorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UseTemplateController;
 use App\Http\Controllers\Public\PersonalizedInvitationController;
 use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\TemplateGalleryController;
@@ -49,11 +49,11 @@ Route::get('/sitemap.xml', function () {
 })->name('sitemap');
 
 // ── Guest-accessible public routes (no auth required) ───────────────────────
-Route::middleware('guest.session')->group(function () {
-    Route::get('/templates',              [TemplateGalleryController::class, 'index'])->name('templates.gallery');
-    Route::get('/templates/{template:slug}/demo', [TemplateGalleryController::class, 'demo'])->name('templates.demo');
-    Route::get('/editor',                 [EditorController::class, 'create'])->name('editor.create');
-});
+Route::get('/templates',              [TemplateGalleryController::class, 'index'])->name('templates.gallery');
+Route::get('/templates/{template:slug}/demo', [TemplateGalleryController::class, 'demo'])->name('templates.demo');
+
+// Template selection — redirects guests to register, authenticated users to editor
+Route::get('/use-template/{template}', UseTemplateController::class)->name('use-template');
 
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
@@ -149,7 +149,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // ── Public invitation pages ─────────────────────────────────────────────
 // IMPORTANT: keep this LAST so /{slug} doesn't swallow other routes.
 // The where() constraint excludes known top-level paths.
-$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap).*';
+$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|use-template|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap).*';
 
 // Two-segment literal routes defined BEFORE wildcard so they take precedence.
 Route::post('/{slug}/unlock',   [PublicInvitationController::class, 'unlock'])->where('slug', $slugExclusion)->name('invitation.unlock');

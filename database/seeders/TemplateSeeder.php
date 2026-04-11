@@ -15,7 +15,6 @@ class TemplateSeeder extends Seeder
     public function run(): void
     {
         $pernikahan = TemplateCategory::where('slug', 'pernikahan')->firstOrFail();
-        $ulangTahun = TemplateCategory::where('slug', 'ulang-tahun')->firstOrFail();
 
         $weddingDemo = [
             'details' => [
@@ -53,32 +52,6 @@ class TemplateSeeder extends Seeder
                 '/demo/prewedding-2.svg',
                 '/demo/prewedding-3.svg',
                 '/demo/prewedding-4.svg',
-            ],
-        ];
-
-        $birthdayDemo = [
-            'details' => [
-                'birthday_person_name' => 'Arya Pratama',
-                'birthday_age'         => 7,
-                'birthday_photo_url'   => '/demo/birthday-kid.svg',
-                'opening_text'         => 'Dengan penuh kebahagiaan, kami mengundang teman-teman untuk merayakan ulang tahun ke-7!',
-                'closing_text'         => 'Kehadiran kalian adalah kado terindah untuk Arya!',
-            ],
-            'events' => [
-                [
-                    'event_name'    => 'Birthday Party',
-                    'event_date'    => '2026-07-20',
-                    'start_time'    => '10:00',
-                    'end_time'      => '13:00',
-                    'venue_name'    => 'Playground Kemang',
-                    'venue_address' => 'Jl. Kemang Raya No. 45, Jakarta Selatan',
-                    'maps_url'      => 'https://maps.google.com/?q=-6.2600,106.8133',
-                ],
-            ],
-            'gallery' => [
-                '/demo/birthday-1.svg',
-                '/demo/birthday-2.svg',
-                '/demo/birthday-3.svg',
             ],
         ];
 
@@ -200,90 +173,13 @@ class TemplateSeeder extends Seeder
                 'is_active'      => true,
                 'sort_order'     => 4,
             ],
-
-            // ── Ulang Tahun ────────────────────────────────────────
-            [
-                'category_id'    => $ulangTahun->id,
-                'name'           => 'Confetti Ceria',
-                'slug'           => 'confetti-ceria',
-                'thumbnail_url'  => null,
-                'description'    => 'Template ulang tahun penuh warna dengan efek confetti yang meriah.',
-                'default_config' => [
-                    'primary_color'   => '#F72585',
-                    'secondary_color' => '#FFF0F6',
-                    'accent_color'    => '#7209B7',
-                    'font_title'      => 'Pacifico',
-                    'font_body'       => 'Poppins',
-                    'layout'          => 'vertical-scroll',
-                    'animation'       => 'bounce',
-                    'bg_pattern'      => 'confetti',
-                ],
-                'demo_data'      => array_merge($birthdayDemo, ['custom_config' => [
-                    'primary_color'   => '#F72585',
-                    'secondary_color' => '#FFF0F6',
-                    'font_title'      => 'Pacifico',
-                    'font_body'       => 'Poppins',
-                ]]),
-                'tier'           => 'free',
-                'is_active'      => true,
-                'sort_order'     => 1,
-            ],
-            [
-                'category_id'    => $ulangTahun->id,
-                'name'           => 'Biru Bintang',
-                'slug'           => 'biru-bintang',
-                'thumbnail_url'  => null,
-                'description'    => 'Template ulang tahun bertema galaxy dengan warna biru gelap dan bintang.',
-                'default_config' => [
-                    'primary_color'   => '#4361EE',
-                    'secondary_color' => '#E0E7FF',
-                    'accent_color'    => '#7C3AED',
-                    'font_title'      => 'Fredoka One',
-                    'font_body'       => 'Nunito',
-                    'layout'          => 'vertical-scroll',
-                    'animation'       => 'twinkle',
-                    'bg_pattern'      => 'stars',
-                ],
-                'demo_data'      => array_merge($birthdayDemo, ['custom_config' => [
-                    'primary_color'   => '#4361EE',
-                    'secondary_color' => '#E0E7FF',
-                    'font_title'      => 'Fredoka One',
-                    'font_body'       => 'Nunito',
-                ]]),
-                'tier'           => 'premium',
-                'is_active'      => true,
-                'sort_order'     => 2,
-            ],
-            [
-                'category_id'    => $ulangTahun->id,
-                'name'           => 'Peach Balon',
-                'slug'           => 'peach-balon',
-                'thumbnail_url'  => null,
-                'description'    => 'Template ulang tahun manis dengan nuansa peach dan dekorasi balon.',
-                'default_config' => [
-                    'primary_color'   => '#FB8500',
-                    'secondary_color' => '#FFF3E0',
-                    'accent_color'    => '#FFB703',
-                    'font_title'      => 'Nunito',
-                    'font_body'       => 'Inter',
-                    'layout'          => 'vertical-scroll',
-                    'animation'       => 'float-up',
-                    'bg_pattern'      => 'balloons',
-                ],
-                'demo_data'      => array_merge($birthdayDemo, ['custom_config' => [
-                    'primary_color'   => '#FB8500',
-                    'secondary_color' => '#FFF3E0',
-                    'font_title'      => 'Nunito',
-                    'font_body'       => 'Inter',
-                ]]),
-                'tier'           => 'free',
-                'is_active'      => true,
-                'sort_order'     => 3,
-            ],
         ];
 
         foreach ($templates as $template) {
             Template::updateOrCreate(['slug' => $template['slug']], $template);
         }
+
+        // Remove leftover birthday templates
+        Template::whereIn('slug', ['confetti-ceria', 'biru-bintang', 'peach-balon'])->delete();
     }
 }

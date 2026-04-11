@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {{-- ── SEO: Core ─────────────────────────────────────────────── --}}
-    <title>TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun Online | Gratis</title>
-    <meta name="description" content="Buat undangan digital pernikahan &amp; ulang tahun yang elegan dalam hitungan menit. 50+ template premium, RSVP online real-time, bagikan via WhatsApp. Mulai gratis, tanpa kartu kredit.">
-    <meta name="keywords" content="undangan digital, undangan pernikahan digital, undangan ulang tahun online, buat undangan digital gratis, undangan nikah online, digital invitation Indonesia, undangan online cantik">
+    <title>TheDay — Undangan Digital Pernikahan Online Premium | Gratis</title>
+    <meta name="description" content="Buat undangan digital pernikahan yang elegan dalam hitungan menit. 50+ template premium, RSVP online real-time, bagikan via WhatsApp. Mulai gratis, tanpa kartu kredit.">
+    <meta name="keywords" content="undangan digital pernikahan, undangan pernikahan digital, buat undangan nikah online gratis, undangan nikah digital, digital wedding invitation Indonesia, undangan online cantik, undangan pernikahan premium">
     <meta name="author" content="TheDay">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{{ url('/') }}">
@@ -17,19 +17,19 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:site_name" content="TheDay">
-    <meta property="og:title" content="TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun | Gratis">
-    <meta property="og:description" content="Buat undangan pernikahan &amp; ulang tahun digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp. Mulai gratis!">
+    <meta property="og:title" content="TheDay — Undangan Digital Pernikahan Premium | Gratis">
+    <meta property="og:description" content="Buat undangan pernikahan digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp. Mulai gratis!">
     <meta property="og:image" content="{{ asset('image/logo.png') }}">
     <meta property="og:image:width" content="300">
     <meta property="og:image:height" content="150">
-    <meta property="og:image:alt" content="TheDay — Platform Undangan Digital Pernikahan &amp; Ulang Tahun Online">
+    <meta property="og:image:alt" content="TheDay — Platform Undangan Digital Pernikahan Premium Online">
     <meta property="og:locale" content="id_ID">
     <meta property="og:locale:alternate" content="en_US">
 
     {{-- ── SEO: Twitter Card ─────────────────────────────────────── --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun Online">
-    <meta name="twitter:description" content="Buat undangan pernikahan &amp; ulang tahun digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp.">
+    <meta name="twitter:title" content="TheDay — Undangan Digital Pernikahan Premium Online">
+    <meta name="twitter:description" content="Buat undangan pernikahan digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp.">
     <meta name="twitter:image" content="{{ asset('image/logo.png') }}">
 
     {{-- ── SEO: Hreflang (bilingual ID / EN) ────────────────────── --}}
@@ -230,7 +230,7 @@
           "@id": "{{ url('/') }}/#website",
           "url": "{{ url('/') }}",
           "name": "TheDay",
-          "description": "Platform undangan digital online untuk pernikahan & ulang tahun terbaik di Indonesia.",
+          "description": "Platform undangan digital pernikahan online terbaik di Indonesia.",
           "inLanguage": ["id-ID", "en-US"],
           "potentialAction": {
             "@type": "SearchAction",
@@ -264,7 +264,7 @@
           "applicationCategory": "LifestyleApplication",
           "operatingSystem": "Web",
           "url": "{{ url('/') }}",
-          "description": "Platform undangan digital online untuk pernikahan & ulang tahun. Buat undangan cantik dalam hitungan menit dengan 50+ template elegan.",
+          "description": "Platform undangan digital pernikahan online. Buat undangan nikah cantik dalam hitungan menit dengan 50+ template elegan.",
           "offers": [
             {
               "@type": "Offer",
@@ -312,7 +312,7 @@
               "name": "Bagaimana cara membuat undangan digital di TheDay?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Cukup 3 langkah mudah: (1) Pilih template pernikahan atau ulang tahun yang sesuai, (2) Isi detail acara seperti nama, tanggal, lokasi, dan foto, (3) Bagikan link undangan ke tamu via WhatsApp atau media sosial."
+                "text": "Cukup 3 langkah mudah: (1) Pilih template pernikahan yang sesuai, (2) Isi detail acara seperti nama mempelai, tanggal, lokasi, dan foto, (3) Bagikan link undangan ke tamu via WhatsApp atau media sosial."
               }
             },
             {
@@ -328,7 +328,7 @@
               "name": "Berapa banyak template undangan yang tersedia?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "TheDay menyediakan 50+ template premium untuk berbagai tema: pernikahan, ulang tahun, vintage, modern, dan minimalis. Semua template bisa dikustomisasi warna, font, dan kontennya."
+                "text": "TheDay menyediakan 50+ template premium undangan pernikahan dalam berbagai tema: romantis, modern, minimalis, vintage, hingga keraton. Semua template bisa dikustomisasi warna, font, dan kontennya."
               }
             },
             {
@@ -459,8 +459,8 @@
                     <span style="color: var(--color-primary)" data-id="Tak Terlupakan" data-en="Unforgettable">Tak Terlupakan</span>
                 </h1>
 
-                <p class="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed" data-id="Undangan digital elegan untuk pernikahan & ulang tahun. Bagikan lewat WhatsApp, terima konfirmasi kehadiran secara real-time." data-en="Elegant digital invitations for weddings & birthdays. Share via WhatsApp, receive attendance confirmations in real-time.">
-                    Undangan digital elegan untuk pernikahan & ulang tahun. Bagikan lewat WhatsApp, terima konfirmasi kehadiran secara real-time.
+                <p class="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed" data-id="Undangan pernikahan digital yang elegan dan berkesan. Bagikan lewat WhatsApp, terima konfirmasi kehadiran secara real-time." data-en="Elegant digital wedding invitations that leave a lasting impression. Share via WhatsApp, receive attendance confirmations in real-time.">
+                    Undangan pernikahan digital yang elegan dan berkesan. Bagikan lewat WhatsApp, terima konfirmasi kehadiran secara real-time.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -629,8 +629,8 @@
                     'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>',
                     'id_title' => 'Template Cantik',
                     'en_title' => 'Beautiful Templates',
-                    'id_desc' => 'Pilih dari 50+ template elegan untuk pernikahan & ulang tahun. Semua responsif & mobile-friendly.',
-                    'en_desc' => 'Choose from 50+ elegant templates for weddings & birthdays. All responsive & mobile-friendly.',
+                    'id_desc' => 'Pilih dari 50+ template undangan pernikahan elegan. Semua responsif & mobile-friendly.',
+                    'en_desc' => 'Choose from 50+ elegant wedding invitation templates. All responsive & mobile-friendly.',
                     'color' => 'rgba(212,163,115,0.12)',
                     'iconColor' => '#D4A373',
                 ],
@@ -726,8 +726,8 @@
             @php
             $steps = [
                 ['num' => '01', 'id_title' => 'Pilih Template',   'en_title' => 'Choose a Template',
-                 'id_desc' => 'Jelajahi koleksi template pernikahan & ulang tahun. Pilih yang sesuai dengan tema acaramu.',
-                 'en_desc' => 'Browse our wedding & birthday template collection. Pick one that matches your event theme.',
+                 'id_desc' => 'Jelajahi koleksi template undangan pernikahan premium. Pilih yang sesuai dengan tema acara nikahmu.',
+                 'en_desc' => 'Browse our premium wedding invitation template collection. Pick one that matches your wedding theme.',
                  'emoji' => '🎨'],
                 ['num' => '02', 'id_title' => 'Isi Detail Acara', 'en_title' => 'Fill in Event Details',
                  'id_desc' => 'Masukkan nama, tanggal, lokasi, dan foto. Semuanya bisa dikustomisasi sesuai selera.',
@@ -790,12 +790,12 @@
         {{-- Category tabs --}}
         @php
         $tabs = [
-            ['id' => 'Semua',       'en' => 'All'],
-            ['id' => 'Pernikahan',  'en' => 'Wedding'],
-            ['id' => 'Ulang Tahun', 'en' => 'Birthday'],
-            ['id' => 'Vintage',     'en' => 'Vintage'],
-            ['id' => 'Modern',      'en' => 'Modern'],
-            ['id' => 'Minimalis',   'en' => 'Minimalist'],
+            ['id' => 'Semua',      'en' => 'All'],
+            ['id' => 'Pernikahan', 'en' => 'Wedding'],
+            ['id' => 'Nusantara',  'en' => 'Nusantara'],
+            ['id' => 'Romantis',   'en' => 'Romantic'],
+            ['id' => 'Modern',     'en' => 'Modern'],
+            ['id' => 'Minimalis',  'en' => 'Minimalist'],
         ];
         @endphp
         <div class="flex items-center justify-center gap-3 mb-10 flex-wrap reveal">
@@ -813,14 +813,14 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
             @php
             $templates = [
-                ['id_name' => 'Bunga Abadi',    'en_name' => 'Eternal Flower', 'id_type' => 'Pernikahan',  'en_type' => 'Wedding',  'bg' => 'linear-gradient(160deg, #FFF5E6, #F9E4C8)', 'primary' => '#C8956C'],
-                ['id_name' => 'Langit Senja',   'en_name' => 'Dusk Sky',       'id_type' => 'Pernikahan',  'en_type' => 'Wedding',  'bg' => 'linear-gradient(160deg, #FDE8E8, #FCCBCB)', 'primary' => '#E57070'],
-                ['id_name' => 'Hijau Daun',     'en_name' => 'Leaf Green',     'id_type' => 'Pernikahan',  'en_type' => 'Wedding',  'bg' => 'linear-gradient(160deg, #E8F5E9, #C8E6C9)', 'primary' => '#66BB6A'],
-                ['id_name' => 'Biru Langit',    'en_name' => 'Sky Blue',       'id_type' => 'Ulang Tahun', 'en_type' => 'Birthday', 'bg' => 'linear-gradient(160deg, #E3F2FD, #BBDEFB)', 'primary' => '#42A5F5'],
-                ['id_name' => 'Ungu Malam',     'en_name' => 'Night Purple',   'id_type' => 'Pernikahan',  'en_type' => 'Wedding',  'bg' => 'linear-gradient(160deg, #EDE7F6, #D1C4E9)', 'primary' => '#9575CD'],
-                ['id_name' => 'Hitam Elegan',   'en_name' => 'Elegant Black',  'id_type' => 'Pernikahan',  'en_type' => 'Wedding',  'bg' => 'linear-gradient(160deg, #263238, #37474F)', 'primary' => '#CFD8DC'],
-                ['id_name' => 'Peach Lembut',   'en_name' => 'Soft Peach',     'id_type' => 'Ulang Tahun', 'en_type' => 'Birthday', 'bg' => 'linear-gradient(160deg, #FFF3E0, #FFE0B2)', 'primary' => '#FFA726'],
-                ['id_name' => 'Sage Minimalis', 'en_name' => 'Sage Minimal',   'id_type' => 'Minimalis',   'en_type' => 'Minimalist','bg' => 'linear-gradient(160deg, #F1F8E9, #DCEDC8)', 'primary' => '#8BC34A'],
+                ['id_name' => 'Bunga Abadi',    'en_name' => 'Eternal Flower', 'id_type' => 'Pernikahan', 'en_type' => 'Wedding',    'bg' => 'linear-gradient(160deg, #FFF5E6, #F9E4C8)', 'primary' => '#C8956C'],
+                ['id_name' => 'Langit Senja',   'en_name' => 'Dusk Sky',       'id_type' => 'Romantis',   'en_type' => 'Romantic',   'bg' => 'linear-gradient(160deg, #FDE8E8, #FCCBCB)', 'primary' => '#E57070'],
+                ['id_name' => 'Hijau Daun',     'en_name' => 'Leaf Green',     'id_type' => 'Pernikahan', 'en_type' => 'Wedding',    'bg' => 'linear-gradient(160deg, #E8F5E9, #C8E6C9)', 'primary' => '#66BB6A'],
+                ['id_name' => 'Nusantara',      'en_name' => 'Nusantara',      'id_type' => 'Nusantara',  'en_type' => 'Nusantara',  'bg' => 'linear-gradient(160deg, #F5F0E8, #E8D5A3)', 'primary' => '#8B6914'],
+                ['id_name' => 'Ungu Malam',     'en_name' => 'Night Purple',   'id_type' => 'Romantis',   'en_type' => 'Romantic',   'bg' => 'linear-gradient(160deg, #EDE7F6, #D1C4E9)', 'primary' => '#9575CD'],
+                ['id_name' => 'Hitam Elegan',   'en_name' => 'Elegant Black',  'id_type' => 'Modern',     'en_type' => 'Modern',     'bg' => 'linear-gradient(160deg, #263238, #37474F)', 'primary' => '#CFD8DC'],
+                ['id_name' => 'Ivory Klasik',   'en_name' => 'Classic Ivory',  'id_type' => 'Minimalis',  'en_type' => 'Minimalist', 'bg' => 'linear-gradient(160deg, #FDFBF7, #F5EFE6)', 'primary' => '#B8956A'],
+                ['id_name' => 'Sage Minimalis', 'en_name' => 'Sage Minimal',   'id_type' => 'Minimalis',  'en_type' => 'Minimalist', 'bg' => 'linear-gradient(160deg, #F1F8E9, #DCEDC8)', 'primary' => '#8BC34A'],
             ];
             @endphp
 
@@ -1127,9 +1127,9 @@
                     <img src="{{ asset('image/logo.png') }}" alt="TheDay" class="h-10 w-auto brightness-0 invert">
                 </a>
                 <p class="text-sm leading-relaxed mb-5"
-                   data-id="Platform undangan digital online untuk pernikahan & ulang tahun terbaik di Indonesia."
-                   data-en="The best online digital invitation platform for weddings & birthdays in Indonesia.">
-                    Platform undangan digital online untuk pernikahan & ulang tahun terbaik di Indonesia.
+                   data-id="Platform undangan pernikahan digital online premium terbaik di Indonesia."
+                   data-en="Indonesia's best premium digital wedding invitation platform.">
+                    Platform undangan pernikahan digital online premium terbaik di Indonesia.
                 </p>
                 <div class="flex items-center gap-3">
                     @foreach(['instagram', 'tiktok', 'whatsapp'] as $social)

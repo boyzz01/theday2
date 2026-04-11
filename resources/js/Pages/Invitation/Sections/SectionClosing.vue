@@ -83,16 +83,9 @@ const pad = (n) => String(n).padStart(2, '0');
                 <!-- Names sign-off -->
                 <div class="pt-2">
                     <p class="text-xs tracking-[0.2em] uppercase text-stone-400 mb-2">Dengan cinta,</p>
-                    <template v-if="invitation.event_type === 'pernikahan'">
-                        <p class="text-2xl font-semibold text-stone-800" :style="{ fontFamily }">
-                            {{ details.groom_name ?? '—' }} &amp; {{ details.bride_name ?? '—' }}
-                        </p>
-                    </template>
-                    <template v-else>
-                        <p class="text-2xl font-semibold text-stone-800" :style="{ fontFamily }">
-                            {{ details.birthday_person_name ?? '—' }}
-                        </p>
-                    </template>
+                    <p class="text-2xl font-semibold text-stone-800" :style="{ fontFamily }">
+                        {{ details.groom_name ?? '—' }} &amp; {{ details.bride_name ?? '—' }}
+                    </p>
                 </div>
             </div>
 

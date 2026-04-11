@@ -31,20 +31,14 @@ const fontBody     = computed(() => cfg.value.font_body       ?? 'Crimson Text')
 const details   = computed(() => props.invitation.details  ?? {});
 const events    = computed(() => props.invitation.events   ?? []);
 const galleries = computed(() => props.invitation.galleries ?? []);
-const isWedding = computed(() => props.invitation.event_type === 'pernikahan');
+const groomName = computed(() => details.value.groom_name ?? '—');
+const brideName = computed(() => details.value.bride_name ?? '—');
 
-const groomName = computed(() => details.value.groom_name  ?? '—');
-const brideName = computed(() => details.value.bride_name  ?? '—');
-const bdayName  = computed(() => details.value.birthday_person_name ?? '—');
-const bdayAge   = computed(() => details.value.birthday_age ?? '');
-
-const firstEvent        = computed(() => events.value[0] ?? null);
-const firstEventDate    = computed(() => firstEvent.value?.event_date_formatted ?? '');
-const openingText       = computed(() =>
+const firstEvent     = computed(() => events.value[0] ?? null);
+const firstEventDate = computed(() => firstEvent.value?.event_date_formatted ?? '');
+const openingText    = computed(() =>
     details.value.opening_text ??
-    (isWedding.value
-        ? 'Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari istimewa kami.'
-        : 'Dengan penuh sukacita kami mengundang kehadiran Bapak/Ibu/Saudara/i.')
+    'Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari istimewa kami.'
 );
 const closingText       = computed(() =>
     details.value.closing_text ??
@@ -325,34 +319,22 @@ onUnmounted(() => clearInterval(cdTimer));
                         class="n-subtitle-label"
                         :style="{ fontFamily: fontHeading, color: primaryLight }"
                     >
-                        {{ isWedding ? 'Undangan Pernikahan' : 'Undangan Ulang Tahun' }}
+                        Undangan Pernikahan
                     </p>
 
                     <SulurDivider :color="primaryLight"/>
 
-                    <template v-if="isWedding">
-                        <h1 class="n-name-display shimmer-gold"
-                            :style="{ fontFamily: fontTitle }">
-                            {{ groomName }}
-                        </h1>
-                        <p class="n-ampersand" :style="{ color: primaryLight, fontFamily: fontHeading }">
-                            &amp;
-                        </p>
-                        <h1 class="n-name-display shimmer-gold"
-                            :style="{ fontFamily: fontTitle }">
-                            {{ brideName }}
-                        </h1>
-                    </template>
-                    <template v-else>
-                        <h1 class="n-name-display shimmer-gold"
-                            :style="{ fontFamily: fontTitle }">
-                            {{ bdayName }}
-                        </h1>
-                        <p v-if="bdayAge" class="n-bday-age"
-                           :style="{ color: primaryLight, fontFamily: fontHeading }">
-                            {{ bdayAge }} Tahun
-                        </p>
-                    </template>
+                    <h1 class="n-name-display shimmer-gold"
+                        :style="{ fontFamily: fontTitle }">
+                        {{ groomName }}
+                    </h1>
+                    <p class="n-ampersand" :style="{ color: primaryLight, fontFamily: fontHeading }">
+                        &amp;
+                    </p>
+                    <h1 class="n-name-display shimmer-gold"
+                        :style="{ fontFamily: fontTitle }">
+                        {{ brideName }}
+                    </h1>
 
                     <SulurDivider :color="primaryLight"/>
 
@@ -413,30 +395,18 @@ onUnmounted(() => clearInterval(cdTimer));
                             class="n-cover-eyebrow"
                             :style="{ fontFamily: fontHeading, color: primary }"
                         >
-                            {{ isWedding ? 'The Wedding of' : 'Happy Birthday' }}
+                            The Wedding of
                         </p>
 
-                        <template v-if="isWedding">
-                            <h1 class="n-cover-name shimmer-gold"
-                                :style="{ fontFamily: fontTitle }">
-                                {{ groomName }}
-                            </h1>
-                            <p class="n-cover-amp" :style="{ color: primary, fontFamily: fontHeading }">&amp;</p>
-                            <h1 class="n-cover-name shimmer-gold"
-                                :style="{ fontFamily: fontTitle }">
-                                {{ brideName }}
-                            </h1>
-                        </template>
-                        <template v-else>
-                            <h1 class="n-cover-name shimmer-gold"
-                                :style="{ fontFamily: fontTitle }">
-                                {{ bdayName }}
-                            </h1>
-                            <p v-if="bdayAge" class="n-cover-age"
-                               :style="{ color: primary, fontFamily: fontHeading }">
-                                {{ bdayAge }} Tahun
-                            </p>
-                        </template>
+                        <h1 class="n-cover-name shimmer-gold"
+                            :style="{ fontFamily: fontTitle }">
+                            {{ groomName }}
+                        </h1>
+                        <p class="n-cover-amp" :style="{ color: primary, fontFamily: fontHeading }">&amp;</p>
+                        <h1 class="n-cover-name shimmer-gold"
+                            :style="{ fontFamily: fontTitle }">
+                            {{ brideName }}
+                        </h1>
 
                         <p v-if="firstEventDate"
                            class="n-cover-date"
@@ -448,7 +418,7 @@ onUnmounted(() => clearInterval(cdTimer));
 
                 <!-- Photos (optional) -->
                 <div
-                    v-if="isWedding && (details.groom_photo_url || details.bride_photo_url)"
+                    v-if="details.groom_photo_url || details.bride_photo_url"
                     class="n-cover-photos"
                     :use-directive="vReveal"
                 >
@@ -521,9 +491,8 @@ onUnmounted(() => clearInterval(cdTimer));
                         </p>
                     </div>
 
-                    <!-- Wedding: couple profiles -->
+                    <!-- Couple profiles -->
                     <div
-                        v-if="isWedding"
                         :ref="el => vReveal(el)"
                         class="n-reveal n-couple-grid"
                     >
@@ -575,21 +544,6 @@ onUnmounted(() => clearInterval(cdTimer));
                                 {{ details.bride_parent_names ?? '—' }}
                             </p>
                         </div>
-                    </div>
-
-                    <!-- Birthday: person info -->
-                    <div v-else :ref="el => vReveal(el)" class="n-reveal n-bday-profile">
-                        <div v-if="details.birthday_photo_url"
-                             class="n-bday-photo-wrap"
-                             :style="{ borderColor: primaryLight }">
-                            <img :src="details.birthday_photo_url" alt="" class="n-bday-photo"/>
-                        </div>
-                        <h2 :style="{ fontFamily: fontTitle, color: darkBg }" class="n-bday-name">
-                            {{ bdayName }}
-                        </h2>
-                        <p v-if="bdayAge" :style="{ fontFamily: fontHeading, color: primary }">
-                            {{ bdayAge }} Tahun
-                        </p>
                     </div>
 
                     <SulurDivider :color="primary"/>
@@ -996,18 +950,10 @@ onUnmounted(() => clearInterval(cdTimer));
                                :style="{ fontFamily: fontBody, color: primaryLight + '80', letterSpacing: '0.2em', fontSize: '11px' }">
                                 DENGAN CINTA,
                             </p>
-                            <template v-if="isWedding">
-                                <h2 class="n-closing-names shimmer-gold"
-                                    :style="{ fontFamily: fontTitle }">
-                                    {{ groomName }} &amp; {{ brideName }}
-                                </h2>
-                            </template>
-                            <template v-else>
-                                <h2 class="n-closing-names shimmer-gold"
-                                    :style="{ fontFamily: fontTitle }">
-                                    {{ bdayName }}
-                                </h2>
-                            </template>
+                            <h2 class="n-closing-names shimmer-gold"
+                                :style="{ fontFamily: fontTitle }">
+                                {{ groomName }} &amp; {{ brideName }}
+                            </h2>
                         </div>
 
                         <p class="n-wassalam"
@@ -1791,8 +1737,8 @@ onUnmounted(() => clearInterval(cdTimer));
     letter-spacing: 0.08em;
 }
 
-/* ─── Birthday profile ─────────────────────────────────────────────────────── */
-.n-bday-profile { text-align: center; }
+/* ─── Unused legacy styles (kept for CSS class name stability) ──────────────── */
+.n-bday-profile { display: none; }
 .n-bday-photo-wrap {
     width: 150px;
     height: 150px;

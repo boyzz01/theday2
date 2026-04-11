@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
-use App\Actions\ConvertGuestDraftAction;
+use App\Actions\CreateInvitationFromTemplateAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\JsonResponse;
@@ -29,23 +29,23 @@ class AuthenticatedSessionController extends Controller
 
     public function store(
         LoginRequest $request,
-        ConvertGuestDraftAction $convertGuestDraft,
+        CreateInvitationFromTemplateAction $createInvitation,
     ): RedirectResponse|JsonResponse {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        $sessionId = $request->cookie('guest_session_id');
+        $pendingTemplate = session()->pull('pending_template');
 
-        if ($sessionId) {
-            $invitation = $convertGuestDraft->execute($request->user(), $sessionId);
+        if ($pendingTemplate) {
+            $invitation = $createInvitation->execute($request->user(), $pendingTemplate);
 
             if ($invitation) {
                 $url = route('dashboard.invitations.edit', $invitation);
                 if ($request->wantsJson()) {
                     return response()->json(['redirect' => $url]);
                 }
-                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Selamat datang kembali! Undanganmu berhasil dipulihkan.']);
+                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Selamat datang kembali! Template sudah dipilih.']);
             }
         }
 

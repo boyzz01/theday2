@@ -46,15 +46,7 @@ const accentColor    = (t) => t.default_config?.accent_color    ?? '#CCD5AE';
 const fontTitle      = (t) => t.default_config?.font_title      ?? 'serif';
 
 function useTemplate(templateId) {
-    if (props.isGuest) {
-        router.visit(`/editor?template=${templateId}`);
-    } else {
-        try {
-            router.visit(route('dashboard.invitations.create', { template: templateId }));
-        } catch {
-            window.location.href = `/dashboard/invitations/create?template=${templateId}`;
-        }
-    }
+    router.visit(`/use-template/${templateId}`);
 }
 
 const { locale, t } = useLocale();
@@ -88,9 +80,9 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
                     {{ t('Pilih Template Undanganmu', 'Choose Your Invitation Template') }}
                 </h1>
                 <p class="text-sm text-stone-400">
-                    {{ t('Semua template bisa dikustomisasi warna, font, dan isinya. Coba dulu,', 'All templates are customizable in color, font, and content. Try first,') }}
-                    <a href="/register" class="underline hover:text-stone-600 transition-colors">{{ t('daftar', 'register') }}</a>
-                    {{ t('belakangan.', 'later.') }}
+                    {{ t('Semua template bisa dikustomisasi warna, font, dan isinya.', 'All templates are customizable in color, font, and content.') }}
+                    <a href="/register" class="underline hover:text-stone-600 transition-colors">{{ t('Daftar gratis', 'Register free') }}</a>
+                    {{ t('untuk mulai membuat undanganmu.', 'to start creating your invitation.') }}
                 </p>
             </div>
 

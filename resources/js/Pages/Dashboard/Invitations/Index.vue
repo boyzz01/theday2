@@ -13,8 +13,7 @@ const statusConfig = {
 };
 
 const eventTypeLabel = {
-    pernikahan:  '💍 Pernikahan',
-    ulang_tahun: '🎂 Ulang Tahun',
+    pernikahan: '💍 Pernikahan',
 };
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';

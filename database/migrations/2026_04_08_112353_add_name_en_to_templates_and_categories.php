@@ -24,20 +24,12 @@ return new class extends Migration
             'name_en'        => 'Wedding',
             'description_en' => 'Wedding invitation templates',
         ]);
-        DB::table('template_categories')->where('slug', 'ulang-tahun')->update([
-            'name_en'        => 'Birthday',
-            'description_en' => 'Birthday invitation templates',
-        ]);
-
         // Seed English translations for templates
         $translations = [
-            'Bunga Abadi'    => ['name_en' => 'Eternal Flower',  'description_en' => 'Elegant wedding template with floral touches and warm golden hues.'],
-            'Langit Senja'   => ['name_en' => 'Dusk Sky',        'description_en' => 'Romantic wedding template with a stunning sunset color palette.'],
-            'Hijau Daun'     => ['name_en' => 'Leaf Green',      'description_en' => 'Fresh wedding template with a natural, lush greenery vibe.'],
-            'Confetti Ceria' => ['name_en' => 'Merry Confetti',  'description_en' => 'Colorful birthday template with a festive confetti effect.'],
-            'Biru Bintang'   => ['name_en' => 'Star Blue',       'description_en' => 'Galaxy-themed birthday template with deep blue tones and stars.'],
-            'Peach Balon'    => ['name_en' => 'Peach Balloon',   'description_en' => 'Sweet birthday template with soft peach tones and balloon decorations.'],
-            'Nusantara'      => ['name_en' => 'Nusantara',       'description_en' => 'Premium Javanese royal-style wedding template — majestic, sacred, and grand. Features animated gates, batik kawung ornaments, sulur lung-lungan scrollwork, and lotus mandala.'],
+            'Bunga Abadi'  => ['name_en' => 'Eternal Flower',  'description_en' => 'Elegant wedding template with floral touches and warm golden hues.'],
+            'Langit Senja' => ['name_en' => 'Dusk Sky',        'description_en' => 'Romantic wedding template with a stunning sunset color palette.'],
+            'Hijau Daun'   => ['name_en' => 'Leaf Green',      'description_en' => 'Fresh wedding template with a natural, lush greenery vibe.'],
+            'Nusantara'    => ['name_en' => 'Nusantara',       'description_en' => 'Premium Javanese royal-style wedding template — majestic, sacred, and grand. Features animated gates, batik kawung ornaments, sulur lung-lungan scrollwork, and lotus mandala.'],
         ];
 
         foreach ($translations as $name => $trans) {

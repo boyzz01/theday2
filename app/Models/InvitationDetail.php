@@ -22,20 +22,10 @@ class InvitationDetail extends Model
         'bride_photo_url',
         'groom_parent_names',
         'bride_parent_names',
-        'birthday_person_name',
-        'birthday_photo_url',
-        'birthday_age',
         'opening_text',
         'closing_text',
         'cover_photo_url',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'birthday_age' => 'integer',
-        ];
-    }
 
     // ─── Relationships ────────────────────────────────────────────
 

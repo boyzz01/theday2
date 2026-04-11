@@ -22,8 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role'          => \App\Http\Middleware\EnsureUserRole::class,
-            'guest.session' => \App\Http\Middleware\TrackGuestSession::class,
+            'role' => \App\Http\Middleware\EnsureUserRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

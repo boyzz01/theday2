@@ -3,7 +3,7 @@
 ## Project Identity
 - **Name:** TheDay
 - **Type:** SaaS web app — undangan digital online
-- **Target:** Pernikahan & Ulang Tahun (Indonesia market)
+- **Target:** Pernikahan (Indonesia market) — platform undangan pernikahan digital premium
 - **URL Pattern:** theday.id/{slug-undangan}
 
 ## RTK (Rust Token Killer) — WAJIB

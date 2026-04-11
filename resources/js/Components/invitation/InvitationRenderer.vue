@@ -136,30 +136,20 @@ onUnmounted(() => observer?.disconnect());
             <div class="max-w-sm w-full space-y-8">
                 <div>
                     <p class="text-xs tracking-[0.3em] uppercase mb-3" :style="{ color: primaryColor }">
-                        Undangan {{ invitation.event_type === 'pernikahan' ? 'Pernikahan' : 'Ulang Tahun' }}
+                        Undangan Pernikahan
                     </p>
 
-                    <template v-if="invitation.event_type === 'pernikahan'">
-                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
-                            {{ invitation.details?.groom_name ?? '—' }}
-                        </h1>
-                        <div class="flex items-center justify-center gap-3 my-3">
-                            <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
-                            <span class="text-lg" :style="{ color: primaryColor }">&amp;</span>
-                            <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
-                        </div>
-                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
-                            {{ invitation.details?.bride_name ?? '—' }}
-                        </h1>
-                    </template>
-                    <template v-else>
-                        <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
-                            {{ invitation.details?.birthday_person_name ?? '—' }}
-                        </h1>
-                        <p v-if="invitation.details?.birthday_age" class="mt-2 text-xl text-stone-500">
-                            {{ invitation.details.birthday_age }} tahun
-                        </p>
-                    </template>
+                    <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
+                        {{ invitation.details?.groom_name ?? '—' }}
+                    </h1>
+                    <div class="flex items-center justify-center gap-3 my-3">
+                        <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
+                        <span class="text-lg" :style="{ color: primaryColor }">&amp;</span>
+                        <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
+                    </div>
+                    <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
+                        {{ invitation.details?.bride_name ?? '—' }}
+                    </h1>
                 </div>
 
                 <div v-if="invitation.events?.length" class="text-sm text-stone-500">
