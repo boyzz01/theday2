@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npm run:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(php -r ':*)"
+    ]
+  },
   "enabledPlugins": {
     "ui-ux-pro-max@ui-ux-pro-max-skill": true
   }

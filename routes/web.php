@@ -7,10 +7,15 @@ use App\Http\Controllers\Dashboard\BudgetPlanner\InitializeBudgetPlannerControll
 use App\Http\Controllers\Dashboard\BudgetPlanner\UpdateBudgetController;
 use App\Http\Controllers\Dashboard\ChecklistController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\GuestImportController;
+use App\Http\Controllers\Dashboard\GuestListController;
+use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\TemplateController;
+use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
 use App\Http\Controllers\EditorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\PersonalizedInvitationController;
 use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
@@ -91,6 +96,27 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::patch( '/budget-planner/items/{item}',  [BudgetItemController::class, 'update'])->name('budget-planner.items.update');
     Route::delete('/budget-planner/items/{item}',  [BudgetItemController::class, 'destroy'])->name('budget-planner.items.destroy');
 
+    // ── Guest List ───────────────────────────────────────────────────────
+    Route::get(   '/guest-list',                              [GuestListController::class, 'index'])->name('guest-list.index');
+    Route::get(   '/guest-list/guests',                       [GuestListController::class, 'guests'])->name('guest-list.guests');
+    Route::get(   '/guest-list/summary',                      [GuestListController::class, 'summary'])->name('guest-list.summary');
+    Route::get(   '/guest-list/categories',                   [GuestListController::class, 'categories'])->name('guest-list.categories');
+    Route::post(  '/guest-list',                              [GuestListController::class, 'store'])->name('guest-list.store');
+    Route::patch( '/guest-list/{guest}',                      [GuestListController::class, 'update'])->name('guest-list.update');
+    Route::delete('/guest-list/{guest}',                      [GuestListController::class, 'destroy'])->name('guest-list.destroy');
+
+    Route::post('/guest-list/import/preview',                 [GuestImportController::class, 'preview'])->name('guest-list.import.preview');
+    Route::post('/guest-list/import',                         [GuestImportController::class, 'store'])->name('guest-list.import.store');
+
+    Route::get( '/guest-list/template',                       [WhatsAppTemplateController::class, 'show'])->name('guest-list.template.show');
+    Route::put( '/guest-list/template',                       [WhatsAppTemplateController::class, 'update'])->name('guest-list.template.update');
+    Route::post('/guest-list/template/reset',                 [WhatsAppTemplateController::class, 'reset'])->name('guest-list.template.reset');
+    Route::post('/guest-list/template/preview',               [WhatsAppTemplateController::class, 'previewRender'])->name('guest-list.template.preview');
+
+    Route::post('/guest-list/{guest}/generate-message',       [GuestMessageController::class, 'generate'])->name('guest-list.message.generate');
+    Route::post('/guest-list/{guest}/mark-sent',              [GuestMessageController::class, 'markSent'])->name('guest-list.message.mark-sent');
+    Route::post('/guest-list/{guest}/copy-log',               [GuestMessageController::class, 'storeCopyLog'])->name('guest-list.message.copy-log');
+
     // ── Checklist ────────────────────────────────────────────────────────
     Route::get( '/checklist',                          [ChecklistController::class, 'index'])->name('checklist.index');
     Route::post('/checklist/initialize',               [ChecklistController::class, 'initialize'])->name('checklist.initialize');
@@ -123,12 +149,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // ── Public invitation pages ─────────────────────────────────────────────
 // IMPORTANT: keep this LAST so /{slug} doesn't swallow other routes.
 // The where() constraint excludes known top-level paths.
-$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|profile|up|verify-email|confirm-password|forgot-password|reset-password|email).*';
+$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap).*';
 
-Route::get( '/{slug}',          [PublicInvitationController::class, 'show'])->where('slug', $slugExclusion)->name('invitation.show');
+// Two-segment literal routes defined BEFORE wildcard so they take precedence.
 Route::post('/{slug}/unlock',   [PublicInvitationController::class, 'unlock'])->where('slug', $slugExclusion)->name('invitation.unlock');
 Route::post('/{slug}/rsvp',     [PublicInvitationController::class, 'rsvp'])->where('slug', $slugExclusion)->name('invitation.rsvp');
 Route::post('/{slug}/messages', [PublicInvitationController::class, 'storeMessage'])->where('slug', $slugExclusion)->name('invitation.messages.store');
 Route::get( '/{slug}/messages', [PublicInvitationController::class, 'messages'])->where('slug', $slugExclusion)->name('invitation.messages');
+
+// Personalized invitation: /{invitationSlug}/{guestSlug}
+// Excludes reserved second-segment names to avoid conflicts.
+Route::get('/{invitationSlug}/{guestSlug}', [PersonalizedInvitationController::class, 'show'])
+    ->where(['invitationSlug' => $slugExclusion, 'guestSlug' => '^(?!rsvp$|messages$|unlock$).*'])
+    ->name('invitation.personal.show');
+
+Route::get( '/{slug}',          [PublicInvitationController::class, 'show'])->where('slug', $slugExclusion)->name('invitation.show');
 
 require __DIR__.'/auth.php';

@@ -282,7 +282,7 @@ function isOverdue(d) {
             <!-- ── Filters + Add button ───────────────────────────── -->
             <div class="flex flex-wrap items-center gap-2 mb-4">
                 <select v-model="filterStatus" @change="applyFilter"
-                        class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                        class="text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
                     <option value="">Semua status</option>
                     <option value="todo">Belum selesai</option>
                     <option value="done">Selesai</option>
@@ -290,7 +290,7 @@ function isOverdue(d) {
                 </select>
 
                 <select v-model="filterCat" @change="applyFilter"
-                        class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                        class="text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
                     <option value="">Semua kategori</option>
                     <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                 </select>
