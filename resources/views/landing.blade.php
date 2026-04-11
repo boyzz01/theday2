@@ -4,9 +4,43 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TheDay — Platform undangan digital online untuk pernikahan & ulang tahun. Buat undangan cantik dalam hitungan menit.">
-    <title>TheDay — Buat Momen Spesialmu Tak Terlupakan</title>
 
+    {{-- ── SEO: Core ─────────────────────────────────────────────── --}}
+    <title>TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun Online | Gratis</title>
+    <meta name="description" content="Buat undangan digital pernikahan &amp; ulang tahun yang elegan dalam hitungan menit. 50+ template premium, RSVP online real-time, bagikan via WhatsApp. Mulai gratis, tanpa kartu kredit.">
+    <meta name="keywords" content="undangan digital, undangan pernikahan digital, undangan ulang tahun online, buat undangan digital gratis, undangan nikah online, digital invitation Indonesia, undangan online cantik">
+    <meta name="author" content="TheDay">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="{{ url('/') }}">
+
+    {{-- ── SEO: Open Graph (WhatsApp / Facebook / LinkedIn) ─────── --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:site_name" content="TheDay">
+    <meta property="og:title" content="TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun | Gratis">
+    <meta property="og:description" content="Buat undangan pernikahan &amp; ulang tahun digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp. Mulai gratis!">
+    <meta property="og:image" content="{{ asset('image/logo.png') }}">
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="150">
+    <meta property="og:image:alt" content="TheDay — Platform Undangan Digital Pernikahan &amp; Ulang Tahun Online">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:locale:alternate" content="en_US">
+
+    {{-- ── SEO: Twitter Card ─────────────────────────────────────── --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TheDay — Undangan Digital Pernikahan &amp; Ulang Tahun Online">
+    <meta name="twitter:description" content="Buat undangan pernikahan &amp; ulang tahun digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp.">
+    <meta name="twitter:image" content="{{ asset('image/logo.png') }}">
+
+    {{-- ── SEO: Hreflang (bilingual ID / EN) ────────────────────── --}}
+    <link rel="alternate" hreflang="id" href="{{ url('/') }}">
+    <link rel="alternate" hreflang="en" href="{{ url('/') }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url('/') }}">
+
+    {{-- ── SEO: Sitemap Discovery ────────────────────────────────── --}}
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url('/sitemap.xml') }}">
+
+    {{-- ── Fonts ─────────────────────────────────────────────────── --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -185,22 +219,142 @@
             background: rgba(212,163,115,0.08);
         }
     </style>
+
+    {{-- ── JSON-LD Structured Data ───────────────────────────────── --}}
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "{{ url('/') }}/#website",
+          "url": "{{ url('/') }}",
+          "name": "TheDay",
+          "description": "Platform undangan digital online untuk pernikahan & ulang tahun terbaik di Indonesia.",
+          "inLanguage": ["id-ID", "en-US"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "{{ url('/templates') }}?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "{{ url('/') }}/#organization",
+          "name": "TheDay",
+          "url": "{{ url('/') }}",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "{{ asset('image/logo.png') }}",
+            "width": 300,
+            "height": 150
+          },
+          "sameAs": [
+            "https://www.instagram.com/thedayid",
+            "https://www.tiktok.com/@thedayid"
+          ]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "{{ url('/') }}/#app",
+          "name": "TheDay",
+          "applicationCategory": "LifestyleApplication",
+          "operatingSystem": "Web",
+          "url": "{{ url('/') }}",
+          "description": "Platform undangan digital online untuk pernikahan & ulang tahun. Buat undangan cantik dalam hitungan menit dengan 50+ template elegan.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Gratis",
+              "price": "0",
+              "priceCurrency": "IDR",
+              "description": "1 undangan aktif, template dasar, RSVP online, peta lokasi, 5 foto galeri"
+            },
+            {
+              "@type": "Offer",
+              "name": "Premium",
+              "price": "99000",
+              "priceCurrency": "IDR",
+              "description": "1 undangan premium, semua template, custom URL, musik sendiri, 30 foto, analitik lengkap"
+            },
+            {
+              "@type": "Offer",
+              "name": "Bisnis",
+              "price": "299000",
+              "priceCurrency": "IDR",
+              "description": "Undangan tidak terbatas, white label, custom domain, laporan Excel"
+            }
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "2000",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Apakah TheDay gratis?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ya, TheDay menyediakan paket gratis selamanya. Mencakup 1 undangan aktif, template dasar, konfirmasi RSVP, link undangan, peta lokasi, dan 5 foto galeri. Tidak perlu kartu kredit."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Bagaimana cara membuat undangan digital di TheDay?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Cukup 3 langkah mudah: (1) Pilih template pernikahan atau ulang tahun yang sesuai, (2) Isi detail acara seperti nama, tanggal, lokasi, dan foto, (3) Bagikan link undangan ke tamu via WhatsApp atau media sosial."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Apakah tamu bisa konfirmasi kehadiran (RSVP) secara online?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ya, tamu dapat langsung konfirmasi hadir atau tidak dari halaman undangan digital. Rekap kehadiran tersedia secara real-time di dashboard pengelola undangan."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Berapa banyak template undangan yang tersedia?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "TheDay menyediakan 50+ template premium untuk berbagai tema: pernikahan, ulang tahun, vintage, modern, dan minimalis. Semua template bisa dikustomisasi warna, font, dan kontennya."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Apakah undangan digital bisa dibagikan via WhatsApp?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ya, setiap undangan TheDay menghasilkan satu link unik yang bisa langsung dibagikan ke semua tamu via WhatsApp, Instagram, email, atau media sosial lainnya."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 
 {{-- ============================================================ --}}
 {{-- NAVBAR --}}
 {{-- ============================================================ --}}
-<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 px-6">
+<nav id="navbar" aria-label="Navigasi utama" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 px-6">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
         {{-- Logo --}}
-        <a href="/" class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--color-primary)">
-                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-            </div>
-            <span class="font-display font-semibold text-xl" style="color: var(--color-dark)">TheDay</span>
+        <a href="/" class="flex items-center">
+            <img src="{{ asset('image/logo.png') }}" alt="TheDay" class="h-10 w-auto">
         </a>
 
         {{-- Desktop Nav Links --}}
@@ -273,6 +427,7 @@
 {{-- ============================================================ --}}
 {{-- HERO SECTION --}}
 {{-- ============================================================ --}}
+<main id="main-content">
 <section class="hero-gradient min-h-screen flex items-center relative overflow-hidden pt-20">
     {{-- Background decoration --}}
     <div class="absolute inset-0 dot-pattern opacity-40"></div>
@@ -958,6 +1113,8 @@
 </section>
 
 
+</main>
+
 {{-- ============================================================ --}}
 {{-- FOOTER --}}
 {{-- ============================================================ --}}
@@ -966,13 +1123,8 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             {{-- Brand --}}
             <div class="md:col-span-1">
-                <a href="/" class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--color-primary)">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </div>
-                    <span class="font-display font-semibold text-xl text-white">TheDay</span>
+                <a href="/" class="flex items-center mb-4">
+                    <img src="{{ asset('image/logo.png') }}" alt="TheDay" class="h-10 w-auto brightness-0 invert">
                 </a>
                 <p class="text-sm leading-relaxed mb-5"
                    data-id="Platform undangan digital online untuk pernikahan & ulang tahun terbaik di Indonesia."

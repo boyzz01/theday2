@@ -6,6 +6,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Actions\BudgetPlanner\BuildBudgetSummaryAction;
+use App\Actions\BudgetPlanner\InitializeWeddingBudgetAction;
 use App\Enums\InvitationStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -14,6 +16,11 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly InitializeWeddingBudgetAction $initBudget,
+        private readonly BuildBudgetSummaryAction $buildSummary,
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user()->load([
@@ -56,6 +63,10 @@ class DashboardController extends Controller
 
         $activePlan = $user->activeSubscription?->plan;
 
+        // Budget widget
+        $budget        = $this->initBudget->execute($request->user());
+        $budgetSummary = $this->buildSummary->execute($budget);
+
         return Inertia::render('Dashboard/Index', [
             'stats'             => $stats,
             'recentInvitations' => $recentInvitations,
@@ -65,6 +76,15 @@ class DashboardController extends Controller
                 'analytics_access' => $activePlan->analytics_access,
                 'remove_watermark' => $activePlan->remove_watermark,
             ] : null,
+            'budgetWidget' => [
+                'total_budget'                => $budgetSummary['total_budget'],
+                'total_actual'                => $budgetSummary['total_actual'],
+                'usage_percentage'            => $budgetSummary['usage_percentage'],
+                'overbudget_categories_count' => $budgetSummary['overbudget_categories_count'],
+                'has_budget'                  => $budgetSummary['has_budget'],
+                'is_total_overbudget'         => $budgetSummary['is_total_overbudget'],
+                'formatted'                   => $budgetSummary['formatted'],
+            ],
         ]);
     }
 }

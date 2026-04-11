@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(Invitation::class);
     }
 
+    public function weddingPlan(): HasOne
+    {
+        return $this->hasOne(WeddingPlan::class);
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

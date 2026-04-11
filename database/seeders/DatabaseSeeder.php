@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             TemplateCategorySeeder::class,
             TemplateSeeder::class,
+            ChecklistTemplateSeeder::class,
         ]);
 
         // ── Admin user ────────────────────────────────────────────

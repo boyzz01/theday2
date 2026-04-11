@@ -7,6 +7,7 @@ const props = defineProps({
     stats: Object,
     recentInvitations: Array,
     activePlan: Object,
+    budgetWidget: Object,
 });
 
 const statCards = computed(() => [
@@ -113,6 +114,58 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                     <p class="text-xs text-stone-400 mt-1">{{ card.sub }}</p>
                 </div>
             </div>
+
+            <!-- ── Budget Widget ──────────────────────────────────── -->
+            <Link
+                v-if="budgetWidget"
+                :href="route('dashboard.budget-planner.index')"
+                class="block bg-white rounded-2xl border border-stone-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+            >
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #FEF3C7">
+                                <svg class="w-4 h-4" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-semibold text-stone-700">Budget Planner</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-medium" style="color: #D4A373">Lihat budget →</span>
+                </div>
+
+                <template v-if="budgetWidget.has_budget">
+                    <div class="flex items-end justify-between mb-2">
+                        <div>
+                            <p class="text-xs text-stone-400">Terpakai</p>
+                            <p class="text-xl font-bold text-stone-800">{{ budgetWidget.formatted.total_actual }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-stone-400">dari</p>
+                            <p class="text-sm font-semibold text-stone-600">{{ budgetWidget.formatted.total_budget }}</p>
+                        </div>
+                    </div>
+                    <div class="h-2 bg-stone-100 rounded-full overflow-hidden mb-2">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            :style="{
+                                width: (budgetWidget.usage_percentage ?? 0) + '%',
+                                backgroundColor: budgetWidget.is_total_overbudget ? '#F87171' : (budgetWidget.usage_percentage >= 80 ? '#F59E0B' : '#D4A373'),
+                            }"
+                        />
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-stone-400">
+                        <span>{{ budgetWidget.usage_percentage ?? 0 }}% terpakai</span>
+                        <span v-if="budgetWidget.overbudget_categories_count > 0" class="text-amber-600 font-medium">
+                            {{ budgetWidget.overbudget_categories_count }} kategori overbudget
+                        </span>
+                    </div>
+                </template>
+                <template v-else>
+                    <p class="text-sm text-stone-500">Atur budget pertamamu untuk mulai memantau pengeluaran pernikahan.</p>
+                </template>
+            </Link>
 
             <!-- ── Recent Invitations ─────────────────────────────── -->
             <div>

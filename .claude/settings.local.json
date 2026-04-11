@@ -20,7 +20,11 @@
       "Read(//c/laragon/www/**)",
       "Read(//c/laragon/**)",
       "Bash(ls -la /c/laragon/www/theday/resources/lang*)",
-      "Bash(grep -r \"locale\\\\|APP_LOCALE\" /c/laragon/www/theday/.env*)"
+      "Bash(grep -r \"locale\\\\|APP_LOCALE\" /c/laragon/www/theday/.env*)",
+      "Bash(ls c:/laragon/www/theday/public/*.png c:/laragon/www/theday/public/*.jpg c:/laragon/www/theday/public/*.ico)",
+      "Bash(php -r ':*)",
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(python \"C:\\\\Users\\\\Ardi\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"wedding budget planner elegant warm mobile indonesia\" --design-system -p \"TheDay Budget Planner\" -f markdown)"
     ]
   }
 }

@@ -8,6 +8,13 @@ const props = defineProps({
 
 const dragState = { from: null };
 
+function onTimeInput(event, obj, key) {
+    let v = event.target.value.replace(/[^0-9]/g, '');
+    if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2, 4);
+    event.target.value = v;
+    obj[key] = v.length === 5 ? v : '';
+}
+
 function onDragStart(index) {
     dragState.from = index;
 }
@@ -104,12 +111,16 @@ function onDrop(index) {
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
-                        <input v-model="event.start_time" type="time"
+                        <input :value="event.start_time ? event.start_time.slice(0, 5) : ''"
+                               @input="onTimeInput($event, event, 'start_time')"
+                               type="text" maxlength="5" placeholder="HH:MM"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Waktu Selesai</label>
-                        <input v-model="event.end_time" type="time"
+                        <input :value="event.end_time ? event.end_time.slice(0, 5) : ''"
+                               @input="onTimeInput($event, event, 'end_time')"
+                               type="text" maxlength="5" placeholder="HH:MM"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
