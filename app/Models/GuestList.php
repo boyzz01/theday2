@@ -21,6 +21,12 @@ class GuestList extends Model
 
     protected $table = 'guest_lists';
 
+    protected $attributes = [
+        'send_status' => 'not_sent',
+        'rsvp_status' => 'pending',
+        'sent_count'  => 0,
+    ];
+
     protected $fillable = [
         'user_id',
         'invitation_id',

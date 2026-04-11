@@ -76,6 +76,10 @@ class ChecklistController extends Controller
             'priority'    => 'sometimes|string|in:low,medium,high',
             'due_date'    => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string|max:500',
+        ], [
+            'title.required' => 'Nama task wajib diisi.',
+            'title.min'      => 'Nama task minimal 3 karakter.',
+            'title.max'      => 'Nama task maksimal 120 karakter.',
         ]);
 
         $task = $this->service->createTask($plan, $data);

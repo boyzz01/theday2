@@ -4,7 +4,10 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(npm run:*)",
       "Bash(python3 -c ':*)",
-      "Bash(php -r ':*)"
+      "Bash(php -r ':*)",
+      "Bash(grep -n \"source\\\\|status\\\\|priority\\\\|category\\\\|default\" c:/laragon/www/theday/database/migrations/*checklist_tasks*)",
+      "Bash(grep -l \"Checklist\\\\|checklist\" c:/laragon/www/theday/public/build/assets/*.js)",
+      "Bash(ls -la /c/laragon/www/theday/app/Http/Requests/Checklist*)"
     ]
   },
   "enabledPlugins": {

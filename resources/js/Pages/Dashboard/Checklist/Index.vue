@@ -12,8 +12,10 @@ const tasks        = ref([]);
 const summary      = ref({ total: 0, todo: 0, done: 0, archived: 0, progress: 0, has_event_date: false });
 const loading      = ref(true);
 const error        = ref(null);
-const filterStatus = ref('');
-const filterCat    = ref('');
+const filterStatus   = ref('');
+const filterCat      = ref('');
+const filterPriority = ref('');
+const sortBy         = ref('');
 const eventDate    = ref('');
 const savingDate   = ref(false);
 const eventDateError = ref('');
@@ -26,6 +28,15 @@ const emptyForm = () => ({ title: '', category: 'lainnya', priority: 'medium', d
 const form      = ref(emptyForm());
 const formError = ref({});
 const saving    = ref(false);
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+const toast      = ref(null);
+let   toastTimer = null;
+function showToast(message, type = 'success') {
+    clearTimeout(toastTimer);
+    toast.value = { message, type };
+    toastTimer = setTimeout(() => { toast.value = null; }, 3500);
+}
 
 // ── Categories ─────────────────────────────────────────────────────────────
 const categories = [
@@ -52,6 +63,8 @@ const priorityConfig = {
 const activeTasks   = computed(() => tasks.value.filter(t => t.status !== 'archived'));
 const archivedTasks = computed(() => tasks.value.filter(t => t.status === 'archived'));
 
+const priorityOrder = { high: 0, medium: 1, low: 2 };
+
 const filtered = computed(() => {
     let list = filterStatus.value === 'archived' ? archivedTasks.value : activeTasks.value;
     if (filterStatus.value && filterStatus.value !== 'archived') {
@@ -59,6 +72,21 @@ const filtered = computed(() => {
     }
     if (filterCat.value) {
         list = list.filter(t => t.category === filterCat.value);
+    }
+    if (filterPriority.value) {
+        list = list.filter(t => t.priority === filterPriority.value);
+    }
+    if (sortBy.value === 'due_date') {
+        list = [...list].sort((a, b) => {
+            if (!a.due_date && !b.due_date) return 0;
+            if (!a.due_date) return 1;
+            if (!b.due_date) return -1;
+            return new Date(a.due_date) - new Date(b.due_date);
+        });
+    } else if (sortBy.value === 'priority') {
+        list = [...list].sort((a, b) =>
+            (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)
+        );
     }
     return list;
 });
@@ -180,8 +208,10 @@ async function saveForm() {
         } else {
             await axios.post(route('dashboard.checklist.tasks.store'), payload);
         }
+        const isEdit = !!editingTask.value;
         closeForm();
         await Promise.all([loadTasks(), loadSummary()]);
+        showToast(isEdit ? 'Task berhasil diperbarui.' : 'Task berhasil ditambahkan.');
     } catch (e) {
         if (e.response?.status === 422) {
             const errs = e.response.data.errors ?? {};
@@ -215,6 +245,27 @@ function isOverdue(d) {
         <template #header>
             <h1 class="text-base font-semibold text-stone-800">Checklist Pernikahan</h1>
         </template>
+
+        <!-- Toast -->
+        <Transition name="slide-down">
+            <div
+                v-if="toast"
+                :class="[
+                    'fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium',
+                    toast.type === 'error'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-100'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+                ]"
+                role="alert"
+                aria-live="polite"
+            >
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path v-if="toast.type !== 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                {{ toast.message }}
+            </div>
+        </Transition>
 
         <!-- Loading -->
         <div v-if="loading" class="flex items-center justify-center py-24">
@@ -293,6 +344,21 @@ function isOverdue(d) {
                         class="text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
                     <option value="">Semua kategori</option>
                     <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
+                </select>
+
+                <select v-model="filterPriority"
+                        class="text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                    <option value="">Semua prioritas</option>
+                    <option value="high">Tinggi</option>
+                    <option value="medium">Sedang</option>
+                    <option value="low">Rendah</option>
+                </select>
+
+                <select v-model="sortBy"
+                        class="text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                    <option value="">Urutan default</option>
+                    <option value="due_date">Tenggat terdekat</option>
+                    <option value="priority">Prioritas tertinggi</option>
                 </select>
 
                 <button @click="openCreate"
@@ -486,4 +552,6 @@ function isOverdue(d) {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s; }
+.slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-10px); }
 </style>

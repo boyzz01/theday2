@@ -191,16 +191,19 @@ async function saveGuest() {
             );
             const idx = guests.value.findIndex(g => g.id === editingGuest.value.id);
             if (idx > -1) guests.value[idx] = data;
+            showToast('Tamu berhasil diperbarui.');
         } else {
-            const { data } = await axios.post(route('dashboard.guest-list.store'), payload);
-            guests.value.unshift(data);
+            await axios.post(route('dashboard.guest-list.store'), payload);
+            showToast('Tamu berhasil ditambahkan.');
         }
 
         closeGuestForm();
-        await Promise.all([loadSummary(), loadCategories()]);
+        await Promise.all([loadGuests(), loadSummary(), loadCategories()]);
     } catch (e) {
         if (e.response?.status === 422) {
             guestErrors.value = e.response.data.errors ?? {};
+        } else {
+            showToast('Gagal menyimpan tamu. Coba lagi.');
         }
     } finally {
         savingGuest.value = false;
