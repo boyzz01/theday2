@@ -13,6 +13,7 @@ use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UseTemplateController;
 use App\Http\Controllers\Public\PersonalizedInvitationController;
@@ -55,7 +56,13 @@ Route::get('/templates/{template:slug}/demo', [TemplateGalleryController::class,
 // Template selection — redirects guests to register, authenticated users to editor
 Route::get('/use-template/{template}', UseTemplateController::class)->name('use-template');
 
-Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
+// ── Onboarding (auth required, onboarding guard NOT applied here) ────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get( '/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates');
 
@@ -132,7 +139,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
 
 // Keep legacy route alias so Breeze redirects still work
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'onboarding'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {

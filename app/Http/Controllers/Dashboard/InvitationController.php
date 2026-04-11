@@ -189,7 +189,9 @@ class InvitationController extends Controller
                 'custom_config'        => $invitation->custom_config ?? [],
                 'details'              => $details ? [
                     'groom_name'           => $details->groom_name,
+                    'groom_nickname'       => $details->groom_nickname,
                     'bride_name'           => $details->bride_name,
+                    'bride_nickname'       => $details->bride_nickname,
                     'groom_parent_names'   => $details->groom_parent_names,
                     'bride_parent_names'   => $details->bride_parent_names,
                     'groom_photo_url'      => $details->groom_photo_url,
@@ -275,7 +277,9 @@ class InvitationController extends Controller
 
         $data = $request->validate([
             'groom_name'           => 'nullable|string|max:255',
+            'groom_nickname'       => 'nullable|string|max:10',
             'bride_name'           => 'nullable|string|max:255',
+            'bride_nickname'       => 'nullable|string|max:10',
             'groom_parent_names'   => 'nullable|string|max:255',
             'bride_parent_names'   => 'nullable|string|max:255',
             'groom_photo_url'      => 'nullable|string|max:2048',

@@ -35,10 +35,22 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+
+        // Onboarding not done — go to onboarding (pending_template is kept in session)
+        if (! $user->hasCompletedOnboarding()) {
+            $url = route('onboarding');
+            if ($request->wantsJson()) {
+                return response()->json(['redirect' => $url]);
+            }
+            return redirect($url);
+        }
+
+        // Onboarding done + has pending template → create/update invitation
         $pendingTemplate = session()->pull('pending_template');
 
         if ($pendingTemplate) {
-            $invitation = $createInvitation->execute($request->user(), $pendingTemplate);
+            $invitation = $createInvitation->execute($user, $pendingTemplate);
 
             if ($invitation) {
                 $url = route('dashboard.invitations.edit', $invitation);

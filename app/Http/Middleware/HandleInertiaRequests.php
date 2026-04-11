@@ -26,10 +26,11 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? [
-                    'id'         => $user->id,
-                    'name'       => $user->name,
-                    'email'      => $user->email,
-                    'avatar_url' => $user->avatar_url,
+                    'id'                      => $user->id,
+                    'name'                    => $user->name,
+                    'email'                   => $user->email,
+                    'avatar_url'              => $user->avatar_url,
+                    'onboarding_completed'    => $user->hasCompletedOnboarding(),
                 ] : null,
                 'subscription' => $user ? (function () use ($user) {
                     $sub = $user->activeSubscription;

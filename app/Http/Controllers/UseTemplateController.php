@@ -18,11 +18,19 @@ class UseTemplateController extends Controller
         Template $template,
         CreateInvitationFromTemplateAction $createInvitation,
     ): RedirectResponse {
+        // Not authenticated → store template, redirect to register
         if (! $request->user()) {
             session(['pending_template' => $template->id]);
             return redirect()->route('register');
         }
 
+        // Authenticated but onboarding not done → store template, redirect to onboarding
+        if (! $request->user()->hasCompletedOnboarding()) {
+            session(['pending_template' => $template->id]);
+            return redirect()->route('onboarding');
+        }
+
+        // Authenticated + onboarding done → create/update invitation immediately
         $invitation = $createInvitation->execute($request->user(), $template->id);
 
         if (! $invitation) {

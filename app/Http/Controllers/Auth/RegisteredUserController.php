@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\AssignFreeSubscriptionAction;
-use App\Actions\CreateInvitationFromTemplateAction;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -31,18 +30,25 @@ class RegisteredUserController extends Controller
     public function store(
         Request $request,
         AssignFreeSubscriptionAction $assignFreeSubscription,
-        CreateInvitationFromTemplateAction $createInvitation,
     ): RedirectResponse|JsonResponse {
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'phone'    => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'name.required'     => 'Nama lengkap wajib diisi.',
+            'name.max'          => 'Nama terlalu panjang, maks. 255 karakter.',
+            'email.required'    => 'Email wajib diisi.',
+            'email.email'       => 'Format email tidak valid.',
+            'email.lowercase'   => 'Email harus ditulis dengan huruf kecil.',
+            'email.unique'      => 'Email ini sudah terdaftar. Coba masuk atau gunakan email lain.',
+            'password.required' => 'Password wajib diisi.',
+            'password.confirmed'=> 'Konfirmasi password tidak cocok.',
+            'password.min'      => 'Password minimal 8 karakter.',
         ]);
 
         $user = User::create([
             'name'     => $request->name,
-            'phone'    => $request->phone,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'role'     => UserRole::User,
@@ -54,24 +60,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        $pendingTemplate = session()->pull('pending_template');
-
-        if ($pendingTemplate) {
-            $invitation = $createInvitation->execute($user, $pendingTemplate);
-
-            if ($invitation) {
-                $url = route('dashboard.invitations.edit', $invitation);
-                if ($request->wantsJson()) {
-                    return response()->json(['redirect' => $url]);
-                }
-                return redirect($url)->with('flash', ['type' => 'success', 'message' => 'Akun dibuat! Template sudah dipilih. Mulai buat undanganmu.']);
-            }
-        }
-
-        $fallback = route('dashboard');
+        $url = route('onboarding');
         if ($request->wantsJson()) {
-            return response()->json(['redirect' => $fallback]);
+            return response()->json(['redirect' => $url]);
         }
-        return redirect($fallback)->with('flash', ['type' => 'success', 'message' => 'Selamat datang di TheDay!']);
+        return redirect($url);
     }
 }

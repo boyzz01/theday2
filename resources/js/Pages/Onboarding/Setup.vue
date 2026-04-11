@@ -1,0 +1,489 @@
+<script setup>
+import { ref, computed } from 'vue';
+import { Head, useForm, router } from '@inertiajs/vue3';
+
+const props = defineProps({
+    user: { type: Object, required: true },
+});
+
+// ── Step management ───────────────────────────────────────────────
+const step    = ref(1);
+const STEPS   = 3;
+
+const stepMeta = [
+    { label: 'Mempelai',   hint: 'Siapa yang akan menikah?' },
+    { label: 'Hari H',     hint: 'Kapan dan di mana?' },
+    { label: 'Tautan',     hint: 'Alamat undangan digitalmu' },
+];
+
+const goNext = () => { if (step.value < STEPS) step.value++ };
+const goBack = () => { if (step.value > 1) step.value-- };
+
+// ── Form ──────────────────────────────────────────────────────────
+const form = useForm({
+    groom_name:     '',
+    groom_nickname: '',
+    bride_name:     '',
+    bride_nickname: '',
+    phone:          props.user.phone ?? '',
+    no_date:        false,
+    wedding_date:   '',
+    start_time:     '',
+    venue_name:     '',
+    venue_address:  '',
+    skip_slug:      false,
+    slug:           '',
+});
+
+// ── Step 1 validation (client-side gate before advancing) ─────────
+const step1Errors = computed(() => {
+    const e = {};
+    if (!form.groom_name.trim()) e.groom_name = 'Wajib diisi.';
+    if (!form.bride_name.trim()) e.bride_name  = 'Wajib diisi.';
+    if (form.groom_nickname && form.groom_nickname.length > 10)
+        e.groom_nickname = 'Maks. 10 karakter.';
+    if (form.bride_nickname && form.bride_nickname.length > 10)
+        e.bride_nickname = 'Maks. 10 karakter.';
+    return e;
+});
+
+const step2Errors = computed(() => {
+    const e = {};
+    if (!form.no_date && !form.wedding_date) e.wedding_date = 'Wajib diisi atau centang "Belum menentukan tanggal".';
+    return e;
+});
+
+function tryNext() {
+    if (step.value === 1 && Object.keys(step1Errors.value).length) return;
+    if (step.value === 2 && Object.keys(step2Errors.value).length) return;
+    goNext();
+}
+
+// ── Slug helpers ──────────────────────────────────────────────────
+function suggestSlug() {
+    const g = (form.groom_nickname || form.groom_name).trim().toLowerCase().replace(/\s+/g, '');
+    const b = (form.bride_nickname || form.bride_name).trim().toLowerCase().replace(/\s+/g, '');
+    if (g && b) form.slug = `${g}-${b}`;
+}
+
+function sanitizeSlug() {
+    form.slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+// ── Submit ────────────────────────────────────────────────────────
+function submit() {
+    form.post(route('onboarding.store'));
+}
+
+// ── Computed display ──────────────────────────────────────────────
+const coupleDisplay = computed(() => {
+    const g = form.groom_nickname || form.groom_name.split(' ')[0];
+    const b = form.bride_nickname || form.bride_name.split(' ')[0];
+    if (g && b) return `${g} & ${b}`;
+    return '';
+});
+</script>
+
+<template>
+    <Head title="Setup Undangan — TheDay" />
+
+    <div class="min-h-screen flex flex-col" style="background-color: #FFFCF7">
+
+        <!-- ── Top bar ──────────────────────────────────────────────── -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+            <a href="/" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #D4A373">
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <span class="font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">TheDay</span>
+            </a>
+
+            <!-- Step indicators -->
+            <div class="flex items-center gap-2">
+                <div v-for="i in STEPS" :key="i" class="flex items-center gap-2">
+                    <div
+                        class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200"
+                        :class="i < step
+                            ? 'text-white'
+                            : i === step
+                                ? 'text-white'
+                                : 'bg-stone-100 text-stone-400'"
+                        :style="i <= step ? 'background-color: #D4A373' : ''"
+                    >
+                        <svg v-if="i < step" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span v-else>{{ i }}</span>
+                    </div>
+                    <div v-if="i < STEPS" class="w-6 h-px" :class="i < step ? 'bg-amber-400' : 'bg-stone-200'"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Main content ─────────────────────────────────────────── -->
+        <div class="flex-1 flex flex-col items-center justify-center px-5 py-10">
+            <div class="w-full max-w-md">
+
+                <!-- Step header -->
+                <div class="mb-8 text-center">
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #D4A373">
+                        Langkah {{ step }} dari {{ STEPS }}
+                    </p>
+                    <h1 class="text-2xl font-bold text-stone-900 mb-1" style="font-family: 'Playfair Display', serif">
+                        {{ stepMeta[step - 1].label }}
+                    </h1>
+                    <p class="text-sm text-stone-400">{{ stepMeta[step - 1].hint }}</p>
+                </div>
+
+                <!-- ── STEP 1: Couple names ───────────────────────────── -->
+                <transition name="slide" mode="out-in">
+                <div v-if="step === 1" key="step1" class="space-y-5">
+
+                    <!-- Mempelai Pria -->
+                    <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: #D4A373">P</div>
+                            <span class="text-sm font-semibold text-stone-700">Mempelai Pria</span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Nama Lengkap <span class="text-red-400">*</span>
+                            </label>
+                            <input
+                                v-model="form.groom_name"
+                                type="text"
+                                placeholder="Ahmad Budi Santoso"
+                                autofocus
+                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
+                                :class="(form.errors.groom_name || step1Errors.groom_name) && form.groom_name === ''
+                                    ? 'border-red-300 focus:ring-red-100'
+                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            />
+                            <p v-if="form.errors.groom_name" class="text-xs text-red-500">{{ form.errors.groom_name }}</p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Nama Panggilan
+                                <span class="text-stone-400 font-normal">(maks. 10 huruf, tampil di undangan)</span>
+                            </label>
+                            <input
+                                v-model="form.groom_nickname"
+                                type="text"
+                                placeholder="Budi"
+                                maxlength="10"
+                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
+                                :class="step1Errors.groom_nickname
+                                    ? 'border-red-300 focus:ring-red-100'
+                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            />
+                            <div class="flex justify-between items-center">
+                                <p v-if="step1Errors.groom_nickname" class="text-xs text-red-500">{{ step1Errors.groom_nickname }}</p>
+                                <p class="text-xs text-stone-300 ml-auto">{{ form.groom_nickname.length }}/10</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mempelai Wanita -->
+                    <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: #C8A26B">W</div>
+                            <span class="text-sm font-semibold text-stone-700">Mempelai Wanita</span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Nama Lengkap <span class="text-red-400">*</span>
+                            </label>
+                            <input
+                                v-model="form.bride_name"
+                                type="text"
+                                placeholder="Siti Rahayu Putri"
+                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
+                                :class="(form.errors.bride_name || step1Errors.bride_name) && form.bride_name === ''
+                                    ? 'border-red-300 focus:ring-red-100'
+                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            />
+                            <p v-if="form.errors.bride_name" class="text-xs text-red-500">{{ form.errors.bride_name }}</p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Nama Panggilan
+                                <span class="text-stone-400 font-normal">(maks. 10 huruf, tampil di undangan)</span>
+                            </label>
+                            <input
+                                v-model="form.bride_nickname"
+                                type="text"
+                                placeholder="Rahayu"
+                                maxlength="10"
+                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
+                                :class="step1Errors.bride_nickname
+                                    ? 'border-red-300 focus:ring-red-100'
+                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            />
+                            <div class="flex justify-between items-center">
+                                <p v-if="step1Errors.bride_nickname" class="text-xs text-red-500">{{ step1Errors.bride_nickname }}</p>
+                                <p class="text-xs text-stone-300 ml-auto">{{ form.bride_nickname.length }}/10</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-1.5">
+                        <label class="block text-xs font-medium text-stone-600">
+                            Nomor WhatsApp
+                            <span class="text-stone-400 font-normal">(untuk konfirmasi undangan)</span>
+                        </label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-stone-200 bg-stone-50 text-xs text-stone-500 font-medium">+62</span>
+                            <input
+                                v-model="form.phone"
+                                type="tel"
+                                placeholder="812 3456 7890"
+                                class="flex-1 px-4 py-3 rounded-r-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
+                            />
+                        </div>
+                        <p v-if="form.errors.phone" class="text-xs text-red-500">{{ form.errors.phone }}</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="tryNext"
+                        :disabled="!form.groom_name.trim() || !form.bride_name.trim() || Object.keys(step1Errors).length > 0"
+                        class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
+                        style="background-color: #D4A373"
+                    >
+                        Lanjut →
+                    </button>
+                </div>
+                </transition>
+
+                <!-- ── STEP 2: Date & Venue ───────────────────────────── -->
+                <transition name="slide" mode="out-in">
+                <div v-if="step === 2" key="step2" class="space-y-5">
+
+                    <!-- Preview couple name -->
+                    <div v-if="coupleDisplay" class="text-center py-3">
+                        <p class="text-xl font-semibold text-stone-700" style="font-family: 'Playfair Display', serif">
+                            {{ coupleDisplay }}
+                        </p>
+                        <p class="text-xs text-stone-400 mt-0.5">Kapan hari bahagianya? 🌸</p>
+                    </div>
+
+                    <!-- No date checkbox -->
+                    <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors"
+                           :class="form.no_date ? 'border-amber-300 bg-amber-50/50' : 'border-stone-200 bg-white'">
+                        <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-colors"
+                             :style="form.no_date ? 'background-color:#D4A373; border-color:#D4A373' : 'border-color:#D1D5DB'">
+                            <svg v-if="form.no_date" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <input type="checkbox" v-model="form.no_date" class="sr-only"/>
+                        <div>
+                            <p class="text-sm font-medium text-stone-700">Belum menentukan tanggal dan waktu</p>
+                            <p class="text-xs text-stone-400">Bisa diisi nanti setelah template dipilih</p>
+                        </div>
+                    </label>
+
+                    <!-- Date & time fields -->
+                    <div v-if="!form.no_date" class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Tanggal Pernikahan <span class="text-red-400">*</span>
+                            </label>
+                            <input
+                                v-model="form.wedding_date"
+                                type="date"
+                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
+                                :class="step2Errors.wedding_date
+                                    ? 'border-red-300 focus:ring-red-100'
+                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            />
+                            <p v-if="step2Errors.wedding_date || form.errors.wedding_date" class="text-xs text-red-500">
+                                {{ form.errors.wedding_date || step2Errors.wedding_date }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
+                            <input
+                                v-model="form.start_time"
+                                type="time"
+                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
+                        <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide">Lokasi</p>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">Nama Gedung / Tempat</label>
+                            <input
+                                v-model="form.venue_name"
+                                type="text"
+                                placeholder="Ballroom Hotel Grand, Masjid Al-Akbar…"
+                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
+                            />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">Alamat Lengkap</label>
+                            <textarea
+                                v-model="form.venue_address"
+                                rows="2"
+                                placeholder="Jl. Pemuda No. 1, Surabaya, Jawa Timur"
+                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300 resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" @click="goBack"
+                                class="flex-none px-5 py-3.5 rounded-2xl text-sm font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">
+                            ← Kembali
+                        </button>
+                        <button
+                            type="button"
+                            @click="tryNext"
+                            :disabled="Object.keys(step2Errors).length > 0"
+                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
+                            style="background-color: #D4A373"
+                        >
+                            Lanjut →
+                        </button>
+                    </div>
+                </div>
+                </transition>
+
+                <!-- ── STEP 3: Slug ───────────────────────────────────── -->
+                <transition name="slide" mode="out-in">
+                <div v-if="step === 3" key="step3" class="space-y-5">
+
+                    <div class="text-center py-2">
+                        <p class="text-xs text-stone-400">Undanganmu akan bisa dibuka di:</p>
+                        <p class="text-sm font-mono font-semibold text-stone-700 mt-1">
+                            theday.id/<span class="text-amber-600">{{ form.skip_slug ? '...' : (form.slug || 'nama-slug') }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Skip slug checkbox -->
+                    <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors"
+                           :class="form.skip_slug ? 'border-amber-300 bg-amber-50/50' : 'border-stone-200 bg-white'">
+                        <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-colors"
+                             :style="form.skip_slug ? 'background-color:#D4A373; border-color:#D4A373' : 'border-color:#D1D5DB'">
+                            <svg v-if="form.skip_slug" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <input type="checkbox" v-model="form.skip_slug" class="sr-only"/>
+                        <div>
+                            <p class="text-sm font-medium text-stone-700">Lewati dan isi slug nanti</p>
+                            <p class="text-xs text-stone-400">Sistem akan membuat tautan sementara untukmu</p>
+                        </div>
+                    </label>
+
+                    <!-- Slug input -->
+                    <div v-if="!form.skip_slug" class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-3">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-stone-600">
+                                Slug Undangan <span class="text-red-400">*</span>
+                            </label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-stone-200 bg-stone-50 text-xs text-stone-400">theday.id/</span>
+                                <input
+                                    v-model="form.slug"
+                                    @input="sanitizeSlug"
+                                    type="text"
+                                    placeholder="budi-dan-rahayu"
+                                    class="flex-1 px-4 py-3 rounded-r-xl border text-sm transition-colors outline-none focus:ring-2"
+                                    :class="form.errors.slug
+                                        ? 'border-red-300 focus:ring-red-100'
+                                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                />
+                            </div>
+                            <p v-if="form.errors.slug" class="text-xs text-red-500">{{ form.errors.slug }}</p>
+                            <p class="text-xs text-stone-400">Hanya huruf kecil, angka, dan tanda hubung (-). Tidak bisa diubah setelah undangan dipublikasi.</p>
+                        </div>
+
+                        <button
+                            v-if="form.groom_name && form.bride_name"
+                            type="button"
+                            @click="suggestSlug"
+                            class="text-xs font-medium transition-colors hover:underline"
+                            style="color: #D4A373"
+                        >
+                            💡 Sarankan slug otomatis
+                        </button>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" @click="goBack"
+                                class="flex-none px-5 py-3.5 rounded-2xl text-sm font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">
+                            ← Kembali
+                        </button>
+                        <button
+                            type="button"
+                            @click="submit"
+                            :disabled="form.processing || (!form.skip_slug && !form.slug.trim())"
+                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
+                            style="background-color: #D4A373"
+                        >
+                            <span v-if="form.processing" class="flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                Membuat undangan…
+                            </span>
+                            <span v-else>Buat Undanganku ✨</span>
+                        </button>
+                    </div>
+
+                    <!-- Server errors summary -->
+                    <div v-if="Object.keys(form.errors).length && !form.processing"
+                         class="p-4 rounded-2xl bg-red-50 border border-red-200">
+                        <p class="text-xs font-semibold text-red-700 mb-1">Ada yang perlu diperbaiki:</p>
+                        <ul class="space-y-0.5">
+                            <li v-for="(msg, field) in form.errors" :key="field" class="text-xs text-red-600">• {{ msg }}</li>
+                        </ul>
+                    </div>
+                </div>
+                </transition>
+
+            </div>
+        </div>
+
+        <!-- ── Footer logout ────────────────────────────────────────── -->
+        <div class="text-center pb-6">
+            <form method="POST" :action="route('logout')" class="inline">
+                <input type="hidden" name="_token" :value="$page.props.csrf_token ?? ''"/>
+                <button type="submit" class="text-xs text-stone-400 hover:text-stone-600 transition-colors">
+                    Keluar dari akun
+                </button>
+            </form>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.slide-enter-active,
+.slide-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.slide-enter-from {
+    opacity: 0;
+    transform: translateX(16px);
+}
+.slide-leave-to {
+    opacity: 0;
+    transform: translateX(-16px);
+}
+</style>

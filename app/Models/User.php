@@ -28,6 +28,7 @@ class User extends Authenticatable
         'phone',
         'avatar_url',
         'role',
+        'onboarding_completed_at',
     ];
 
     protected $hidden = [
@@ -38,10 +39,16 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'role'              => UserRole::class,
+            'email_verified_at'       => 'datetime',
+            'onboarding_completed_at' => 'datetime',
+            'password'                => 'hashed',
+            'role'                    => UserRole::class,
         ];
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->onboarding_completed_at !== null;
     }
 
     // ─── Relationships ────────────────────────────────────────────
