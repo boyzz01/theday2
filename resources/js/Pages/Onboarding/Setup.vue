@@ -1,10 +1,37 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     user: { type: Object, required: true },
 });
+
+// ── Persistence ───────────────────────────────────────────────────
+const STORAGE_KEY = 'theday_onboarding';
+
+function saveProgress() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        step: step.value,
+        form: {
+            groom_name:     form.groom_name,
+            groom_nickname: form.groom_nickname,
+            bride_name:     form.bride_name,
+            bride_nickname: form.bride_nickname,
+            phone:          form.phone,
+            no_date:        form.no_date,
+            wedding_date:   form.wedding_date,
+            start_time:     form.start_time,
+            venue_name:     form.venue_name,
+            venue_address:  form.venue_address,
+            skip_slug:      form.skip_slug,
+            slug:           form.slug,
+        },
+    }));
+}
+
+function clearProgress() {
+    localStorage.removeItem(STORAGE_KEY);
+}
 
 // ── Step management ───────────────────────────────────────────────
 const step    = ref(1);
@@ -57,6 +84,7 @@ function tryNext() {
     if (step.value === 1 && Object.keys(step1Errors.value).length) return;
     if (step.value === 2 && Object.keys(step2Errors.value).length) return;
     goNext();
+    saveProgress();
 }
 
 // ── Slug helpers ──────────────────────────────────────────────────
@@ -70,9 +98,34 @@ function sanitizeSlug() {
     form.slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
+// ── Restore from localStorage on mount ───────────────────────────
+onMounted(() => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const { step: savedStep, form: savedForm } = JSON.parse(saved);
+        Object.assign(form, savedForm);
+        step.value = savedStep ?? 1;
+        // Sync calendar view to restored date
+        if (savedForm.wedding_date) {
+            const [y, m] = savedForm.wedding_date.split('-').map(Number);
+            calYear.value  = y;
+            calMonth.value = m - 1;
+        }
+        // Sync time picker
+        if (savedForm.start_time) {
+            const [h, min] = savedForm.start_time.split(':');
+            timeHour.value   = h;
+            timeMinute.value = MINUTES.includes(min) ? min : '00';
+        }
+    } catch { /* ignore corrupt storage */ }
+});
+
 // ── Submit ────────────────────────────────────────────────────────
 function submit() {
-    form.post(route('onboarding.store'));
+    form.post(route('onboarding.store'), {
+        onSuccess: () => clearProgress(),
+    });
 }
 
 // ── Computed display ──────────────────────────────────────────────
@@ -81,6 +134,86 @@ const coupleDisplay = computed(() => {
     const b = form.bride_nickname || form.bride_name.split(' ')[0];
     if (g && b) return `${g} & ${b}`;
     return '';
+});
+
+// ── Date modal ────────────────────────────────────────────────────
+const showDateModal = ref(false);
+
+function openDateModal()  { showDateModal.value = true;  }
+function closeDateModal() { showDateModal.value = false; }
+
+// ── Custom date picker ────────────────────────────────────────────
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+const today        = new Date();
+const calYear      = ref(today.getFullYear());
+const calMonth     = ref(today.getMonth()); // 0-indexed
+
+function prevMonth() {
+    if (calMonth.value === 0) { calMonth.value = 11; calYear.value--; }
+    else calMonth.value--;
+}
+function nextMonth() {
+    if (calMonth.value === 11) { calMonth.value = 0; calYear.value++; }
+    else calMonth.value++;
+}
+
+// Grid of day numbers (null = padding cell)
+const calDays = computed(() => {
+    const first   = new Date(calYear.value, calMonth.value, 1).getDay();
+    const total   = new Date(calYear.value, calMonth.value + 1, 0).getDate();
+    const cells   = [];
+    for (let i = 0; i < first; i++) cells.push(null);
+    for (let d = 1; d <= total; d++) cells.push(d);
+    return cells;
+});
+
+function selectDay(day) {
+    if (!day) return;
+    const m = String(calMonth.value + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    form.wedding_date = `${calYear.value}-${m}-${d}`;
+}
+
+function isSelectedDay(day) {
+    if (!day || !form.wedding_date) return false;
+    const [y, m, d] = form.wedding_date.split('-').map(Number);
+    return y === calYear.value && m === calMonth.value + 1 && d === day;
+}
+
+function isPastDay(day) {
+    if (!day) return false;
+    const cellDate = new Date(calYear.value, calMonth.value, day);
+    const t        = new Date(); t.setHours(0,0,0,0);
+    return cellDate < t;
+}
+
+const displayDate = computed(() => {
+    if (!form.wedding_date) return '';
+    const [y, m, d] = form.wedding_date.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+});
+
+// Sync calendar view when date is set externally
+watch(() => form.wedding_date, (val) => {
+    if (val) {
+        const [y, m] = val.split('-').map(Number);
+        calYear.value  = y;
+        calMonth.value = m - 1;
+    }
+});
+
+// ── Time picker ───────────────────────────────────────────────────
+const timeHour   = ref('');
+const timeMinute = ref('');
+
+const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTES = ['00', '15', '30', '45'];
+
+watch([timeHour, timeMinute], ([h, m]) => {
+    if (h !== '') form.start_time = m !== '' ? `${h}:${m}` : `${h}:00`;
 });
 </script>
 
@@ -291,34 +424,172 @@ const coupleDisplay = computed(() => {
                         </div>
                     </label>
 
-                    <!-- Date & time fields -->
-                    <div v-if="!form.no_date" class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">
-                                Tanggal Pernikahan <span class="text-red-400">*</span>
-                            </label>
-                            <input
-                                v-model="form.wedding_date"
-                                type="date"
-                                class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
-                                :class="step2Errors.wedding_date
-                                    ? 'border-red-300 focus:ring-red-100'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
-                            />
-                            <p v-if="step2Errors.wedding_date || form.errors.wedding_date" class="text-xs text-red-500">
-                                {{ form.errors.wedding_date || step2Errors.wedding_date }}
-                            </p>
-                        </div>
+                    <!-- Date trigger button -->
+                    <div v-if="!form.no_date" class="space-y-1.5">
+                        <p class="text-xs font-medium text-stone-600">
+                            Tanggal & Waktu Pernikahan <span class="text-red-400">*</span>
+                        </p>
+                        <button
+                            type="button"
+                            @click="openDateModal"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl border bg-white text-sm transition-colors"
+                            :class="step2Errors.wedding_date ? 'border-red-300' : 'border-stone-200 hover:border-amber-300'"
+                        >
+                            <span v-if="displayDate" class="text-stone-800 font-medium">
+                                {{ displayDate }}{{ form.start_time ? ' · ' + form.start_time + ' WIB' : '' }}
+                            </span>
+                            <span v-else class="text-stone-400">Pilih tanggal…</span>
+                            <svg class="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        <p v-if="step2Errors.wedding_date || form.errors.wedding_date" class="text-xs text-red-500">
+                            {{ form.errors.wedding_date || step2Errors.wedding_date }}
+                        </p>
+                    </div>
 
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
-                            <input
-                                v-model="form.start_time"
-                                type="time"
-                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
-                            />
+                    <!-- ── Date/time modal ───────────────────────────── -->
+                    <teleport to="body">
+                    <transition name="modal">
+                    <div v-if="showDateModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+                        <!-- Backdrop -->
+                        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDateModal"/>
+
+                        <!-- Sheet -->
+                        <div class="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                             style="max-height: 92dvh; overflow-y: auto">
+
+                            <!-- Handle bar (mobile) -->
+                            <div class="sm:hidden flex justify-center pt-3 pb-1">
+                                <div class="w-10 h-1 rounded-full bg-stone-200"/>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="flex items-center justify-between px-5 py-4">
+                                <div>
+                                    <p class="text-sm font-bold text-stone-800" style="font-family:'Playfair Display',serif">
+                                        Pilih Tanggal
+                                    </p>
+                                    <p v-if="displayDate" class="text-xs text-amber-600 mt-0.5">{{ displayDate }}</p>
+                                </div>
+                                <button type="button" @click="closeDateModal"
+                                        class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                                    <svg class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Month/year navigation -->
+                            <div class="flex items-center justify-between px-5 pb-2">
+                                <button type="button" @click="prevMonth"
+                                        class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <span class="text-sm font-semibold text-stone-700">
+                                    {{ MONTHS_ID[calMonth] }} {{ calYear }}
+                                </span>
+                                <button type="button" @click="nextMonth"
+                                        class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Day-of-week headers -->
+                            <div class="grid grid-cols-7 px-4 pb-1">
+                                <div v-for="d in DAYS_ID" :key="d"
+                                     class="text-center text-xs font-semibold py-1"
+                                     :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">
+                                    {{ d }}
+                                </div>
+                            </div>
+
+                            <!-- Calendar grid -->
+                            <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
+                                <div v-for="(day, i) in calDays" :key="i"
+                                     class="flex items-center justify-center aspect-square">
+                                    <button
+                                        v-if="day"
+                                        type="button"
+                                        @click="selectDay(day)"
+                                        :disabled="isPastDay(day)"
+                                        class="w-9 h-9 rounded-full text-sm font-medium transition-all"
+                                        :class="[
+                                            isSelectedDay(day)
+                                                ? 'text-white font-bold shadow-sm'
+                                                : isPastDay(day)
+                                                    ? 'text-stone-200 cursor-not-allowed'
+                                                    : 'text-stone-700 hover:bg-amber-50 active:bg-amber-100',
+                                        ]"
+                                        :style="isSelectedDay(day) ? 'background-color:#D4A373' : ''"
+                                    >
+                                        {{ day }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Time picker -->
+                            <div class="border-t border-stone-100 px-5 py-4 space-y-3">
+                                <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                                    Waktu Mulai <span class="text-stone-300 font-normal normal-case">(opsional)</span>
+                                </p>
+                                <div class="flex gap-3">
+                                    <!-- Hours -->
+                                    <div class="flex-1 space-y-1.5">
+                                        <p class="text-xs text-stone-400 text-center">Jam</p>
+                                        <div class="grid grid-cols-4 gap-1">
+                                            <button
+                                                v-for="h in HOURS" :key="h"
+                                                type="button"
+                                                @click="timeHour = h"
+                                                class="py-1.5 rounded-lg text-xs font-medium transition-all"
+                                                :class="timeHour === h ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-amber-50'"
+                                                :style="timeHour === h ? 'background-color:#D4A373' : ''"
+                                            >{{ h }}</button>
+                                        </div>
+                                    </div>
+                                    <!-- Divider -->
+                                    <div class="w-px bg-stone-100 self-stretch"/>
+                                    <!-- Minutes -->
+                                    <div class="w-20 flex-shrink-0 space-y-1.5">
+                                        <p class="text-xs text-stone-400 text-center">Menit</p>
+                                        <div class="flex flex-col gap-1.5">
+                                            <button
+                                                v-for="m in MINUTES" :key="m"
+                                                type="button"
+                                                @click="timeMinute = m"
+                                                class="py-2.5 rounded-lg text-xs font-medium transition-all"
+                                                :class="timeMinute === m ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-amber-50'"
+                                                :style="timeMinute === m ? 'background-color:#D4A373' : ''"
+                                            >{{ m }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Confirm button -->
+                            <div class="px-5 pb-6 pt-2">
+                                <button
+                                    type="button"
+                                    @click="closeDateModal"
+                                    :disabled="!form.wedding_date"
+                                    class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                                    style="background-color:#D4A373"
+                                >
+                                    <span v-if="form.wedding_date">
+                                        Simpan{{ form.start_time ? ' · ' + form.start_time + ' WIB' : '' }}
+                                    </span>
+                                    <span v-else>Pilih tanggal dulu</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    </transition>
+                    </teleport>
 
                     <!-- Venue -->
                     <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
@@ -478,12 +749,20 @@ const coupleDisplay = computed(() => {
 .slide-leave-active {
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
-.slide-enter-from {
-    opacity: 0;
-    transform: translateX(16px);
+.slide-enter-from { opacity: 0; transform: translateX(16px); }
+.slide-leave-to   { opacity: 0; transform: translateX(-16px); }
+
+/* Modal / bottom-sheet */
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.22s ease;
 }
-.slide-leave-to {
-    opacity: 0;
-    transform: translateX(-16px);
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+    transition: transform 0.22s ease;
 }
+.modal-enter-from { opacity: 0; }
+.modal-leave-to   { opacity: 0; }
+.modal-enter-from .relative { transform: translateY(40px); }
+.modal-leave-to   .relative { transform: translateY(40px); }
 </style>

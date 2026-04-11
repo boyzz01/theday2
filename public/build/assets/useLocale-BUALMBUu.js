@@ -1,0 +1,1 @@
+import{M as r,s as u}from"./app-BhmGWGzJ.js";const a="theday_lang",o=u(localStorage.getItem(a)||"id");function i(){function t(e){o.value=e,localStorage.setItem(a,e)}function l(){t(o.value==="id"?"en":"id")}function n(e,c){return o.value==="en"?c:e}return{locale:r(o),setLocale:t,toggleLocale:l,t:n}}export{i as u};
