@@ -134,7 +134,7 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                     <!-- Actions -->
                     <div class="flex gap-2">
                         <Link
-                            :href="route('dashboard.invitations.edit', inv.id)"
+                            :href="route('editor.invitations.show', inv.id)"
                             class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
                         >
                             Edit

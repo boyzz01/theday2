@@ -205,8 +205,8 @@ onMounted(() => {
     updateCountdown();
     cdTimer = setInterval(updateCountdown, 1000);
 
-    // Reduce motion: skip all animations, show content immediately
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Skip gate when autoOpen=true (editor preview / demo) or reduced motion
+    if (props.autoOpen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         gateOpen.value    = true;
         contentOpen.value = true;
     }

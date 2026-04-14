@@ -15,6 +15,7 @@ use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Blog\BlogController;
+use App\Http\Controllers\Editor\EditorController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UseTemplateController;
@@ -101,7 +102,6 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     // Invitation list & wizard
     Route::get( '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');
     Route::get( '/invitations/create',             [InvitationController::class, 'create'])->name('invitations.create');
-    Route::get( '/invitations/{invitation}/edit',  [InvitationController::class, 'edit'])->name('invitations.edit');
     Route::post('/invitations/from-template',      [InvitationController::class, 'createFromTemplate'])->name('invitations.from-template');
 
     // Invitation CRUD API
@@ -167,6 +167,14 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::patch('/checklist/tasks/{id}/restore',      [ChecklistController::class, 'restore'])->name('checklist.tasks.restore');
     Route::get(  '/checklist/summary',                 [ChecklistController::class, 'summary'])->name('checklist.summary');
     Route::patch('/checklist/event-date',              [ChecklistController::class, 'updateEventDate'])->name('checklist.event-date');
+});
+
+// ── Editor Mode routes ──────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'onboarding'])->prefix('editor')->name('editor.')->group(function () {
+    Route::get('/invitations/{invitation}',                          [EditorController::class, 'show'])->name('invitations.show');
+    Route::get('/invitations/{invitation}/section/{sectionKey}',     [EditorController::class, 'show'])->name('invitations.section');
+    Route::patch('/invitations/{invitation}/sections/{section}',     [EditorController::class, 'saveSection'])->name('sections.save');
+    Route::patch('/invitations/{invitation}/sections/reorder',       [EditorController::class, 'reorderSections'])->name('sections.reorder');
 });
 
 // Keep legacy route alias so Breeze redirects still work
