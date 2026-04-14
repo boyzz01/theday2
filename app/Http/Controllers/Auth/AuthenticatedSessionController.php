@@ -37,6 +37,15 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
+        // Admin → go straight to admin dashboard
+        if ($user->role->isAdmin()) {
+            $url = route('admin.articles.index');
+            if ($request->wantsJson()) {
+                return response()->json(['redirect' => $url]);
+            }
+            return redirect($url);
+        }
+
         // Onboarding not done — go to onboarding (pending_template is kept in session)
         if (! $user->hasCompletedOnboarding()) {
             $url = route('onboarding');

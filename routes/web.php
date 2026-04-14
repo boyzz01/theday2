@@ -13,6 +13,8 @@ use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
+use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Blog\BlogController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UseTemplateController;
@@ -22,7 +24,21 @@ use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('landing');
+    $featuredArticles = \App\Models\Article::published()
+        ->with('category')
+        ->orderByRaw('featured DESC, published_at DESC')
+        ->limit(3)
+        ->get()
+        ->map(fn ($a) => [
+            'title'           => $a->title,
+            'slug'            => $a->slug,
+            'excerpt'         => $a->excerpt,
+            'cover_image_url' => $a->cover_image_url,
+            'published_at'    => $a->published_at?->toDateString(),
+            'reading_time'    => $a->reading_time,
+            'category'        => $a->category ? ['name' => $a->category->name, 'slug' => $a->category->slug] : null,
+        ]);
+    return view('landing', ['featuredArticles' => $featuredArticles]);
 })->name('home');
 
 // ── Sitemap ──────────────────────────────────────────────────────────────────
@@ -30,16 +46,27 @@ Route::get('/sitemap.xml', function () {
     $pages = [
         ['url' => url('/'),          'priority' => '1.0', 'changefreq' => 'weekly'],
         ['url' => url('/templates'), 'priority' => '0.9', 'changefreq' => 'daily'],
+        ['url' => url('/blog'),      'priority' => '0.8', 'changefreq' => 'daily'],
         ['url' => url('/login'),     'priority' => '0.5', 'changefreq' => 'monthly'],
         ['url' => url('/register'),  'priority' => '0.6', 'changefreq' => 'monthly'],
     ];
+
+    // Add published articles to sitemap
+    \App\Models\Article::published()->select('slug', 'updated_at')->each(function ($article) use (&$pages) {
+        $pages[] = [
+            'url'        => url('/blog/' . $article->slug),
+            'priority'   => '0.7',
+            'changefreq' => 'weekly',
+            'lastmod'    => $article->updated_at->toDateString(),
+        ];
+    });
 
     $xml  = '<?xml version="1.0" encoding="UTF-8"?>';
     $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
     foreach ($pages as $page) {
         $xml .= '<url>';
         $xml .= '<loc>' . e($page['url']) . '</loc>';
-        $xml .= '<lastmod>' . now()->toDateString() . '</lastmod>';
+        $xml .= '<lastmod>' . ($page['lastmod'] ?? now()->toDateString()) . '</lastmod>';
         $xml .= '<changefreq>' . $page['changefreq'] . '</changefreq>';
         $xml .= '<priority>' . $page['priority'] . '</priority>';
         $xml .= '</url>';
@@ -48,6 +75,11 @@ Route::get('/sitemap.xml', function () {
 
     return response($xml, 200)->header('Content-Type', 'application/xml');
 })->name('sitemap');
+
+// ── Blog / Artikel (public) ──────────────────────────────────────────────────
+Route::get('/blog',                        [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/category/{slug}',        [BlogController::class, 'category'])->name('blog.category');
+Route::get('/blog/{slug}',                 [BlogController::class, 'show'])->name('blog.show');
 
 // ── Guest-accessible public routes (no auth required) ───────────────────────
 Route::get('/templates',              [TemplateGalleryController::class, 'index'])->name('templates.gallery');
@@ -151,12 +183,23 @@ Route::middleware('auth')->group(function () {
 // Admin routes — protected by role:admin middleware
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    // ── Articles ──────────────────────────────────────────────────────
+    Route::get(   '/articles',                         [ArticleController::class, 'index'])->name('articles.index');
+    Route::get(   '/articles/create',                  [ArticleController::class, 'create'])->name('articles.create');
+    Route::post(  '/articles',                         [ArticleController::class, 'store'])->name('articles.store');
+    Route::get(   '/articles/{article}/edit',          [ArticleController::class, 'edit'])->name('articles.edit');
+    Route::patch( '/articles/{article}',               [ArticleController::class, 'update'])->name('articles.update');
+    Route::delete('/articles/{article}',               [ArticleController::class, 'destroy'])->name('articles.destroy');
+    Route::patch( '/articles/{article}/publish',       [ArticleController::class, 'publish'])->name('articles.publish');
+    Route::patch( '/articles/{article}/unpublish',     [ArticleController::class, 'unpublish'])->name('articles.unpublish');
+    Route::patch( '/articles/{article}/featured',      [ArticleController::class, 'toggleFeatured'])->name('articles.featured');
 });
 
 // ── Public invitation pages ─────────────────────────────────────────────
 // IMPORTANT: keep this LAST so /{slug} doesn't swallow other routes.
 // The where() constraint excludes known top-level paths.
-$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|use-template|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap).*';
+$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|use-template|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap|blog).*';
 
 // Two-segment literal routes defined BEFORE wildcard so they take precedence.
 Route::post('/{slug}/unlock',   [PublicInvitationController::class, 'unlock'])->where('slug', $slugExclusion)->name('invitation.unlock');

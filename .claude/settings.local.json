@@ -24,7 +24,12 @@
       "Bash(ls c:/laragon/www/theday/public/*.png c:/laragon/www/theday/public/*.jpg c:/laragon/www/theday/public/*.ico)",
       "Bash(php -r ':*)",
       "Bash(grep -v \"^\\\\s*$\")",
-      "Bash(python \"C:\\\\Users\\\\Ardi\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"wedding budget planner elegant warm mobile indonesia\" --design-system -p \"TheDay Budget Planner\" -f markdown)"
+      "Bash(python \"C:\\\\Users\\\\Ardi\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"wedding budget planner elegant warm mobile indonesia\" --design-system -p \"TheDay Budget Planner\" -f markdown)",
+      "Bash(php -l /c/laragon/www/theday/app/Http/Controllers/Blog/BlogController.php)",
+      "Bash(php -l /c/laragon/www/theday/app/Http/Controllers/Admin/ArticleController.php)",
+      "Bash(php -l /c/laragon/www/theday/app/Models/Article.php)",
+      "Bash(php -l /c/laragon/www/theday/app/Models/BlogCategory.php)",
+      "Bash(grep -n \"UserRole\\\\|App\\\\\\\\\\\\\\\\Enums\" /c/laragon/www/theday/app/Enums/UserRole.php)"
     ]
   }
 }

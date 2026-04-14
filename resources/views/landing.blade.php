@@ -1074,6 +1074,78 @@
 
 
 {{-- ============================================================ --}}
+{{-- BLOG TEASER SECTION --}}
+{{-- ============================================================ --}}
+@if(isset($featuredArticles) && $featuredArticles->count() > 0)
+<section id="blog" class="py-24 bg-white reveal">
+    <div class="max-w-6xl mx-auto px-6">
+        {{-- Section header --}}
+        <div class="text-center mb-12">
+            <p class="text-sm font-semibold uppercase tracking-widest mb-2" style="color: var(--color-primary)">Inspirasi & Panduan</p>
+            <h2 class="font-display text-3xl md:text-4xl font-semibold mb-3" style="color: var(--color-dark)">Artikel Terbaru</h2>
+            <p class="text-gray-500 max-w-md mx-auto text-base">Tips pernikahan, inspirasi undangan, dan panduan merencanakan hari istimewamu.</p>
+        </div>
+
+        {{-- Article cards --}}
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            @foreach($featuredArticles as $article)
+            <a href="/blog/{{ $article['slug'] }}" class="group block bg-white rounded-2xl overflow-hidden feature-card cursor-pointer"
+               style="box-shadow: 0 2px 12px rgba(0,0,0,0.06)">
+                {{-- Cover --}}
+                <div class="aspect-video overflow-hidden bg-stone-100 relative">
+                    @if($article['cover_image_url'])
+                    <img src="{{ $article['cover_image_url'] }}" alt="{{ $article['title'] }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    @else
+                    <div class="w-full h-full flex items-center justify-center"
+                         style="background: linear-gradient(135deg, #FEFAE0, #EDE8D0)">
+                        <svg class="w-10 h-10 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    @endif
+                </div>
+                {{-- Body --}}
+                <div class="p-5">
+                    @if($article['category'])
+                    <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-primary)">
+                        {{ $article['category']['name'] }}
+                    </span>
+                    @endif
+                    <h3 class="font-display text-lg font-semibold mt-1.5 mb-2 leading-snug group-hover:opacity-70 transition"
+                        style="color: var(--color-dark)">
+                        {{ $article['title'] }}
+                    </h3>
+                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-4">{{ $article['excerpt'] }}</p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span>
+                            @if($article['published_at'])
+                            {{ \Carbon\Carbon::parse($article['published_at'])->translatedFormat('d M Y') }}
+                            @endif
+                        </span>
+                        <span>{{ $article['reading_time'] }} menit baca</span>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+
+        {{-- CTA link --}}
+        <div class="text-center">
+            <a href="/blog" class="btn-outline inline-flex items-center gap-2">
+                <span>Baca Artikel Lainnya</span>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+@endif
+
+
+{{-- ============================================================ --}}
 {{-- CTA SECTION --}}
 {{-- ============================================================ --}}
 <section class="py-24 relative overflow-hidden" style="background: linear-gradient(135deg, #1E1E1E, #2D2520)">
