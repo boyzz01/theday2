@@ -236,20 +236,34 @@ class ChecklistTemplateSeeder extends Seeder
         ];
 
         foreach ($templates as $template) {
-            DB::table('checklist_templates')->updateOrInsert(
-                ['name' => $template['name'], 'category' => $template['category']],
-                [
-                    'id'          => Str::uuid()->toString(),
-                    'title'       => $template['title'],
-                    'description' => $template['description'],
-                    'day_offset'  => $template['day_offset'],
-                    'priority'    => $template['priority'],
-                    'is_active'   => true,
-                    'sort_order'  => $template['sort_order'],
-                    'created_at'  => $now,
-                    'updated_at'  => $now,
-                ]
-            );
+            $exists = DB::table('checklist_templates')
+                ->where('name', $template['name'])
+                ->where('category', $template['category'])
+                ->exists();
+
+            $payload = [
+                'title'       => $template['title'],
+                'description' => $template['description'],
+                'day_offset'  => $template['day_offset'],
+                'priority'    => $template['priority'],
+                'is_active'   => true,
+                'sort_order'  => $template['sort_order'],
+                'updated_at'  => $now,
+            ];
+
+            if ($exists) {
+                DB::table('checklist_templates')
+                    ->where('name', $template['name'])
+                    ->where('category', $template['category'])
+                    ->update($payload);
+            } else {
+                DB::table('checklist_templates')->insert(array_merge($payload, [
+                    'id'         => Str::uuid()->toString(),
+                    'name'       => $template['name'],
+                    'category'   => $template['category'],
+                    'created_at' => $now,
+                ]));
+            }
         }
     }
 }
