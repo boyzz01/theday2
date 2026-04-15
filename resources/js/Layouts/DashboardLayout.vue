@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -10,6 +10,7 @@ const flash = computed(() => page.props.flash);
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
+const expandedGroups = ref({});
 
 const navItems = [
     {
@@ -26,10 +27,22 @@ const navItems = [
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
     },
     {
-        label: 'Guest List',
-        route: 'dashboard.guest-list.index',
+        label: 'Tamu',
+        group: true,
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`,
+        children: [
+            {
+                label: 'Guest List',
+                route: 'dashboard.guest-list.index',
+                activePattern: 'dashboard.guest-list.*',
+            },
+            {
+                label: 'Buku Tamu',
+                route: 'dashboard.guest-book.index',
+                comingSoon: true,
+            },
+        ],
     },
     {
         label: 'Checklist Pernikahan',
@@ -69,8 +82,27 @@ const checklistTodo = computed(() => page.props.checklist_todo ?? 0);
 const isActive = (item) => {
     if (item.noActive) return false;
     if (item.activePattern && route().current(item.activePattern)) return true;
-    return route().current(item.route);
+    if (item.comingSoon) return false;
+    try { return route().current(item.route); } catch { return false; }
 };
+
+const isGroupActive = (item) => {
+    if (!item.children) return false;
+    return item.children.some(child => isActive(child));
+};
+
+const toggleGroup = (label) => {
+    expandedGroups.value[label] = !expandedGroups.value[label];
+};
+
+// auto-expand group yang berisi halaman aktif
+onMounted(() => {
+    navItems.forEach(item => {
+        if (item.group && isGroupActive(item)) {
+            expandedGroups.value[item.label] = true;
+        }
+    });
+});
 
 const logout = async () => {
     await axios.post(route('logout'));
@@ -134,7 +166,63 @@ const avatarInitials = computed(() => {
             <!-- Nav Items -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <template v-for="item in navItems" :key="item.label">
+
+                    <!-- Group (with children) -->
+                    <template v-if="item.group">
+                        <!-- Group header button -->
+                        <button
+                            @click="toggleGroup(item.label)"
+                            :class="[
+                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                                isGroupActive(item)
+                                    ? 'text-amber-800 bg-amber-50'
+                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                                sidebarCollapsed ? 'justify-center' : '',
+                            ]"
+                        >
+                            <svg class="w-5 h-5 flex-shrink-0"
+                                 :class="isGroupActive(item) ? 'text-amber-600' : 'text-stone-400'"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
+                            <span v-if="!sidebarCollapsed" class="flex-1 text-left">{{ item.label }}</span>
+                            <svg v-if="!sidebarCollapsed"
+                                 class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+                                 :class="expandedGroups[item.label] ? 'rotate-180' : ''"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <!-- Sub-items -->
+                        <Transition name="expand">
+                            <div v-if="!sidebarCollapsed && expandedGroups[item.label]"
+                                 class="mt-1 ml-4 pl-3 border-l border-stone-100 space-y-0.5">
+                                <template v-for="child in item.children" :key="child.label">
+                                    <!-- Coming soon: non-clickable -->
+                                    <span v-if="child.comingSoon"
+                                          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-stone-400 cursor-default select-none">
+                                        {{ child.label }}
+                                        <span class="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-400 font-medium">Segera</span>
+                                    </span>
+                                    <!-- Normal child link -->
+                                    <Link v-else
+                                          :href="route(child.route)"
+                                          :class="[
+                                              'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                                              isActive(child)
+                                                  ? 'text-amber-800 bg-amber-50'
+                                                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                                          ]"
+                                    >
+                                        {{ child.label }}
+                                    </Link>
+                                </template>
+                            </div>
+                        </Transition>
+                    </template>
+
+                    <!-- Regular item -->
                     <Link
+                        v-else
                         :href="route(item.route)"
                         :class="[
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
@@ -153,6 +241,7 @@ const avatarInitials = computed(() => {
                             style="background-color: #D4A373"
                         >{{ checklistTodo }}</span>
                     </Link>
+
                 </template>
             </nav>
 
@@ -249,4 +338,8 @@ const avatarInitials = computed(() => {
 
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-8px); }
+
+.expand-enter-active, .expand-leave-active { transition: all 0.2s ease; overflow: hidden; }
+.expand-enter-from, .expand-leave-to { opacity: 0; transform: translateY(-4px); max-height: 0; }
+.expand-enter-to, .expand-leave-from { opacity: 1; transform: translateY(0); max-height: 200px; }
 </style>
