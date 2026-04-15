@@ -3,12 +3,12 @@ import { computed, reactive } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { useInvitationEditor } from '@/Composables/useInvitationEditor.js';
-import Step1BasicInfo      from './Steps/Step1BasicInfo.vue';
-import Step2Events         from './Steps/Step2Events.vue';
-import Step3Gallery        from './Steps/Step3Gallery.vue';
-import Step4Music          from './Steps/Step4Music.vue';
-import Step5Customization  from './Steps/Step5Customization.vue';
-import Step6Review         from './Steps/Step6Review.vue';
+import StepInformasi  from './Steps/StepInformasi.vue';
+import StepAcara      from './Steps/StepAcara.vue';
+import StepMedia      from './Steps/StepMedia.vue';
+import StepInteraksi  from './Steps/StepInteraksi.vue';
+import StepTampilan   from './Steps/StepTampilan.vue';
+import StepPublikasi  from './Steps/StepPublikasi.vue';
 
 const props = defineProps({
     template:     { type: Object, required: true },
@@ -20,20 +20,20 @@ const props = defineProps({
 const editor = reactive(useInvitationEditor(props.template, props.invitation));
 
 const steps = [
-    { number: 1, label: 'Informasi',  shortLabel: '1' },
-    { number: 2, label: 'Acara',      shortLabel: '2' },
-    { number: 3, label: 'Galeri',     shortLabel: '3' },
-    { number: 4, label: 'Musik',      shortLabel: '4' },
-    { number: 5, label: 'Tampilan',   shortLabel: '5' },
-    { number: 6, label: 'Publikasi',  shortLabel: '6' },
+    { number: 1, label: 'Informasi',  key: 'informasi' },
+    { number: 2, label: 'Acara',      key: 'acara' },
+    { number: 3, label: 'Media',      key: 'media' },
+    { number: 4, label: 'Interaksi',  key: 'interaksi' },
+    { number: 5, label: 'Tampilan',   key: 'tampilan' },
+    { number: 6, label: 'Publikasi',  key: 'publikasi' },
 ];
 
 const stepSaveMap = {
-    1: editor.saveStep1,
-    2: editor.saveStep2,
-    3: editor.saveStep3,
-    4: editor.saveStep4,
-    5: editor.saveStep5,
+    1: () => editor.saveStep1(),
+    2: () => editor.saveStep2(),
+    3: () => editor.saveStep3(),
+    4: () => editor.saveStep4(),
+    5: () => editor.saveStep5(),
 };
 
 async function next() {
@@ -42,7 +42,7 @@ async function next() {
         try {
             await save();
         } catch {
-            return; // saveError already set
+            return;
         }
     }
     if (editor.currentStep < 6) editor.currentStep++;
@@ -53,7 +53,7 @@ function back() {
 }
 
 function goTo(n) {
-    if (n <= editor.lastSavedStep + 1 || n <= editor.currentStep) {
+    if (n <= (editor.lastSavedStep ?? 0) + 1 || n <= editor.currentStep) {
         editor.currentStep = n;
     }
 }
@@ -73,7 +73,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
             </div>
         </template>
 
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-2xl mx-auto">
 
             <!-- ── Step indicator ──────────────────────────────── -->
             <div class="mb-6">
@@ -113,7 +113,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                                  class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span v-else>{{ step.shortLabel }}</span>
+                            <span v-else>{{ step.number }}</span>
                         </div>
                         <span :class="[
                             'hidden sm:block text-xs font-medium',
@@ -140,61 +140,71 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
 
                 <!-- Step panels -->
                 <Transition name="step-fade" mode="out-in">
-                    <Step1BasicInfo
+                    <StepInformasi
                         v-if="editor.currentStep === 1"
                         :basic="editor.basic"
                         :details="editor.details"
-                        :template="template"
+                        :sections="editor.sections"
                         :upload-photo-field="editor.uploadPhotoField"
-                        :invitation-id="editor.invitationId"
+                        :on-toggle-section="editor.toggleSection"
                     />
-                    <Step2Events
+                    <StepAcara
                         v-else-if="editor.currentStep === 2"
                         :events="editor.events"
+                        :sections="editor.sections"
                         :add-event="editor.addEvent"
                         :remove-event="editor.removeEvent"
                         :move-event="editor.moveEvent"
+                        :on-toggle-section="editor.toggleSection"
                     />
-                    <Step3Gallery
+                    <StepMedia
                         v-else-if="editor.currentStep === 3"
                         :galleries="editor.galleries"
+                        :sections="editor.sections"
                         :invitation-id="editor.invitationId"
                         :upload-gallery-file="editor.uploadGalleryFile"
                         :remove-gallery="editor.removeGallery"
                         :move-gallery="editor.moveGallery"
+                        :on-toggle-section="editor.toggleSection"
                     />
-                    <Step4Music
+                    <StepInteraksi
                         v-else-if="editor.currentStep === 4"
+                        :sections="editor.sections"
+                        :on-toggle-section="editor.toggleSection"
+                    />
+                    <StepTampilan
+                        v-else-if="editor.currentStep === 5"
+                        :custom-config="editor.customConfig"
+                        :fonts="fonts"
+                        :sections="editor.sections"
                         :selected-music="editor.selectedMusic"
                         :default-music="defaultMusic"
                         :invitation-id="editor.invitationId"
                         :upload-audio="editor.uploadAudio"
-                        @select="editor.selectedMusic = $event"
+                        :on-toggle-section="editor.toggleSection"
+                        @update:selected-music="editor.selectedMusic = $event"
                     />
-                    <Step5Customization
-                        v-else-if="editor.currentStep === 5"
-                        :custom-config="editor.customConfig"
-                        :fonts="fonts"
-                    />
-                    <Step6Review
+                    <StepPublikasi
                         v-else-if="editor.currentStep === 6"
                         :publish="editor.publish"
+                        :sections="editor.sections"
                         :invitation-id="editor.invitationId"
                         :is-saving="editor.isSaving"
                         :save-step6="editor.saveStep6"
                         :template="template"
                         :basic="editor.basic"
                         :details="editor.details"
+                        :on-toggle-section="editor.toggleSection"
                     />
                 </Transition>
 
                 <!-- ── Footer nav ──────────────────────────────── -->
                 <div v-if="editor.currentStep < 6"
-                     class="border-t border-stone-100 px-6 py-4 flex items-center justify-between bg-stone-50/50">
+                     class="border-t border-stone-100 px-4 py-4 flex items-center justify-between bg-stone-50/50 sticky bottom-0">
                     <button
                         v-if="editor.currentStep > 1"
                         @click="back"
-                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-xl hover:bg-stone-100 transition-colors"
+                        class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 rounded-xl hover:bg-stone-100 transition-colors"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -206,14 +216,14 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                     <button
                         @click="next"
                         :disabled="editor.isSaving"
-                        class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60"
+                        class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60"
                         style="background-color: #D4A373"
                     >
                         <svg v-if="editor.isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                         </svg>
-                        {{ editor.isSaving ? 'Menyimpan…' : editor.currentStep === 5 ? 'Lanjut ke Review' : 'Simpan & Lanjut' }}
+                        {{ editor.isSaving ? 'Menyimpan…' : editor.currentStep === 5 ? 'Lanjut ke Publikasi' : 'Simpan & Lanjut' }}
                         <svg v-if="!editor.isSaving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>

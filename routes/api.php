@@ -5,6 +5,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\InvitationSectionController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ── Music ─────────────────────────────────────────────────────
     Route::post('/invitations/{invitation}/music', [InvitationController::class, 'storeMusic']);
+
+    // ── Sections ──────────────────────────────────────────────────
+    Route::get(  '/invitations/{invitation}/sections',                     [InvitationSectionController::class, 'index']);
+    Route::patch('/invitations/{invitation}/sections/{sectionKey}/toggle', [InvitationSectionController::class, 'toggle']);
+    Route::patch('/invitations/{invitation}/sections/{sectionKey}',        [InvitationSectionController::class, 'updateData']);
 
     // ── Publish / Unpublish ───────────────────────────────────────
     Route::put('/invitations/{invitation}/publish',   [InvitationController::class, 'publish']);

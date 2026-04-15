@@ -102,6 +102,11 @@ class Invitation extends Model
         return $this->hasMany(InvitationView::class);
     }
 
+    public function sections(): HasMany
+    {
+        return $this->hasMany(InvitationSection::class)->orderBy('sort_order');
+    }
+
     // ─── Scopes ───────────────────────────────────────────────────
 
     public function scopeDraft(Builder $query): Builder

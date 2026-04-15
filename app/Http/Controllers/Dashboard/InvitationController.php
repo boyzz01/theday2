@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\InvitationSection;
 use App\Models\Template;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -129,6 +130,7 @@ class InvitationController extends Controller
                 'status'      => 'draft',
             ]);
             $invitation->details()->create(['invitation_id' => $invitation->id]);
+            InvitationSection::initializeForInvitation($invitation->id);
         }
 
         return redirect()->route('dashboard.invitations.edit', $invitation);
@@ -139,6 +141,12 @@ class InvitationController extends Controller
         $this->authorizeOwner($invitation);
 
         $invitation->load(['template.category', 'details', 'events', 'galleries', 'music']);
+
+        // Always upsert wizard sections so all expected section_keys exist.
+        // initializeForInvitation uses upsert (INSERT … ON DUPLICATE KEY UPDATE)
+        // so it is safe to run on every edit load — existing data is preserved.
+        InvitationSection::initializeForInvitation($invitation->id);
+        $invitation->load('sections');
 
         $template = $invitation->template;
 
@@ -219,6 +227,15 @@ class InvitationController extends Controller
                 'music'     => $invitation->music->map(fn($m) => [
                     'title'    => $m->title,
                     'file_url' => $m->file_url,
+                ])->values(),
+                'sections'  => $invitation->sections->map(fn($s) => [
+                    'section_key'       => $s->section_key,
+                    'step_key'          => $s->step_key,
+                    'is_enabled'        => $s->is_enabled,
+                    'is_required'       => $s->is_required,
+                    'completion_status' => $s->completion_status,
+                    'data_json'         => $s->data_json ?? [],
+                    'sort_order'        => $s->sort_order,
                 ])->values(),
             ],
             'defaultMusic' => $defaultMusic,

@@ -1,24 +1,74 @@
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import axios from 'axios';
 
 // ─── axios instance with CSRF cookie ─────────────────────────────────────────
-// Sanctum session-cookie auth: include credentials so Laravel reads the session.
-axios.defaults.withCredentials    = true;
-axios.defaults.withXSRFToken      = true;
+axios.defaults.withCredentials = true;
+axios.defaults.withXSRFToken   = true;
+
+// ─── Section default data (for new sections without dedicated tables) ─────────
+
+const SECTION_DATA_DEFAULTS = {
+    cover:               { button_text: 'Buka Undangan' },
+    konten_utama:        {},
+    couple:              {},
+    quote:               { text: '', source: '' },
+    events:              {},
+    countdown:           {},
+    live_streaming:      { url: '', platform: '' },
+    additional_info:     { text: '' },
+    gallery:             {},
+    video:               { url: '', caption: '' },
+    love_story:          { stories: [] },
+    rsvp:                { deadline: '' },
+    wishes:              {},
+    gift:                { accounts: [] },
+    music:               {},
+    theme_settings:      {},
+    slug_settings:       {},
+    password_protection: {},
+    preview_and_publish: {},
+};
+
+// Build a keyed map from the sections array returned by the server
+function buildSectionMap(sectionsArray) {
+    const map = {};
+    for (const s of sectionsArray ?? []) {
+        map[s.section_key] = reactive({
+            ...s,
+            data_json: reactive({ ...(SECTION_DATA_DEFAULTS[s.section_key] ?? {}), ...(s.data_json ?? {}) }),
+        });
+    }
+    // Fill in any section not yet in DB (e.g. old invitation opened before migration)
+    const allKeys = Object.keys(SECTION_DATA_DEFAULTS);
+    for (const key of allKeys) {
+        if (!map[key]) {
+            map[key] = reactive({
+                section_key: key,
+                is_enabled:  false,
+                is_required: false,
+                completion_status: 'empty',
+                data_json: reactive({ ...(SECTION_DATA_DEFAULTS[key] ?? {}) }),
+            });
+        }
+    }
+    return map;
+}
 
 // ─── Default state factories ──────────────────────────────────────────────────
 
 function defaultDetails() {
     return {
-        groom_name:           '',
-        bride_name:           '',
-        groom_parent_names:   '',
-        bride_parent_names:   '',
-        groom_photo_url:      '',
-        bride_photo_url:      '',
-        opening_text:         '',
-        closing_text:         '',
-        cover_photo_url:      '',
+        groom_name:          '',
+        groom_nickname:      '',
+        bride_name:          '',
+        bride_nickname:      '',
+        groom_parent_names:  '',
+        bride_parent_names:  '',
+        groom_photo_url:     '',
+        bride_photo_url:     '',
+        opening_text:        '',
+        closing_text:        '',
+        cover_photo_url:     '',
     };
 }
 
@@ -88,7 +138,7 @@ export function useInvitationEditor(template, invitation = null) {
             _key:      Date.now() + Math.random() + i,
             _serverId: g.id,
             image_url: g.image_url,
-            caption:   g.caption   ?? '',
+            caption:   g.caption ?? '',
         }))
         : []
     );
@@ -113,6 +163,9 @@ export function useInvitationEditor(template, invitation = null) {
         password:              '',
         expires_at:            invitation?.expires_at            ?? '',
     });
+
+    // ── Sections map (keyed by section_key) ───────────────────────
+    const sections = reactive(buildSectionMap(invitation?.sections ?? []));
 
     // ── Restore step from DB ──────────────────────────────────────
     if (invitation?.id) {
@@ -144,41 +197,11 @@ export function useInvitationEditor(template, invitation = null) {
     }
 
     // ── Pending photo queue (deferred until saveStep1) ────────────
-    // key = field name without _url (e.g. "groom_photo"), value = File
     const pendingPhotoFiles = reactive({});
 
     // ── Upload helpers ────────────────────────────────────────────
 
-    async function uploadFile(file, type = 'photo') {
-        if (!invitationId.value) throw new Error('Simpan informasi dasar terlebih dahulu.');
-
-        const form = new FormData();
-        form.append('image', file);
-        if (type === 'cover') form.append('type', 'cover');
-
-        // Use the details endpoint for single-photo uploads;
-        // gallery uploads use the dedicated gallery endpoint.
-        if (type === 'gallery') {
-            const res = await axios.post(
-                apiUrl(`/invitations/${invitationId.value}/galleries`),
-                form,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
-            );
-            return res.data.data.image_url;
-        }
-
-        // For profile/cover photos, PATCH details with the file
-        const res = await axios.post(
-            apiUrl(`/invitations/${invitationId.value}/details`),
-            form,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-        return res.data.data;
-    }
-
-    // Queue the file locally and show a preview — actual upload happens in saveStep1
     function uploadPhotoField(file, field) {
-        // Revoke previous object URL to avoid memory leak
         if (pendingPhotoFiles[field] && details[`${field}_url`]?.startsWith('blob:')) {
             URL.revokeObjectURL(details[`${field}_url`]);
         }
@@ -201,12 +224,100 @@ export function useInvitationEditor(template, invitation = null) {
         return { url: res.data.data.file_url, name: res.data.data.title };
     }
 
-    // ── Save methods (one per step) ───────────────────────────────
+    // ── Section toggle ────────────────────────────────────────────
+
+    async function toggleSection(sectionKey) {
+        if (!invitationId.value) {
+            // Optimistic local toggle before first save
+            if (sections[sectionKey]) {
+                sections[sectionKey].is_enabled = !sections[sectionKey].is_enabled;
+                sections[sectionKey].completion_status = sections[sectionKey].is_enabled ? 'empty' : 'disabled';
+            }
+            return;
+        }
+        try {
+            const res = await axios.patch(
+                apiUrl(`/invitations/${invitationId.value}/sections/${sectionKey}/toggle`)
+            );
+            if (sections[sectionKey]) {
+                sections[sectionKey].is_enabled        = res.data.is_enabled;
+                sections[sectionKey].completion_status = res.data.completion_status;
+            }
+        } catch {
+            // Best effort — revert on error is optional
+        }
+    }
+
+    // Save section data_json for a given section key
+    async function saveSectionData(sectionKey) {
+        if (!invitationId.value || !sections[sectionKey]) return;
+        await axios.patch(
+            apiUrl(`/invitations/${invitationId.value}/sections/${sectionKey}`),
+            { data: sections[sectionKey].data_json }
+        );
+    }
+
+    // ── Completion helpers ────────────────────────────────────────
+
+    function computeSectionStatus(key) {
+        const s = sections[key];
+        if (!s) return 'empty';
+        if (!s.is_enabled) return 'disabled';
+
+        switch (key) {
+            case 'cover':
+                return details.cover_photo_url ? 'complete' : 'empty';
+            case 'konten_utama':
+                return basic.title ? 'complete' : 'incomplete';
+            case 'couple':
+                return (details.groom_name && details.bride_name) ? 'complete' : 'incomplete';
+            case 'quote':
+                return s.data_json?.text ? 'complete' : 'incomplete';
+            case 'events':
+                return events.value.some(e => e.event_name && e.event_date && e.venue_name) ? 'complete' : 'incomplete';
+            case 'countdown':
+            case 'rsvp':
+            case 'wishes':
+                return 'complete';
+            case 'live_streaming':
+                return s.data_json?.url ? 'complete' : 'incomplete';
+            case 'additional_info':
+                return s.data_json?.text ? 'complete' : 'incomplete';
+            case 'gallery':
+                return galleries.value.length > 0 ? 'complete' : 'empty';
+            case 'video':
+                return s.data_json?.url ? 'complete' : 'incomplete';
+            case 'love_story':
+                return (s.data_json?.stories?.length > 0) ? 'complete' : 'empty';
+            case 'gift':
+                return (s.data_json?.accounts?.length > 0) ? 'complete' : 'incomplete';
+            case 'music':
+                return selectedMusic.value ? 'complete' : 'incomplete';
+            case 'theme_settings':
+                return (customConfig.primary_color && customConfig.font) ? 'complete' : 'incomplete';
+            case 'slug_settings':
+                return publish.slug ? 'complete' : 'incomplete';
+            case 'password_protection':
+                return publish.password?.length >= 4 ? 'complete' : 'incomplete';
+            case 'preview_and_publish':
+                return 'empty';
+            default:
+                return 'empty';
+        }
+    }
+
+    // Sync computed statuses into the sections map (called before saving)
+    function syncSectionStatuses() {
+        for (const key of Object.keys(sections)) {
+            sections[key].completion_status = computeSectionStatus(key);
+        }
+    }
+
+    // ── Save methods ──────────────────────────────────────────────
 
     async function saveStep1() {
         return apiCall(async () => {
             if (!invitationId.value) {
-                // Create
                 const res = await axios.post(apiUrl('/invitations'), {
                     template_id: template.id,
                     title:       basic.title,
@@ -214,14 +325,12 @@ export function useInvitationEditor(template, invitation = null) {
                 });
                 invitationId.value = res.data.data.id;
                 publish.slug       = res.data.data.slug;
-                // Update URL so refresh lands on the edit page with correct data
                 window.history.replaceState(
                     null, '',
                     `/dashboard/invitations/${invitationId.value}/edit`
                 );
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: 1 });
             } else {
-                // Update basic fields
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
                     title:        basic.title,
                     event_type:   basic.event_type,
@@ -229,13 +338,8 @@ export function useInvitationEditor(template, invitation = null) {
                 });
             }
 
-            // Sync text details
-            await axios.post(
-                apiUrl(`/invitations/${invitationId.value}/details`),
-                sanitizedDetailsPayload()
-            );
+            await axios.post(apiUrl(`/invitations/${invitationId.value}/details`), sanitizedDetailsPayload());
 
-            // Upload any pending photo files (queued when user picked a file)
             for (const [field, file] of Object.entries(pendingPhotoFiles)) {
                 const form = new FormData();
                 form.append(field, file);
@@ -252,6 +356,10 @@ export function useInvitationEditor(template, invitation = null) {
                 delete pendingPhotoFiles[field];
             }
 
+            // Save data_json for step 1 sections
+            syncSectionStatuses();
+            await Promise.all(['cover', 'konten_utama', 'couple', 'quote'].map(saveSectionData));
+
             lastSavedStep.value = Math.max(lastSavedStep.value, 1);
         });
     }
@@ -259,10 +367,6 @@ export function useInvitationEditor(template, invitation = null) {
     async function saveStep2() {
         if (!invitationId.value) return;
         return apiCall(async () => {
-            // Sync all events: delete existing then re-create in order
-            // We do this by calling storeEvent for each; a cleaner approach is a
-            // bulk-sync endpoint, but here we use the individual endpoints.
-            // Strategy: track server-side IDs on each event object.
             for (let i = 0; i < events.value.length; i++) {
                 const ev = events.value[i];
                 const payload = {
@@ -290,7 +394,12 @@ export function useInvitationEditor(template, invitation = null) {
                 }
             }
 
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 2) });
+            syncSectionStatuses();
+            await Promise.all(['events', 'countdown', 'live_streaming', 'additional_info'].map(saveSectionData));
+
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
+                current_step: Math.max(lastSavedStep.value, 2),
+            });
             lastSavedStep.value = Math.max(lastSavedStep.value, 2);
         });
     }
@@ -298,8 +407,6 @@ export function useInvitationEditor(template, invitation = null) {
     async function saveStep3() {
         if (!invitationId.value) return;
         return apiCall(async () => {
-            // Gallery items that already have server IDs are already saved;
-            // reorder them if needed.
             const serverIds = galleries.value
                 .filter(g => g._serverId)
                 .map(g => g._serverId);
@@ -311,23 +418,25 @@ export function useInvitationEditor(template, invitation = null) {
                 );
             }
 
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 3) });
+            syncSectionStatuses();
+            await Promise.all(['gallery', 'video', 'love_story'].map(saveSectionData));
+
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
+                current_step: Math.max(lastSavedStep.value, 3),
+            });
             lastSavedStep.value = Math.max(lastSavedStep.value, 3);
         });
     }
 
     async function saveStep4() {
-        if (!invitationId.value || !selectedMusic.value) return;
+        if (!invitationId.value) return;
         return apiCall(async () => {
-            await axios.post(
-                apiUrl(`/invitations/${invitationId.value}/music`),
-                {
-                    type:     'default',
-                    title:    selectedMusic.value.title,
-                    file_url: selectedMusic.value.file_url ?? '',
-                }
-            );
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: Math.max(lastSavedStep.value, 4) });
+            syncSectionStatuses();
+            await Promise.all(['rsvp', 'wishes', 'gift'].map(saveSectionData));
+
+            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
+                current_step: Math.max(lastSavedStep.value, 4),
+            });
             lastSavedStep.value = Math.max(lastSavedStep.value, 4);
         });
     }
@@ -335,10 +444,25 @@ export function useInvitationEditor(template, invitation = null) {
     async function saveStep5() {
         if (!invitationId.value) return;
         return apiCall(async () => {
+            if (selectedMusic.value) {
+                await axios.post(
+                    apiUrl(`/invitations/${invitationId.value}/music`),
+                    {
+                        type:     'default',
+                        title:    selectedMusic.value.title,
+                        file_url: selectedMusic.value.file_url ?? '',
+                    }
+                );
+            }
+
             await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
                 custom_config: { ...customConfig },
                 current_step:  Math.max(lastSavedStep.value, 5),
             });
+
+            syncSectionStatuses();
+            await Promise.all(['music', 'theme_settings'].map(saveSectionData));
+
             lastSavedStep.value = Math.max(lastSavedStep.value, 5);
         });
     }
@@ -362,7 +486,6 @@ export function useInvitationEditor(template, invitation = null) {
                 lastSavedStep.value = Math.max(lastSavedStep.value, 6);
                 return res.data;
             } else {
-                // Draft: just update slug/settings without publishing
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
                     slug: publish.slug,
                 });
@@ -385,9 +508,7 @@ export function useInvitationEditor(template, invitation = null) {
                 await axios.delete(
                     apiUrl(`/invitations/${invitationId.value}/events/${ev._serverId}`)
                 );
-            } catch {
-                // best-effort: remove locally regardless
-            }
+            } catch { /* best-effort */ }
         }
         events.value.splice(index, 1);
     }
@@ -401,16 +522,6 @@ export function useInvitationEditor(template, invitation = null) {
 
     // ── Gallery helpers ───────────────────────────────────────────
 
-    function addGalleryItem(url, caption = '', serverId = null) {
-        galleries.value.push({
-            _key:       Date.now() + Math.random(),
-            _serverId:  serverId,
-            image_url:  url,
-            caption:    caption,
-            sort_order: galleries.value.length,
-        });
-    }
-
     async function removeGallery(index) {
         const item = galleries.value[index];
         if (item._serverId && invitationId.value) {
@@ -418,9 +529,7 @@ export function useInvitationEditor(template, invitation = null) {
                 await axios.delete(
                     apiUrl(`/invitations/${invitationId.value}/galleries/${item._serverId}`)
                 );
-            } catch {
-                // best-effort
-            }
+            } catch { /* best-effort */ }
         }
         galleries.value.splice(index, 1);
     }
@@ -432,7 +541,6 @@ export function useInvitationEditor(template, invitation = null) {
         arr.forEach((g, i) => (g.sort_order = i));
     }
 
-    // Upload a gallery file immediately and add to the list
     async function uploadGalleryFile(file) {
         if (!invitationId.value) throw new Error('Simpan informasi dasar terlebih dahulu.');
 
@@ -457,26 +565,18 @@ export function useInvitationEditor(template, invitation = null) {
         return data.image_url;
     }
 
-    // ── Draft restore (from sessionStorage) ──────────────────────
-
-    function restoreFromDraft(draft) {
-        if (!draft) return;
-        if (draft.basic)       Object.assign(basic, draft.basic);
-        if (draft.details)     Object.assign(details, draft.details);
-        if (draft.events?.length) events.value = draft.events;
-        if (draft.customConfig) Object.assign(customConfig, draft.customConfig);
-    }
-
     // ── Internal helpers ──────────────────────────────────────────
 
     function sanitizedDetailsPayload() {
         return {
-            groom_name:         details.groom_name         || null,
-            bride_name:         details.bride_name         || null,
-            groom_parent_names: details.groom_parent_names || null,
-            bride_parent_names: details.bride_parent_names || null,
-            opening_text:       details.opening_text       || null,
-            closing_text:       details.closing_text       || null,
+            groom_name:          details.groom_name          || null,
+            groom_nickname:      details.groom_nickname      || null,
+            bride_name:          details.bride_name          || null,
+            bride_nickname:      details.bride_nickname      || null,
+            groom_parent_names:  details.groom_parent_names  || null,
+            bride_parent_names:  details.bride_parent_names  || null,
+            opening_text:        details.opening_text        || null,
+            closing_text:        details.closing_text        || null,
         };
     }
 
@@ -496,9 +596,7 @@ export function useInvitationEditor(template, invitation = null) {
         selectedMusic,
         customConfig,
         publish,
-
-        // Draft restore
-        restoreFromDraft,
+        sections,
 
         // Save methods
         saveStep1,
@@ -512,12 +610,13 @@ export function useInvitationEditor(template, invitation = null) {
         addEvent,
         removeEvent,
         moveEvent,
-        addGalleryItem,
         removeGallery,
         moveGallery,
-        uploadFile,
         uploadPhotoField,
         uploadAudio,
         uploadGalleryFile,
+        toggleSection,
+        saveSectionData,
+        syncSectionStatuses,
     };
 }

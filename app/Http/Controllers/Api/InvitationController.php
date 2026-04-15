@@ -19,6 +19,7 @@ use App\Http\Requests\Invitation\UpdateInvitationRequest;
 use App\Models\Invitation;
 use App\Models\InvitationEvent;
 use App\Models\InvitationGallery;
+use App\Models\InvitationSection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -79,8 +80,9 @@ class InvitationController extends Controller
             'status'      => 'draft',
         ]);
 
-        // Bootstrap empty details row
+        // Bootstrap empty details row and sections
         $invitation->details()->create(['invitation_id' => $invitation->id]);
+        InvitationSection::initializeForInvitation($invitation->id);
 
         return response()->json([
             'data' => $this->formatInvitation($invitation),
