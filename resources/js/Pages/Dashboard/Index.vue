@@ -4,10 +4,11 @@ import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
-    stats: Object,
+    stats:           Object,
     recentInvitations: Array,
-    activePlan: Object,
-    budgetWidget: Object,
+    activePlan:      Object,
+    budgetWidget:    Object,
+    checklistWidget: Object,
 });
 
 const statCards = computed(() => [
@@ -62,6 +63,12 @@ const eventTypeLabel = {
 };
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
+
+const priorityDot = {
+    high:   'bg-red-400',
+    medium: 'bg-amber-400',
+    low:    'bg-stone-300',
+};
 </script>
 
 <template>
@@ -163,6 +170,81 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                 </template>
                 <template v-else>
                     <p class="text-sm text-stone-500">Atur budget pertamamu untuk mulai memantau pengeluaran pernikahan.</p>
+                </template>
+            </Link>
+
+            <!-- ── Checklist Widget ───────────────────────────────── -->
+            <Link
+                v-if="checklistWidget"
+                :href="route('dashboard.checklist.index')"
+                class="block bg-white rounded-2xl border border-stone-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+            >
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #F0FDF4">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-stone-700">Checklist Pernikahan</p>
+                    </div>
+                    <span class="text-xs font-medium" style="color: #D4A373">Lihat semua →</span>
+                </div>
+
+                <template v-if="!checklistWidget.initialized">
+                    <p class="text-sm text-stone-500">Checklist belum diinisialisasi. Klik untuk mulai.</p>
+                </template>
+                <template v-else-if="checklistWidget.total === 0">
+                    <p class="text-sm text-stone-500">Belum ada task. Tambahkan task pertamamu.</p>
+                </template>
+                <template v-else>
+                    <!-- Progress bar -->
+                    <div class="flex items-end justify-between mb-2">
+                        <div>
+                            <p class="text-xs text-stone-400">Selesai</p>
+                            <p class="text-xl font-bold text-stone-800">
+                                {{ checklistWidget.done }}
+                                <span class="text-sm font-normal text-stone-400">/ {{ checklistWidget.total }}</span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold" :class="checklistWidget.progress === 100 ? 'text-emerald-500' : 'text-stone-700'">
+                                {{ checklistWidget.progress }}%
+                            </p>
+                        </div>
+                    </div>
+                    <div class="h-2 bg-stone-100 rounded-full overflow-hidden mb-3">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            :style="{
+                                width: checklistWidget.progress + '%',
+                                backgroundColor: checklistWidget.progress === 100 ? '#34D399' : '#D4A373',
+                            }"
+                        />
+                    </div>
+
+                    <!-- Upcoming tasks -->
+                    <div v-if="checklistWidget.upcoming_tasks?.length" class="space-y-1.5">
+                        <p class="text-xs font-medium text-stone-400 mb-2">Segera dikerjakan</p>
+                        <div
+                            v-for="task in checklistWidget.upcoming_tasks"
+                            :key="task.id"
+                            class="flex items-center gap-2 text-xs"
+                        >
+                            <span :class="['w-1.5 h-1.5 rounded-full flex-shrink-0', priorityDot[task.priority]]"/>
+                            <span class="flex-1 text-stone-600 truncate">{{ task.title }}</span>
+                            <span :class="['flex-shrink-0 font-medium', task.is_overdue ? 'text-rose-500' : 'text-stone-400']">
+                                {{ task.due_date_label }}
+                            </span>
+                        </div>
+                    </div>
+                    <p v-else-if="checklistWidget.todo === 0" class="text-xs text-emerald-600 font-medium">
+                        🎉 Semua task sudah selesai!
+                    </p>
+                    <p v-else class="text-xs text-stone-400">
+                        {{ checklistWidget.todo }} task belum selesai
+                    </p>
                 </template>
             </Link>
 

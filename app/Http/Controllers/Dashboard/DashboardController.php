@@ -8,8 +8,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Actions\BudgetPlanner\BuildBudgetSummaryAction;
 use App\Actions\BudgetPlanner\InitializeWeddingBudgetAction;
+use App\Enums\ChecklistTaskStatus;
 use App\Enums\InvitationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\WeddingPlan;
+use App\Services\ChecklistService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +22,7 @@ class DashboardController extends Controller
     public function __construct(
         private readonly InitializeWeddingBudgetAction $initBudget,
         private readonly BuildBudgetSummaryAction $buildSummary,
+        private readonly ChecklistService $checklistService,
     ) {}
 
     public function index(Request $request): Response
@@ -67,6 +71,27 @@ class DashboardController extends Controller
         $budget        = $this->initBudget->execute($request->user());
         $budgetSummary = $this->buildSummary->execute($budget);
 
+        // Checklist widget
+        $plan            = WeddingPlan::firstOrCreate(['user_id' => $request->user()->id]);
+        $checklistSummary = $this->checklistService->getSummary($plan);
+
+        // 3 nearest due tasks (todo only, with due_date)
+        $upcomingTasks = $plan->checklistTasks()
+            ->where('status', ChecklistTaskStatus::Todo)
+            ->whereNotNull('due_date')
+            ->orderBy('due_date')
+            ->limit(3)
+            ->get()
+            ->map(fn ($t) => [
+                'id'       => $t->id,
+                'title'    => $t->title,
+                'category' => $t->category->value,
+                'priority' => $t->priority->value,
+                'due_date' => $t->due_date?->format('Y-m-d'),
+                'due_date_label' => $t->due_date?->translatedFormat('d M Y'),
+                'is_overdue' => $t->due_date?->isPast(),
+            ]);
+
         return Inertia::render('Dashboard/Index', [
             'stats'             => $stats,
             'recentInvitations' => $recentInvitations,
@@ -76,6 +101,14 @@ class DashboardController extends Controller
                 'analytics_access' => $activePlan->analytics_access,
                 'remove_watermark' => $activePlan->remove_watermark,
             ] : null,
+            'checklistWidget' => [
+                'total'          => $checklistSummary['total'],
+                'todo'           => $checklistSummary['todo'],
+                'done'           => $checklistSummary['done'],
+                'progress'       => $checklistSummary['progress'],
+                'initialized'    => $plan->isChecklistInitialized(),
+                'upcoming_tasks' => $upcomingTasks,
+            ],
             'budgetWidget' => [
                 'total_budget'                => $budgetSummary['total_budget'],
                 'total_actual'                => $budgetSummary['total_actual'],
