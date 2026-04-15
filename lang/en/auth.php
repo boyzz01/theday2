@@ -14,6 +14,11 @@ return [
     'login_headline' => "Capture your\nspecial moments\nwith TheDay.",
     'login_sub'      => 'Create elegant, unforgettable digital wedding invitations in minutes.',
 
+    // Auth errors
+    'failed'   => 'The email or password you entered is incorrect. Please try again.',
+    'password' => 'The password you entered is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+
     // Login — Right panel
     'login_heading'    => 'Sign in to your account',
     'no_account'       => "Don't have an account?",

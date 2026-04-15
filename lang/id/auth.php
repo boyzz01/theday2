@@ -14,6 +14,11 @@ return [
     'login_headline' => "Abadikan\nmomen spesialmu\nbersama TheDay.",
     'login_sub'      => 'Buat undangan digital pernikahan yang elegan dan tak terlupakan dalam hitungan menit.',
 
+    // Auth errors
+    'failed'   => 'Email atau password yang kamu masukkan salah. Silakan coba lagi.',
+    'password' => 'Password yang kamu masukkan salah.',
+    'throttle' => 'Terlalu banyak percobaan login. Coba lagi dalam :seconds detik.',
+
     // Login — Right panel
     'login_heading'    => 'Masuk ke akun kamu',
     'no_account'       => 'Belum punya akun?',
