@@ -122,8 +122,8 @@ export function useInvitationEditor(template, invitation = null) {
             _serverId:     e.id,
             event_name:    e.event_name    ?? '',
             event_date:    e.event_date    ?? '',
-            start_time:    e.start_time    ?? '',
-            end_time:      e.end_time      ?? '',
+            start_time:    e.start_time ? e.start_time.substring(0, 5) : '',
+            end_time:      e.end_time   ? e.end_time.substring(0, 5)   : '',
             venue_name:    e.venue_name    ?? '',
             venue_address: e.venue_address ?? '',
             maps_url:      e.maps_url      ?? '',
@@ -209,6 +209,20 @@ export function useInvitationEditor(template, invitation = null) {
         details[`${field}_url`] = URL.createObjectURL(file);
     }
 
+    async function deletePhotoField(field) {
+        const urlField = `${field}_url`;
+        // Revoke blob if it's a pending unsaved upload
+        if (pendingPhotoFiles[field]) {
+            if (details[urlField]?.startsWith('blob:')) URL.revokeObjectURL(details[urlField]);
+            delete pendingPhotoFiles[field];
+        }
+        details[urlField] = null;
+        // If already saved to server, delete from DB too
+        if (invitationId.value) {
+            await axios.delete(apiUrl(`/invitations/${invitationId.value}/details/photos/${field}`));
+        }
+    }
+
     async function uploadAudio(file) {
         if (!invitationId.value) throw new Error('Simpan informasi dasar terlebih dahulu.');
 
@@ -253,7 +267,10 @@ export function useInvitationEditor(template, invitation = null) {
         if (!invitationId.value || !sections[sectionKey]) return;
         await axios.patch(
             apiUrl(`/invitations/${invitationId.value}/sections/${sectionKey}`),
-            { data: sections[sectionKey].data_json }
+            {
+                data:   sections[sectionKey].data_json,
+                status: sections[sectionKey].completion_status,
+            }
         );
     }
 
@@ -266,7 +283,7 @@ export function useInvitationEditor(template, invitation = null) {
 
         switch (key) {
             case 'cover':
-                return details.cover_photo_url ? 'complete' : 'empty';
+                return 'complete'; // foto cover opsional, section selalu dianggap lengkap
             case 'konten_utama':
                 return basic.title ? 'complete' : 'incomplete';
             case 'couple':
@@ -613,6 +630,7 @@ export function useInvitationEditor(template, invitation = null) {
         removeGallery,
         moveGallery,
         uploadPhotoField,
+        deletePhotoField,
         uploadAudio,
         uploadGalleryFile,
         toggleSection,

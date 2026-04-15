@@ -6,11 +6,12 @@ import { ref } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 
 const props = defineProps({
-    basic:            { type: Object,   required: true },
-    details:          { type: Object,   required: true },
-    sections:         { type: Object,   required: true }, // sectionMap keyed by section_key
-    uploadPhotoField: { type: Function, required: true },
-    onToggleSection:  { type: Function, required: true },
+    basic:             { type: Object,   required: true },
+    details:           { type: Object,   required: true },
+    sections:          { type: Object,   required: true }, // sectionMap keyed by section_key
+    uploadPhotoField:  { type: Function, required: true },
+    deletePhotoField:  { type: Function, required: true },
+    onToggleSection:   { type: Function, required: true },
 });
 
 // Which card is expanded (only one at a time)
@@ -58,8 +59,8 @@ function handlePhotoUpload(event, field) {
         >
             <div class="space-y-4">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-stone-700">Foto Cover</label>
-                    <div class="flex items-center gap-4">
+                    <label class="block text-sm font-medium text-stone-700">Foto Cover <span class="text-xs font-normal text-stone-400">(opsional)</span></label>
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div v-if="details.cover_photo_url"
                              class="w-20 h-14 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.cover_photo_url" class="w-full h-full object-cover" alt="Cover"/>
@@ -73,6 +74,19 @@ function handlePhotoUpload(event, field) {
                             <input type="file" accept="image/*" class="sr-only"
                                    @change="handlePhotoUpload($event, 'cover_photo_url')"/>
                         </label>
+                        <button
+                            v-if="details.cover_photo_url"
+                            type="button"
+                            @click="deletePhotoField('cover_photo')"
+                            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-100 text-sm font-medium text-red-400 hover:bg-red-50 hover:border-red-200 transition-all"
+                            title="Hapus foto cover"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus
+                        </button>
                     </div>
                 </div>
                 <div class="space-y-1.5">
@@ -162,7 +176,7 @@ function handlePhotoUpload(event, field) {
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div v-if="details.groom_photo_url"
                              class="w-16 h-16 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.groom_photo_url" class="w-full h-full object-cover" alt="Foto pria"/>
@@ -176,6 +190,19 @@ function handlePhotoUpload(event, field) {
                             <input type="file" accept="image/*" class="sr-only"
                                    @change="handlePhotoUpload($event, 'groom_photo_url')"/>
                         </label>
+                        <button
+                            v-if="details.groom_photo_url"
+                            type="button"
+                            @click="deletePhotoField('groom_photo')"
+                            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-100 text-sm font-medium text-red-400 hover:bg-red-50 hover:border-red-200 transition-all"
+                            title="Hapus foto pria"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus
+                        </button>
                     </div>
                 </div>
 
@@ -199,7 +226,7 @@ function handlePhotoUpload(event, field) {
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div v-if="details.bride_photo_url"
                              class="w-16 h-16 rounded-xl overflow-hidden border border-stone-200 flex-shrink-0">
                             <img :src="details.bride_photo_url" class="w-full h-full object-cover" alt="Foto wanita"/>
@@ -213,6 +240,19 @@ function handlePhotoUpload(event, field) {
                             <input type="file" accept="image/*" class="sr-only"
                                    @change="handlePhotoUpload($event, 'bride_photo_url')"/>
                         </label>
+                        <button
+                            v-if="details.bride_photo_url"
+                            type="button"
+                            @click="deletePhotoField('bride_photo')"
+                            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-100 text-sm font-medium text-red-400 hover:bg-red-50 hover:border-red-200 transition-all"
+                            title="Hapus foto wanita"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus
+                        </button>
                     </div>
                 </div>
             </div>

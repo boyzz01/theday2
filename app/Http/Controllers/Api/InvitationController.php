@@ -111,6 +111,33 @@ class InvitationController extends Controller
         ]);
     }
 
+    // ─── DELETE /api/invitations/{invitation}/details/photos/{field} ─
+
+    public function deleteDetailPhoto(Invitation $invitation, string $photoField): JsonResponse
+    {
+        $this->authorize('update', $invitation);
+
+        $allowed = ['groom_photo', 'bride_photo', 'cover_photo'];
+        if (! in_array($photoField, $allowed, true)) {
+            return response()->json(['message' => 'Field tidak valid.'], 422);
+        }
+
+        $urlField = "{$photoField}_url";
+        $details  = $invitation->details;
+
+        if ($details && $details->{$urlField}) {
+            // Remove file from storage if it's in our local disk
+            $url  = $details->{$urlField};
+            $path = Str::after($url, '/storage/');
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+            $details->update([$urlField => null]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     // ─── POST /api/invitations/{invitation}/details ───────────────
 
     public function storeDetails(StoreDetailRequest $request, Invitation $invitation): JsonResponse

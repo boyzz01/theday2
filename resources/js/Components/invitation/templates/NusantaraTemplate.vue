@@ -37,6 +37,11 @@ const brideName = computed(() => details.value.bride_name ?? '—');
 const groomNick = computed(() => details.value.groom_nickname?.trim() || groomName.value);
 const brideNick = computed(() => details.value.bride_nickname?.trim() || brideName.value);
 
+// ── Cover photo ───────────────────────────────────────────────────────────────
+// Saat ada cover photo → jadi background image, teks pakai warna terang
+const coverPhotoUrl  = computed(() => details.value.cover_photo_url ?? null);
+const coverTextColor = computed(() => coverPhotoUrl.value ? primaryLight.value : primary.value);
+
 // ── Section visibility + data ─────────────────────────────────────────────────
 // invitation.sections is a section_key → { enabled, data } map (null = old invitation)
 // When null/missing → default true (backwards compat: show everything)
@@ -450,18 +455,27 @@ onUnmounted(() => clearInterval(cdTimer));
         <div v-if="gateOpen" class="n-main">
 
             <!-- ── Section 1: Cover ─────────────────────────────────── -->
-            <section class="n-cover" :style="{ background: bgColor }">
-                <BatikKawung :color="primary" :opacity="0.035"/>
+            <section
+                class="n-cover"
+                :class="{ 'n-cover--photo': coverPhotoUrl }"
+                :style="coverPhotoUrl
+                    ? { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center top' }
+                    : { background: bgColor }"
+            >
+                <!-- Dark overlay when photo present for readability -->
+                <div v-if="coverPhotoUrl" class="n-cover-photo-overlay" :style="{ background: darkBg }"/>
+
+                <BatikKawung :color="primaryLight" :opacity="coverPhotoUrl ? 0.06 : 0.035"/>
 
                 <!-- Ambient gradient overlay -->
-                <div class="n-cover-gradient" :style="{ '--n-primary': primary }"/>
+                <div class="n-cover-gradient" :style="{ '--n-primary': primaryLight }"/>
 
                 <!-- JavaneseGate frame with names -->
-                <JavaneseGate :primary-color="primary" :light-color="primaryLight" class="n-gate-frame">
+                <JavaneseGate :primary-color="coverTextColor" :light-color="primaryLight" class="n-gate-frame">
                     <div class="n-cover-names">
                         <p
                             class="n-cover-eyebrow"
-                            :style="{ fontFamily: fontHeading, color: primary }"
+                            :style="{ fontFamily: fontHeading, color: coverTextColor }"
                         >
                             The Wedding of
                         </p>
@@ -470,7 +484,7 @@ onUnmounted(() => clearInterval(cdTimer));
                             :style="{ fontFamily: fontTitle }">
                             {{ groomNick }}
                         </h1>
-                        <p class="n-cover-amp" :style="{ color: primary, fontFamily: fontHeading }">&amp;</p>
+                        <p class="n-cover-amp" :style="{ color: coverTextColor, fontFamily: fontHeading }">&amp;</p>
                         <h1 class="n-cover-name shimmer-gold"
                             :style="{ fontFamily: fontTitle }">
                             {{ brideNick }}
@@ -478,7 +492,7 @@ onUnmounted(() => clearInterval(cdTimer));
 
                         <p v-if="firstEventDate"
                            class="n-cover-date"
-                           :style="{ fontFamily: fontBody, color: primary + 'cc' }">
+                           :style="{ fontFamily: fontBody, color: coverTextColor + 'cc' }">
                             {{ firstEventDate }}
                         </p>
                     </div>
@@ -1568,13 +1582,20 @@ onUnmounted(() => clearInterval(cdTimer));
     padding: 64px 24px 32px;
     position: relative;
 }
+.n-cover-photo-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.52;
+    pointer-events: none;
+    z-index: 0;
+}
 .n-cover-gradient {
     position: absolute;
     inset: 0;
     background:
         radial-gradient(ellipse at 30% 20%, var(--n-primary, #8B6914) 0%, transparent 60%),
         radial-gradient(ellipse at 70% 80%, var(--n-primary, #8B6914) 0%, transparent 60%);
-    opacity: 0.06;
+    opacity: 0.08;
     pointer-events: none;
 }
 .n-gate-frame {

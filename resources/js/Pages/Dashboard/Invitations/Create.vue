@@ -146,6 +146,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :details="editor.details"
                         :sections="editor.sections"
                         :upload-photo-field="editor.uploadPhotoField"
+                        :delete-photo-field="editor.deletePhotoField"
                         :on-toggle-section="editor.toggleSection"
                     />
                     <StepAcara

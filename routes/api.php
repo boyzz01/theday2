@@ -38,7 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put(    '/invitations/{invitation}',   [InvitationController::class, 'update']);
 
     // ── Details ───────────────────────────────────────────────────
-    Route::post('/invitations/{invitation}/details', [InvitationController::class, 'storeDetails']);
+    Route::post(  '/invitations/{invitation}/details',                      [InvitationController::class, 'storeDetails']);
+    Route::delete('/invitations/{invitation}/details/photos/{photoField}',  [InvitationController::class, 'deleteDetailPhoto']);
 
     // ── Events ────────────────────────────────────────────────────
     Route::post(  '/invitations/{invitation}/events',          [InvitationController::class, 'storeEvent']);
