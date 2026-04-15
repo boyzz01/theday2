@@ -39,32 +39,49 @@ const previewInvitation = computed(() => {
     const sectionData = Object.fromEntries(
         localSections.value.map(s => [s.section_type, s.data ?? {}])
     );
-    const envelope = sectionData.envelope ?? {};
-    const cover    = sectionData.cover    ?? {};
-    const couple   = sectionData.couple   ?? {};
-    const closing  = sectionData.closing  ?? {};
+    const cover   = sectionData.cover   ?? {};
+    const couple  = sectionData.couple  ?? {};
+    const closing = sectionData.closing ?? {};
 
     return {
         ...props.invitation,
         template_slug: props.invitation.template?.slug,
-        // Envelope / opening screen overrides
-        envelope: {
-            groom_name:     envelope.groom_name    ?? cover.groom_name    ?? '',
-            bride_name:     envelope.bride_name    ?? cover.bride_name    ?? '',
-            recipient_text: envelope.recipient_text ?? '',
-            button_text:    envelope.button_text   ?? 'Buka Undangan',
-            bg_image_url:   envelope.bg_image_url  ?? cover.cover_image?.url ?? '',
+        // Cover section data (opening gate)
+        cover: {
+            pretitle:               cover.pretitle               ?? 'The Wedding Of',
+            couple_names:           cover.couple_names           ?? '',
+            event_date_text:        cover.event_date_text        ?? '',
+            intro_text:             cover.intro_text             ?? '',
+            button_text:            cover.button_text            ?? 'Buka Undangan',
+            guest_name_mode:        cover.guest_name_mode        ?? 'query_param',
+            guest_name:             cover.guest_name             ?? null,
+            guest_query_key:        cover.guest_query_key        ?? 'to',
+            fallback_guest_text:    cover.fallback_guest_text    ?? 'Tamu Undangan',
+            show_guest_name:        cover.show_guest_name        ?? true,
+            background_image:       cover.background_image       ?? null,
+            background_mobile_image: cover.background_mobile_image ?? null,
+            background_position:    cover.background_position    ?? 'center',
+            background_size:        cover.background_size        ?? 'cover',
+            text_align:             cover.text_align             ?? 'center',
+            content_position:       cover.content_position       ?? 'center',
+            overlay_opacity:        cover.overlay_opacity        ?? 0.35,
+            show_ornament:          cover.show_ornament          ?? true,
+            show_date:              cover.show_date              ?? true,
+            show_pretitle:          cover.show_pretitle          ?? true,
+            music_on_open:          cover.music_on_open          ?? true,
+            show_music_button:      cover.show_music_button      ?? false,
+            open_action:            cover.open_action            ?? 'enter_content',
         },
         details: {
-            groom_name:       cover.groom_name    ?? envelope.groom_name   ?? props.invitation.details?.groom_name ?? '',
-            bride_name:       cover.bride_name    ?? envelope.bride_name   ?? props.invitation.details?.bride_name ?? '',
-            groom_nickname:   couple.groom?.nickname   ?? '',
-            bride_nickname:   couple.bride?.nickname   ?? '',
-            groom_photo_url:  couple.groom?.photo?.url ?? props.invitation.details?.groom_photo_url,
-            bride_photo_url:  couple.bride?.photo?.url ?? props.invitation.details?.bride_photo_url,
-            cover_photo_url:  cover.cover_image?.url   ?? envelope.bg_image_url ?? props.invitation.details?.cover_photo_url,
-            opening_text:     sectionData.opening?.body ?? props.invitation.details?.opening_text ?? '',
-            closing_text:     closing.body ?? props.invitation.details?.closing_text ?? '',
+            groom_name:      props.invitation.details?.groom_name  ?? '',
+            bride_name:      props.invitation.details?.bride_name  ?? '',
+            groom_nickname:  couple.groom?.nickname   ?? '',
+            bride_nickname:  couple.bride?.nickname   ?? '',
+            groom_photo_url: couple.groom?.photo?.url ?? props.invitation.details?.groom_photo_url,
+            bride_photo_url: couple.bride?.photo?.url ?? props.invitation.details?.bride_photo_url,
+            cover_photo_url: cover.background_image?.url          ?? props.invitation.details?.cover_photo_url,
+            opening_text:    sectionData.opening?.body             ?? props.invitation.details?.opening_text ?? '',
+            closing_text:    closing.body                          ?? props.invitation.details?.closing_text ?? '',
         },
         events: (sectionData.events?.items ?? props.invitation.events ?? []).map(e => ({
             title:               e.title,
@@ -282,8 +299,8 @@ watch(activeKey, async (newKey, oldKey) => {
                             <InvitationRenderer
                                 :invitation="previewInvitation"
                                 :messages="[]"
-                                :is-demo="activeKey !== 'envelope'"
-                                :auto-open="activeKey !== 'envelope'"
+                                :is-demo="activeKey !== 'cover'"
+                                :auto-open="activeKey !== 'cover'"
                             />
                         </div>
                     </div>

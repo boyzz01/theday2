@@ -4,7 +4,6 @@ import SectionCover    from '@/Pages/Invitation/Sections/SectionCover.vue';
 import SectionOpening  from '@/Pages/Invitation/Sections/SectionOpening.vue';
 import SectionEvents   from '@/Pages/Invitation/Sections/SectionEvents.vue';
 import SectionGallery  from '@/Pages/Invitation/Sections/SectionGallery.vue';
-import SectionMusic    from '@/Pages/Invitation/Sections/SectionMusic.vue';
 import SectionRsvp     from '@/Pages/Invitation/Sections/SectionRsvp.vue';
 import SectionMessages from '@/Pages/Invitation/Sections/SectionMessages.vue';
 import SectionClosing  from '@/Pages/Invitation/Sections/SectionClosing.vue';
@@ -78,7 +77,7 @@ const localMessages = ref([...props.messages]);
 function onMessageSent(msg) { localMessages.value.unshift(msg); }
 
 // ── Section intersection tracking ─────────────────────────────────────────
-const activeSection = ref('cover');
+const activeSection = ref('opening');
 const sectionRefs   = {};
 
 function setSectionRef(name) {
@@ -124,56 +123,16 @@ onUnmounted(() => observer?.disconnect());
         class="sr-only"
     />
 
-    <!-- ── Envelope / open screen (not shown in demo) ───────────── -->
+    <!-- ── Cover / opening gate ──────────────────────────────────── -->
     <Transition name="envelope">
-        <div
+        <SectionCover
             v-if="!opened"
-            class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-8"
-            :style="{ backgroundColor: primaryColor + '15', fontFamily }"
-        >
-            <div class="absolute top-0 left-0 right-0 h-2" :style="{ backgroundColor: primaryColor }"/>
-
-            <div class="max-w-sm w-full space-y-8">
-                <div>
-                    <p class="text-xs tracking-[0.3em] uppercase mb-3" :style="{ color: primaryColor }">
-                        Undangan Pernikahan
-                    </p>
-
-                    <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
-                        {{ invitation.envelope?.groom_name ?? invitation.details?.groom_name ?? '—' }}
-                    </h1>
-                    <div class="flex items-center justify-center gap-3 my-3">
-                        <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
-                        <span class="text-lg" :style="{ color: primaryColor }">&amp;</span>
-                        <div class="h-px flex-1" :style="{ backgroundColor: primaryColor }"/>
-                    </div>
-                    <h1 class="text-4xl font-semibold text-stone-800 leading-tight" :style="{ fontFamily }">
-                        {{ invitation.envelope?.bride_name ?? invitation.details?.bride_name ?? '—' }}
-                    </h1>
-                </div>
-
-                <div v-if="invitation.events?.length" class="text-sm text-stone-500">
-                    {{ invitation.events[0].event_date_formatted }}
-                </div>
-
-                <button
-                    @click="handleOpenAndPlay"
-                    class="w-full py-4 rounded-2xl text-white text-sm font-semibold tracking-wide transition-all active:scale-95 shadow-lg"
-                    :style="{ backgroundColor: primaryColor }"
-                >
-                    {{ invitation.envelope?.button_text || 'Buka Undangan' }}
-                    <svg class="inline-block w-4 h-4 ml-2 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
-
-                <p class="text-xs text-stone-400">
-                    {{ invitation.envelope?.recipient_text || 'Kepada Yth. Bapak/Ibu/Sdr/i Tamu Undangan' }}
-                </p>
-            </div>
-
-            <div class="absolute bottom-0 left-0 right-0 h-2" :style="{ backgroundColor: primaryColor }"/>
-        </div>
+            :invitation="invitation"
+            :primary-color="primaryColor"
+            :font-family="fontFamily"
+            :opened="opened"
+            @open="handleOpenAndPlay"
+        />
     </Transition>
 
     <!-- ── Main scrolling content ────────────────────────────────── -->
@@ -192,10 +151,6 @@ onUnmounted(() => observer?.disconnect());
                 <path d="M9 19V6l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/>
             </svg>
         </button>
-
-        <div data-section="cover" :ref="setSectionRef('cover')">
-            <SectionCover :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>
-        </div>
 
         <div data-section="opening" :ref="setSectionRef('opening')">
             <SectionOpening :invitation="invitation" :primary-color="primaryColor" :font-family="fontFamily"/>

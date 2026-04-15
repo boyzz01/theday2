@@ -52,10 +52,19 @@ class InvitationSectionSyncService
             }
         }
 
-        // Reload + recalculate completion statuses
+        // Reload + migrate legacy data + recalculate completion statuses
         $invitation->load('sections');
 
         foreach ($invitation->sections as $section) {
+            // Migrate existing cover sections that still use legacy field names
+            if ($section->section_type === 'cover') {
+                $migrated = $this->migrateLegacyCoverData($section->data_json ?? []);
+                if ($migrated !== null) {
+                    $section->data_json = $migrated;
+                    $section->save();
+                }
+            }
+
             $status = $this->calcCompletion($section);
             if ($section->completion_status !== $status) {
                 $section->update(['completion_status' => $status]);
@@ -97,13 +106,97 @@ class InvitationSectionSyncService
 
     private function backfillCover(Invitation $inv): array
     {
-        $d = $inv->details;
+        $d     = $inv->details;
+        $groom = $d?->groom_name ?? '';
+        $bride = $d?->bride_name ?? '';
+
+        // Build couple_names from legacy groom + bride fields
+        $coupleNames = match (true) {
+            ! empty($groom) && ! empty($bride) => "{$groom} & {$bride}",
+            ! empty($groom)                    => $groom,
+            ! empty($bride)                    => $bride,
+            default                            => '',
+        };
+
         return [
-            'headline'      => 'The Wedding Of',
-            'groom_name'    => $d?->groom_name ?? '',
-            'bride_name'    => $d?->bride_name ?? '',
-            'cover_image'   => $d?->cover_photo_url ? ['url' => $d->cover_photo_url] : null,
-            'opening_text'  => $d?->opening_text ?? 'Kepada Yth.\nBapak/Ibu/Saudara/i',
+            'pretitle'               => 'The Wedding Of',
+            'couple_names'           => $coupleNames,
+            'event_date_text'        => '',
+            'intro_text'             => $d?->opening_text ?? 'Kepada Bapak/Ibu/Saudara/i',
+            'button_text'            => 'Buka Undangan',
+            'guest_name_mode'        => 'query_param',
+            'guest_name'             => null,
+            'guest_query_key'        => 'to',
+            'fallback_guest_text'    => 'Tamu Undangan',
+            'show_guest_name'        => true,
+            'background_image'       => $d?->cover_photo_url ? ['asset_id' => null, 'url' => $d->cover_photo_url] : null,
+            'background_mobile_image' => null,
+            'background_position'    => 'center',
+            'background_size'        => 'cover',
+            'text_align'             => 'center',
+            'content_position'       => 'center',
+            'overlay_opacity'        => 0.35,
+            'show_ornament'          => true,
+            'show_date'              => true,
+            'show_pretitle'          => true,
+            'music_on_open'          => true,
+            'show_music_button'      => false,
+            'open_action'            => 'enter_content',
+        ];
+    }
+
+    /**
+     * Detect old cover schema (groom_name/bride_name/headline) and upgrade to spec schema.
+     * Returns migrated array, or null if already on new schema (no migration needed).
+     */
+    private function migrateLegacyCoverData(array $d): ?array
+    {
+        // Already on new schema — has couple_names key (even if empty)
+        if (array_key_exists('couple_names', $d)) {
+            return null;
+        }
+
+        // Old schema detected — transform
+        $groom = trim($d['groom_name'] ?? '');
+        $bride = trim($d['bride_name'] ?? '');
+
+        $coupleNames = match (true) {
+            $groom !== '' && $bride !== '' => "{$groom} & {$bride}",
+            $groom !== ''                  => $groom,
+            $bride !== ''                  => $bride,
+            default                        => '',
+        };
+
+        // Migrate cover_image: could be { url } or null
+        $bgImage = null;
+        if (! empty($d['cover_image']['url'])) {
+            $bgImage = ['asset_id' => null, 'url' => $d['cover_image']['url']];
+        }
+
+        return [
+            'pretitle'               => $d['headline']     ?? 'The Wedding Of',
+            'couple_names'           => $coupleNames,
+            'event_date_text'        => '',
+            'intro_text'             => $d['opening_text'] ?? 'Kepada Bapak/Ibu/Saudara/i',
+            'button_text'            => 'Buka Undangan',
+            'guest_name_mode'        => 'query_param',
+            'guest_name'             => null,
+            'guest_query_key'        => 'to',
+            'fallback_guest_text'    => 'Tamu Undangan',
+            'show_guest_name'        => true,
+            'background_image'       => $bgImage,
+            'background_mobile_image' => null,
+            'background_position'    => 'center',
+            'background_size'        => 'cover',
+            'text_align'             => 'center',
+            'content_position'       => 'center',
+            'overlay_opacity'        => 0.35,
+            'show_ornament'          => true,
+            'show_date'              => true,
+            'show_pretitle'          => true,
+            'music_on_open'          => true,
+            'show_music_button'      => false,
+            'open_action'            => 'enter_content',
         ];
     }
 
@@ -206,9 +299,20 @@ class InvitationSectionSyncService
 
     private function completeCover(array $d): string
     {
-        if (empty($d['groom_name']) && empty($d['bride_name'])) return 'incomplete';
-        if (empty($d['groom_name']) || empty($d['bride_name']))  return 'incomplete';
-        return 'complete';
+        // Support both new spec fields and legacy groom_name/bride_name
+        $coupleNames = $d['couple_names']
+            ?? (trim(($d['groom_name'] ?? '') . ' ' . ($d['bride_name'] ?? '')) ?: null);
+        $buttonText  = $d['button_text'] ?? null;
+
+        if (empty($coupleNames) && empty($buttonText)) return 'empty';
+        if (empty($coupleNames) || empty($buttonText))  return 'incomplete';
+
+        // Warn if visible optional fields are toggled on but empty
+        $hasWarning = ($d['show_date']     ?? true)     && empty($d['event_date_text'])
+                   || ($d['show_pretitle'] ?? true)     && empty($d['pretitle'])
+                   || ($d['show_guest_name'] ?? true)   && ($d['guest_name_mode'] ?? 'query_param') === 'manual' && empty($d['guest_name']);
+
+        return $hasWarning ? 'warning' : 'complete';
     }
 
     private function completeCouple(array $d): string
