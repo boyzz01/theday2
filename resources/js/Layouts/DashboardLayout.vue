@@ -21,6 +21,7 @@ const navItems = [
     {
         label: 'Undangan Saya',
         route: 'dashboard.invitations.index',
+        activePattern: 'dashboard.invitations.*',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
     },
@@ -65,7 +66,11 @@ const navItems = [
 
 const checklistTodo = computed(() => page.props.checklist_todo ?? 0);
 
-const isActive = (item) => !item.noActive && route().current(item.route);
+const isActive = (item) => {
+    if (item.noActive) return false;
+    if (item.activePattern && route().current(item.activePattern)) return true;
+    return route().current(item.route);
+};
 
 const logout = async () => {
     await axios.post(route('logout'));
