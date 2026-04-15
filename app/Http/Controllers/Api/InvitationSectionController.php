@@ -80,8 +80,9 @@ class InvitationSectionController extends Controller
         $this->authorizeOwner($invitation);
 
         $data = $request->validate([
-            'data'   => 'present|array',
-            'status' => 'sometimes|string|in:empty,incomplete,complete,warning,disabled,error',
+            'data'       => 'present|array',
+            'status'     => 'sometimes|string|in:empty,incomplete,complete,warning,disabled,error',
+            'is_enabled' => 'sometimes|boolean',
         ]);
 
         if ($invitation->sections()->where('section_key', $sectionKey)->doesntExist()) {
@@ -95,6 +96,10 @@ class InvitationSectionController extends Controller
         $updates = ['data_json' => $data['data']];
         if (isset($data['status'])) {
             $updates['completion_status'] = $data['status'];
+        }
+        // Required sections stay enabled regardless of the payload
+        if (isset($data['is_enabled']) && ! $section->is_required) {
+            $updates['is_enabled'] = $data['is_enabled'];
         }
 
         $section->update($updates);

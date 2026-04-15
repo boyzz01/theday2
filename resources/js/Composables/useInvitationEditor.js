@@ -268,8 +268,9 @@ export function useInvitationEditor(template, invitation = null) {
         await axios.patch(
             apiUrl(`/invitations/${invitationId.value}/sections/${sectionKey}`),
             {
-                data:   sections[sectionKey].data_json,
-                status: sections[sectionKey].completion_status,
+                data:       sections[sectionKey].data_json,
+                status:     sections[sectionKey].completion_status,
+                is_enabled: sections[sectionKey].is_enabled,
             }
         );
     }
