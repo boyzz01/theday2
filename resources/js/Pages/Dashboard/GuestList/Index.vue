@@ -27,28 +27,31 @@ const page        = ref(1);
 let   searchTimer = null;
 
 // ── Modals ─────────────────────────────────────────────────────────────────
-const showGuestForm   = ref(false);
-const editingGuest    = ref(null);
-const showTemplateModal = ref(false);
-const showSendModal   = ref(false);
-const showImportModal = ref(false);
-const showDeleteConfirm = ref(null); // guest to delete
+const showGuestForm       = ref(false);
+const editingGuest        = ref(null);
+const showTemplateModal   = ref(false);
+const showSendModal       = ref(false);
+const showImportModal     = ref(false);
+const showDeleteConfirm   = ref(null);
+const showBulkDeleteConfirm = ref(false);
+const showBulkCategoryModal = ref(false);
+const showFilterSheet     = ref(false); // mobile filter bottom sheet
 
 // ── Guest form ─────────────────────────────────────────────────────────────
 const emptyGuestForm = () => ({
     name: '', phone_number: '', category: '', greeting: '', note: '', invitation_id: '',
 });
-const guestForm  = ref(emptyGuestForm());
+const guestForm   = ref(emptyGuestForm());
 const guestErrors = ref({});
 const savingGuest = ref(false);
 
 // ── Template editor ────────────────────────────────────────────────────────
-const templateForm    = reactive({ name: 'Template Default', content: '' });
-const templateErrors  = ref({});
-const savingTemplate  = ref(false);
-const templatePreview = ref('');
+const templateForm     = reactive({ name: 'Template Default', content: '' });
+const templateErrors   = ref({});
+const savingTemplate   = ref(false);
+const templatePreview  = ref('');
 const templateWarnings = ref([]);
-const previewLoading  = ref(false);
+const previewLoading   = ref(false);
 
 // ── Send WA modal ──────────────────────────────────────────────────────────
 const sendTarget      = ref(null);
@@ -67,11 +70,14 @@ const importPreview   = ref([]);
 const importPreviewing = ref(false);
 const importCommitting = ref(false);
 const importResult    = ref(null);
-const importStep      = ref('input'); // 'input' | 'preview' | 'done'
+const importStep      = ref('input');
 
 // ── Bulk selection ─────────────────────────────────────────────────────────
-const selected       = ref([]);
+const selected            = ref([]);
 const bulkMarkSentLoading = ref(false);
+const bulkDeleteLoading   = ref(false);
+const bulkCategoryLoading = ref(false);
+const bulkCategoryValue   = ref('');
 
 const allSelected = computed(() =>
     guests.value.length > 0 && selected.value.length === guests.value.length
@@ -83,8 +89,37 @@ const hasActiveFilter = computed(() =>
     filters.category || filters.invitation_id
 );
 
+const activeFilterCount = computed(() => {
+    let n = 0;
+    if (filters.send_status)   n++;
+    if (filters.rsvp_status)   n++;
+    if (filters.category)      n++;
+    if (filters.invitation_id) n++;
+    return n;
+});
+
+const activeFilterChips = computed(() => {
+    const chips = [];
+    if (filters.send_status) {
+        const labels = { not_sent: 'Belum Kirim', sent: 'Sudah Kirim', opened: 'Sudah Dibuka' };
+        chips.push({ key: 'send_status', label: `Status: ${labels[filters.send_status] ?? filters.send_status}` });
+    }
+    if (filters.rsvp_status) {
+        const labels = { pending: 'Belum Respon', attending: 'Hadir', not_attending: 'Tidak Hadir', maybe: 'Mungkin' };
+        chips.push({ key: 'rsvp_status', label: `RSVP: ${labels[filters.rsvp_status] ?? filters.rsvp_status}` });
+    }
+    if (filters.category) {
+        chips.push({ key: 'category', label: `Kategori: ${filters.category}` });
+    }
+    if (filters.invitation_id) {
+        const inv = props.invitations.find(i => i.id == filters.invitation_id);
+        chips.push({ key: 'invitation_id', label: `Undangan: ${inv?.title ?? filters.invitation_id}` });
+    }
+    return chips;
+});
+
 const suggestedCategories = computed(() => {
-    const defaults = ['Keluarga', 'Teman', 'Kantor', 'Tetangga', 'Vendor', 'Lainnya'];
+    const defaults = ['Keluarga', 'Teman', 'Kantor', 'Tetangga', 'VIP', 'Lainnya'];
     const custom   = categories.value.filter(c => !defaults.includes(c));
     return [...defaults, ...custom];
 });
@@ -118,16 +153,16 @@ async function loadGuests() {
     loadingGuests.value = true;
     try {
         const params = { page: page.value, per_page: 20, sort: sort.value };
-        if (search.value)           params.search       = search.value;
-        if (filters.send_status)    params.send_status  = filters.send_status;
-        if (filters.rsvp_status)    params.rsvp_status  = filters.rsvp_status;
-        if (filters.category)       params.category     = filters.category;
+        if (search.value)           params.search        = search.value;
+        if (filters.send_status)    params.send_status   = filters.send_status;
+        if (filters.rsvp_status)    params.rsvp_status   = filters.rsvp_status;
+        if (filters.category)       params.category      = filters.category;
         if (filters.invitation_id)  params.invitation_id = filters.invitation_id;
 
         const { data } = await axios.get(route('dashboard.guest-list.guests'), { params });
-        guests.value   = data.data;
+        guests.value     = data.data;
         guestsMeta.value = data.meta;
-        selected.value = [];
+        selected.value   = [];
     } finally {
         loadingGuests.value = false;
     }
@@ -149,6 +184,40 @@ async function changePage(p) {
     page.value = p;
     await loadGuests();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Stat card quick filters ────────────────────────────────────────────────
+function applyStatFilter(type, value) {
+    if (type === 'reset') {
+        filters.send_status  = '';
+        filters.rsvp_status  = '';
+        page.value = 1;
+        return;
+    }
+    // toggle: clicking same active card resets it
+    if (type === 'send_status') {
+        filters.send_status = filters.send_status === value ? '' : value;
+        filters.rsvp_status = '';
+    } else if (type === 'rsvp_status') {
+        filters.rsvp_status = filters.rsvp_status === value ? '' : value;
+        filters.send_status = '';
+    }
+    page.value = 1;
+}
+
+function isStatActive(type, value) {
+    if (type === 'send_status') return filters.send_status === value;
+    if (type === 'rsvp_status') return filters.rsvp_status === value;
+    return !filters.send_status && !filters.rsvp_status;
+}
+
+function removeFilterChip(key) {
+    filters[key] = '';
+}
+
+function resetAllFilters() {
+    search.value = '';
+    Object.assign(filters, { send_status: '', rsvp_status: '', category: '', invitation_id: '' });
 }
 
 // ── Guest CRUD ─────────────────────────────────────────────────────────────
@@ -252,6 +321,7 @@ async function saveTemplate() {
             content: templateForm.content,
         });
         showTemplateModal.value = false;
+        showToast('Template berhasil disimpan.');
     } catch (e) {
         if (e.response?.status === 422) {
             templateErrors.value = e.response.data.errors ?? {};
@@ -274,11 +344,11 @@ function insertPlaceholder(ph) {
 
 // ── Send WA ────────────────────────────────────────────────────────────────
 async function openSendModal(guest) {
-    sendTarget.value    = guest;
-    generatedMsg.value  = '';
+    sendTarget.value     = guest;
+    generatedMsg.value   = '';
     generatedWaUrl.value = '';
-    showSendModal.value = true;
-    generating.value    = true;
+    showSendModal.value  = true;
+    generating.value     = true;
 
     try {
         const { data } = await axios.post(
@@ -335,13 +405,13 @@ async function copyMessage() {
 
 // ── Import ─────────────────────────────────────────────────────────────────
 function openImport() {
-    importStep.value   = 'input';
-    importMode.value   = 'paste';
-    importText.value   = '';
-    importFile.value   = null;
-    importInvId.value  = props.invitations[0]?.id ?? '';
+    importStep.value    = 'input';
+    importMode.value    = 'paste';
+    importText.value    = '';
+    importFile.value    = null;
+    importInvId.value   = props.invitations[0]?.id ?? '';
     importPreview.value = [];
-    importResult.value = null;
+    importResult.value  = null;
     showImportModal.value = true;
 }
 
@@ -398,7 +468,7 @@ async function commitImport() {
     }
 }
 
-// ── Bulk actions ───────────────────────────────────────────────────────────
+// ── Bulk selection ─────────────────────────────────────────────────────────
 function toggleSelectAll() {
     selected.value = allSelected.value ? [] : guests.value.map(g => g.id);
 }
@@ -409,21 +479,62 @@ function toggleSelect(id) {
     else selected.value.push(id);
 }
 
+// ── Bulk actions ───────────────────────────────────────────────────────────
 async function bulkMarkSent() {
     if (selected.value.length === 0 || bulkMarkSentLoading.value) return;
+    const ids = [...selected.value];
     bulkMarkSentLoading.value = true;
     try {
         await Promise.all(
-            selected.value.map(id =>
-                axios.post(route('dashboard.guest-list.message.mark-sent', id))
-            )
+            ids.map(id => axios.post(route('dashboard.guest-list.message.mark-sent', id)))
         );
         await Promise.all([loadGuests(), loadSummary()]);
-        selected.value = [];
-        showToast(`${selected.value.length} tamu ditandai sudah dikirim`);
+        showToast(`${ids.length} tamu ditandai sudah dikirim`);
     } finally {
         bulkMarkSentLoading.value = false;
     }
+}
+
+async function bulkDelete() {
+    if (selected.value.length === 0 || bulkDeleteLoading.value) return;
+    const ids = [...selected.value];
+    bulkDeleteLoading.value = true;
+    try {
+        await axios.post(route('dashboard.guest-list.bulk.destroy'), { ids });
+        showBulkDeleteConfirm.value = false;
+        await Promise.all([loadGuests(), loadSummary()]);
+        showToast(`${ids.length} tamu berhasil dihapus`);
+    } finally {
+        bulkDeleteLoading.value = false;
+    }
+}
+
+function openBulkCategoryModal() {
+    bulkCategoryValue.value = '';
+    showBulkCategoryModal.value = true;
+}
+
+async function bulkUpdateCategory() {
+    if (!bulkCategoryValue.value || bulkCategoryLoading.value) return;
+    const ids = [...selected.value];
+    bulkCategoryLoading.value = true;
+    try {
+        await axios.post(route('dashboard.guest-list.bulk.category'), {
+            ids,
+            category: bulkCategoryValue.value,
+        });
+        showBulkCategoryModal.value = false;
+        await Promise.all([loadGuests(), loadCategories()]);
+        showToast(`Kategori ${ids.length} tamu diperbarui`);
+    } finally {
+        bulkCategoryLoading.value = false;
+    }
+}
+
+function bulkExport() {
+    const ids = selected.value.join(',');
+    const url = route('dashboard.guest-list.export') + (ids ? `?ids=${ids}` : '');
+    window.open(url, '_blank');
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -439,18 +550,36 @@ function showToast(msg) {
 // ── Helpers ────────────────────────────────────────────────────────────────
 function sendStatusBadge(status) {
     return {
-        not_sent: { label: 'Belum Kirim',  cls: 'bg-stone-100 text-stone-500' },
-        sent:     { label: 'Sudah Kirim',  cls: 'bg-blue-50 text-blue-600' },
-        opened:   { label: 'Sudah Dibuka', cls: 'bg-green-50 text-green-600' },
+        not_sent: { label: 'Belum Kirim',  cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
+        sent:     { label: 'Sudah Kirim',  cls: 'bg-blue-50 text-blue-600 ring-1 ring-blue-100' },
+        opened:   { label: 'Sudah Dibuka', cls: 'bg-green-50 text-green-700 ring-1 ring-green-100' },
     }[status] ?? { label: status, cls: 'bg-stone-100 text-stone-400' };
 }
 
 function rsvpBadge(status) {
     return {
-        pending:       { label: 'Belum Respon', cls: 'bg-amber-50 text-amber-600' },
-        attending:     { label: 'Hadir',        cls: 'bg-green-50 text-green-700' },
-        not_attending: { label: 'Tidak Hadir',  cls: 'bg-red-50 text-red-600' },
+        pending:       { label: 'Belum Respon', cls: 'bg-amber-50 text-amber-600 ring-1 ring-amber-100' },
+        attending:     { label: 'Hadir',        cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+        not_attending: { label: 'Tidak Hadir',  cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+        maybe:         { label: 'Mungkin',      cls: 'bg-violet-50 text-violet-600 ring-1 ring-violet-100' },
     }[status] ?? { label: status, cls: 'bg-stone-100 text-stone-400' };
+}
+
+function relativeTime(iso) {
+    if (!iso) return 'Belum pernah';
+    const now  = new Date();
+    const date = new Date(iso);
+    const ms   = now - date;
+    const min  = Math.floor(ms / 60000);
+    const hr   = Math.floor(min / 60);
+    const days = Math.floor(hr / 24);
+
+    if (min < 1)   return 'Baru saja';
+    if (min < 60)  return `${min} mnt lalu`;
+    if (hr  < 24)  return `${hr} jam lalu`;
+    if (days === 1) return 'Kemarin';
+    if (days < 7)  return `${days} hari lalu`;
+    return formatDate(iso);
 }
 
 function formatDate(iso) {
@@ -469,6 +598,14 @@ function formatPhone(phone) {
         return local.slice(0, 4) + '-' + local.slice(4, 8) + '-' + local.slice(8);
     }
     return local;
+}
+
+function hasValidPhone(guest) {
+    return !!(guest.normalized_phone || guest.phone_number);
+}
+
+function sendLabel(guest) {
+    return (guest.send_status === 'sent' || guest.send_status === 'opened') ? 'Kirim Ulang' : 'Kirim WA';
 }
 </script>
 
@@ -492,132 +629,206 @@ function formatPhone(phone) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <div class="flex-1">
-                    <p>Buat template WhatsApp agar pengiriman undangan lebih cepat.</p>
-                </div>
+                <p class="flex-1">Buat template WhatsApp agar pengiriman undangan lebih cepat.</p>
                 <button @click="openTemplateEditor"
-                        class="text-xs font-semibold text-amber-800 underline whitespace-nowrap">
-                    Atur Template
+                        class="text-xs font-semibold text-amber-800 underline whitespace-nowrap">Atur Template</button>
+            </div>
+
+            <!-- ── Summary Cards (clickable quick filters) ───────── -->
+            <div class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
+                <!-- Total -->
+                <button @click="applyStatFilter('reset','')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('total','') ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Total Tamu</p>
+                    <p class="text-xl sm:text-2xl font-bold text-stone-800">{{ summary.total }}</p>
+                </button>
+                <!-- Belum Kirim -->
+                <button @click="applyStatFilter('send_status','not_sent')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('send_status','not_sent') ? 'bg-stone-100 border-stone-400 ring-2 ring-stone-200' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Belum Kirim</p>
+                    <p class="text-xl sm:text-2xl font-bold text-stone-500">{{ summary.not_sent }}</p>
+                </button>
+                <!-- Sudah Kirim -->
+                <button @click="applyStatFilter('send_status','sent')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('send_status','sent') ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Sudah Kirim</p>
+                    <p class="text-xl sm:text-2xl font-bold text-blue-600">{{ summary.sent + summary.opened }}</p>
+                </button>
+                <!-- Sudah Dibuka -->
+                <button @click="applyStatFilter('send_status','opened')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('send_status','opened') ? 'bg-green-50 border-green-300 ring-2 ring-green-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Sudah Dibuka</p>
+                    <p class="text-xl sm:text-2xl font-bold text-green-600">{{ summary.opened }}</p>
+                </button>
+                <!-- Hadir -->
+                <button @click="applyStatFilter('rsvp_status','attending')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('rsvp_status','attending') ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Hadir</p>
+                    <p class="text-xl sm:text-2xl font-bold text-emerald-600">{{ summary.attending }}</p>
+                </button>
+                <!-- Belum Respon -->
+                <button @click="applyStatFilter('rsvp_status','pending')"
+                        class="text-left rounded-xl border p-3 sm:p-4 transition-all"
+                        :class="isStatActive('rsvp_status','pending') ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                    <p class="text-xs text-stone-400 mb-1">Belum Respon</p>
+                    <p class="text-xl sm:text-2xl font-bold text-amber-600">{{ summary.pending_rsvp }}</p>
                 </button>
             </div>
 
-            <!-- ── Summary Cards ─────────────────────────────────── -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Total Tamu</p>
-                    <p class="text-2xl font-bold text-stone-800">{{ summary.total }}</p>
-                </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Belum Kirim</p>
-                    <p class="text-2xl font-bold text-stone-500">{{ summary.not_sent }}</p>
-                </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Sudah Kirim</p>
-                    <p class="text-2xl font-bold text-blue-600">{{ summary.sent + summary.opened }}</p>
-                </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Sudah Dibuka</p>
-                    <p class="text-2xl font-bold text-green-600">{{ summary.opened }}</p>
-                </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Hadir</p>
-                    <p class="text-2xl font-bold text-emerald-600">{{ summary.attending }}</p>
-                </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Belum Respon</p>
-                    <p class="text-2xl font-bold text-amber-600">{{ summary.pending_rsvp }}</p>
-                </div>
-            </div>
-
             <!-- ── Toolbar ───────────────────────────────────────── -->
-            <div class="flex flex-wrap items-center gap-2 mb-4">
-                <!-- Search -->
-                <div class="relative flex-1 min-w-48">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input v-model="search" type="text" placeholder="Cari nama atau nomor…"
-                           class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+            <div class="flex flex-col md:flex-row md:items-center gap-2 mb-3">
+
+                <!-- Baris 1: Search + filter (mobile) / Search + semua filter (desktop) -->
+                <div class="flex items-center gap-2">
+                    <!-- Search -->
+                    <div class="relative flex-1 min-w-0">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input v-model="search" type="text" placeholder="Cari nama atau nomor…"
+                               class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                    </div>
+
+                    <!-- Mobile: tombol Filter -->
+                    <button @click="showFilterSheet = true"
+                            class="md:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm transition-colors whitespace-nowrap"
+                            :class="activeFilterCount > 0 ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                        </svg>
+                        Filter
+                        <span v-if="activeFilterCount > 0"
+                              class="w-4 h-4 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center font-bold">
+                            {{ activeFilterCount }}
+                        </span>
+                    </button>
+
+                    <!-- Desktop: dropdown filters inline -->
+                    <div class="hidden md:flex items-center gap-2">
+                        <select v-model="filters.send_status"
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            <option value="">Semua status</option>
+                            <option value="not_sent">Belum Kirim</option>
+                            <option value="sent">Sudah Kirim</option>
+                            <option value="opened">Sudah Dibuka</option>
+                        </select>
+
+                        <select v-model="filters.rsvp_status"
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            <option value="">Semua RSVP</option>
+                            <option value="pending">Belum Respon</option>
+                            <option value="attending">Hadir</option>
+                            <option value="not_attending">Tidak Hadir</option>
+                            <option value="maybe">Mungkin</option>
+                        </select>
+
+                        <select v-if="categories.length > 0" v-model="filters.category"
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            <option value="">Semua kategori</option>
+                            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                        </select>
+
+                        <select v-model="sort"
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            <option value="newest">Terbaru</option>
+                            <option value="name_asc">Nama A–Z</option>
+                            <option value="not_sent">Belum Kirim Dulu</option>
+                            <option value="not_rsvp">Belum RSVP Dulu</option>
+                        </select>
+
+                        <button v-if="hasActiveFilter" @click="resetAllFilters"
+                                class="text-xs text-stone-500 underline px-2 whitespace-nowrap">Reset</button>
+                    </div>
                 </div>
 
-                <!-- Filter: send status -->
-                <select v-model="filters.send_status"
-                        class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
-                    <option value="">Semua status</option>
-                    <option value="not_sent">Belum Kirim</option>
-                    <option value="sent">Sudah Kirim</option>
-                    <option value="opened">Sudah Dibuka</option>
-                </select>
-
-                <!-- Filter: RSVP -->
-                <select v-model="filters.rsvp_status"
-                        class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
-                    <option value="">Semua RSVP</option>
-                    <option value="pending">Belum Respon</option>
-                    <option value="attending">Hadir</option>
-                    <option value="not_attending">Tidak Hadir</option>
-                </select>
-
-                <!-- Filter: category -->
-                <select v-if="categories.length > 0" v-model="filters.category"
-                        class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
-                    <option value="">Semua kategori</option>
-                    <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-                </select>
-
-                <!-- Sort -->
-                <select v-model="sort"
-                        class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
-                    <option value="newest">Terbaru</option>
-                    <option value="name_asc">Nama A–Z</option>
-                    <option value="not_sent">Belum Kirim Dulu</option>
-                    <option value="not_rsvp">Belum RSVP Dulu</option>
-                </select>
-
-                <!-- Reset filter -->
-                <button v-if="hasActiveFilter" @click="search=''; Object.assign(filters,{send_status:'',rsvp_status:'',category:'',invitation_id:''})"
-                        class="text-xs text-stone-500 underline px-2">Reset</button>
-
-                <!-- Actions -->
-                <div class="ml-auto flex items-center gap-2">
+                <!-- Baris 2 (mobile): tombol aksi full-width / Desktop: lanjut inline -->
+                <div class="flex items-center gap-2 md:ml-auto">
                     <button @click="openTemplateEditor"
-                            class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors whitespace-nowrap">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M4 6h16M4 10h16M4 14h8"/>
                         </svg>
                         Template WA
                     </button>
                     <button @click="openImport"
-                            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
-                        Import
+                        <span class="hidden lg:inline">Import</span>
                     </button>
                     <button @click="openCreate"
-                            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+                            class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
                             style="background-color:#D4A373">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Tambah Tamu
+                        <span class="hidden lg:inline">Tambah Tamu</span>
                     </button>
                 </div>
+
+            </div>
+
+            <!-- ── Active filter chips ────────────────────────────── -->
+            <div v-if="activeFilterChips.length > 0" class="flex flex-wrap gap-1.5 mb-3">
+                <div v-for="chip in activeFilterChips" :key="chip.key"
+                     class="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-50 border border-amber-100 text-xs text-amber-700">
+                    {{ chip.label }}
+                    <button @click="removeFilterChip(chip.key)"
+                            class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-amber-100 transition-colors">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <button @click="resetAllFilters" class="text-xs text-stone-400 hover:text-stone-600 px-1 underline">
+                    Reset semua
+                </button>
             </div>
 
             <!-- ── Bulk action bar ────────────────────────────────── -->
             <Transition name="slide-down">
                 <div v-if="selected.length > 0"
-                     class="mb-3 flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
-                    <p class="text-sm text-amber-800 font-medium">{{ selected.length }} tamu dipilih</p>
-                    <button @click="bulkMarkSent" :disabled="bulkMarkSentLoading"
-                            class="text-xs px-3 py-1.5 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 disabled:opacity-50 transition-colors">
-                        Tandai Sudah Kirim
+                     class="mb-3 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                    <p class="text-sm text-amber-800 font-medium mr-1">{{ selected.length }} tamu dipilih</p>
+
+                    <!-- Kirim WA -->
+                    <button @click="openSendModal(guests.find(g => g.id === selected[0]))"
+                            class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[#25D366] text-white font-medium hover:opacity-90 transition-opacity">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Kirim WA
                     </button>
+
+                    <!-- Ubah Kategori -->
+                    <button @click="openBulkCategoryModal"
+                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-700 font-medium hover:bg-amber-50 transition-colors">
+                        Ubah Kategori
+                    </button>
+
+                    <!-- Export -->
+                    <button @click="bulkExport"
+                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-700 font-medium hover:bg-amber-50 transition-colors">
+                        Export
+                    </button>
+
+                    <!-- Hapus -->
+                    <button @click="showBulkDeleteConfirm = true"
+                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-red-200 text-red-500 font-medium hover:bg-red-50 transition-colors">
+                        Hapus
+                    </button>
+
                     <button @click="selected = []"
                             class="ml-auto text-xs text-amber-600 hover:underline">Batal</button>
                 </div>
@@ -638,13 +849,19 @@ function formatPhone(phone) {
                 </div>
                 <div class="text-center">
                     <p class="text-stone-700 font-medium">
-                        {{ hasActiveFilter ? 'Tidak ada tamu yang cocok dengan filter ini' : 'Tambahkan tamu pertamamu' }}
+                        {{ hasActiveFilter ? 'Tidak ada tamu yang cocok' : 'Tambahkan tamu pertamamu' }}
                     </p>
                     <p class="text-stone-400 text-sm mt-1">
-                        {{ hasActiveFilter ? 'Coba ubah atau reset filter di atas.' : 'Kelola daftar tamu dan kirim undangan lebih rapi lewat WhatsApp.' }}
+                        {{ hasActiveFilter ? 'Coba ubah atau reset filter di atas.' : 'Kelola daftar tamu dan kirim undangan lewat WhatsApp.' }}
                     </p>
                 </div>
-                <div v-if="!hasActiveFilter" class="flex gap-2">
+                <div v-if="hasActiveFilter">
+                    <button @click="resetAllFilters"
+                            class="px-4 py-2 rounded-xl text-sm border border-stone-200 text-stone-600 hover:bg-stone-50">
+                        Reset Filter
+                    </button>
+                </div>
+                <div v-else class="flex gap-2">
                     <button @click="openCreate"
                             class="px-4 py-2 rounded-xl text-sm font-medium text-white"
                             style="background-color:#D4A373">Tambah Tamu</button>
@@ -653,145 +870,161 @@ function formatPhone(phone) {
                 </div>
             </div>
 
-            <!-- ── Desktop table ──────────────────────────────────── -->
-            <div v-else class="hidden md:block bg-white border border-stone-100 rounded-xl overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="border-b border-stone-100 bg-stone-50/50">
-                        <tr>
-                            <th class="w-10 px-4 py-3">
-                                <input type="checkbox" :checked="allSelected" @change="toggleSelectAll"
-                                       class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Tamu</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Kategori</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Status Kirim</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">RSVP</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Terakhir Kirim</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wide">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-50">
-                        <tr v-for="guest in guests" :key="guest.id"
-                            class="hover:bg-stone-50/50 transition-colors">
-                            <!-- Checkbox -->
-                            <td class="px-4 py-3">
-                                <input type="checkbox" :checked="selected.includes(guest.id)"
-                                       @change="toggleSelect(guest.id)"
-                                       class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
-                            </td>
-                            <!-- Name + phone -->
-                            <td class="px-4 py-3">
-                                <p class="font-medium text-stone-800 leading-snug">{{ guest.name }}</p>
-                                <p class="text-xs text-stone-400 mt-0.5">
-                                    {{ guest.normalized_phone ? formatPhone(guest.normalized_phone) : guest.phone_number }}
-                                </p>
-                                <p v-if="guest.invitation" class="text-xs text-stone-300 mt-0.5 truncate max-w-40">{{ guest.invitation.title }}</p>
-                            </td>
-                            <!-- Category -->
-                            <td class="px-4 py-3">
-                                <span v-if="guest.category"
-                                      class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                                    {{ guest.category }}
-                                </span>
-                                <span v-else class="text-stone-300 text-xs">—</span>
-                            </td>
-                            <!-- Send status -->
-                            <td class="px-4 py-3">
-                                <span class="text-xs px-2.5 py-1 rounded-full font-medium"
-                                      :class="sendStatusBadge(guest.send_status).cls">
-                                    {{ sendStatusBadge(guest.send_status).label }}
-                                </span>
-                            </td>
-                            <!-- RSVP -->
-                            <td class="px-4 py-3">
-                                <span class="text-xs px-2.5 py-1 rounded-full font-medium"
-                                      :class="rsvpBadge(guest.rsvp_status).cls">
-                                    {{ rsvpBadge(guest.rsvp_status).label }}
-                                </span>
-                            </td>
-                            <!-- Last sent -->
-                            <td class="px-4 py-3 text-xs text-stone-400">
-                                {{ guest.last_sent_at ? formatDate(guest.last_sent_at) : '—' }}
-                            </td>
-                            <!-- Actions -->
-                            <td class="px-4 py-3">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button @click="openSendModal(guest)"
-                                            title="Kirim WA"
-                                            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
-                                            style="background-color:#25D366">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                        </svg>
-                                        Kirim
-                                    </button>
-                                    <button @click="openEdit(guest)"
-                                            class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors" title="Edit">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button @click="showDeleteConfirm = guest"
-                                            class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <template v-else>
+                <!-- ── Desktop table ──────────────────────────────── -->
+                <div class="hidden md:block bg-white border border-stone-100 rounded-xl overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-stone-100 bg-stone-50/50">
+                            <tr>
+                                <th class="w-10 px-4 py-3">
+                                    <input type="checkbox" :checked="allSelected" @change="toggleSelectAll"
+                                           class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Tamu</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Kategori</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Status Kirim</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">RSVP</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Terakhir Kirim</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wide">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-stone-50">
+                            <tr v-for="guest in guests" :key="guest.id"
+                                class="hover:bg-stone-50/30 transition-colors">
+                                <td class="px-4 py-3.5">
+                                    <input type="checkbox" :checked="selected.includes(guest.id)"
+                                           @change="toggleSelect(guest.id)"
+                                           class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
+                                </td>
+                                <!-- Name + phone -->
+                                <td class="px-4 py-3.5">
+                                    <p class="font-semibold text-stone-800 leading-snug">{{ guest.name }}</p>
+                                    <p class="text-xs text-stone-400 mt-0.5">
+                                        {{ guest.normalized_phone ? formatPhone(guest.normalized_phone) : guest.phone_number }}
+                                    </p>
+                                    <p v-if="guest.invitation" class="text-xs text-stone-300 mt-0.5 truncate max-w-40">{{ guest.invitation.title }}</p>
+                                </td>
+                                <!-- Category -->
+                                <td class="px-4 py-3.5">
+                                    <span v-if="guest.category"
+                                          class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 font-medium">
+                                        {{ guest.category }}
+                                    </span>
+                                    <span v-else class="text-stone-300 text-xs">—</span>
+                                </td>
+                                <!-- Send status -->
+                                <td class="px-4 py-3.5">
+                                    <span class="text-xs px-2.5 py-1 rounded-md font-medium"
+                                          :class="sendStatusBadge(guest.send_status).cls">
+                                        {{ sendStatusBadge(guest.send_status).label }}
+                                    </span>
+                                </td>
+                                <!-- RSVP -->
+                                <td class="px-4 py-3.5">
+                                    <span class="text-xs px-2.5 py-1 rounded-full font-medium"
+                                          :class="rsvpBadge(guest.rsvp_status).cls">
+                                        {{ rsvpBadge(guest.rsvp_status).label }}
+                                    </span>
+                                </td>
+                                <!-- Last sent -->
+                                <td class="px-4 py-3.5">
+                                    <span class="text-xs text-stone-400" :title="formatDate(guest.last_sent_at) ?? ''">
+                                        {{ relativeTime(guest.last_sent_at) }}
+                                    </span>
+                                    <span v-if="guest.sent_count > 1" class="ml-1 text-xs text-stone-300">
+                                        ({{ guest.sent_count }}x)
+                                    </span>
+                                </td>
+                                <!-- Actions -->
+                                <td class="px-4 py-3.5">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button v-if="hasValidPhone(guest)"
+                                                @click="openSendModal(guest)"
+                                                :title="sendLabel(guest)"
+                                                class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
+                                                style="background-color:#25D366">
+                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                            </svg>
+                                            {{ sendLabel(guest) }}
+                                        </button>
+                                        <span v-else
+                                              class="text-xs px-2.5 py-1.5 rounded-lg bg-stone-50 text-stone-300 cursor-not-allowed"
+                                              title="Nomor belum diisi">Kirim WA</span>
+                                        <button @click="openEdit(guest)"
+                                                class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <button @click="showDeleteConfirm = guest"
+                                                class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-            <!-- ── Mobile card list ───────────────────────────────── -->
-            <div v-if="!loadingGuests && guests.length > 0" class="md:hidden space-y-3">
-                <div v-for="guest in guests" :key="guest.id"
-                     class="bg-white border border-stone-100 rounded-xl p-4">
-                    <div class="flex items-start justify-between gap-2 mb-2">
-                        <div class="flex-1 min-w-0">
-                            <p class="font-medium text-stone-800 leading-snug truncate">{{ guest.name }}</p>
-                            <p class="text-xs text-stone-400 mt-0.5">
-                                {{ guest.normalized_phone ? formatPhone(guest.normalized_phone) : guest.phone_number }}
-                            </p>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-xs px-2 py-0.5 rounded-full font-medium"
+                <!-- ── Mobile card list ───────────────────────────── -->
+                <div class="md:hidden space-y-2.5">
+                    <div v-for="guest in guests" :key="guest.id"
+                         class="bg-white border border-stone-100 rounded-xl p-4">
+                        <!-- Row 1: name + send status -->
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <p class="font-semibold text-stone-800 leading-snug flex-1 min-w-0 truncate">{{ guest.name }}</p>
+                            <span class="text-xs px-2 py-0.5 rounded-md font-medium flex-shrink-0"
                                   :class="sendStatusBadge(guest.send_status).cls">
                                 {{ sendStatusBadge(guest.send_status).label }}
                             </span>
                         </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-1 mb-3">
-                        <span v-if="guest.category"
-                              class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">{{ guest.category }}</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-medium"
-                              :class="rsvpBadge(guest.rsvp_status).cls">{{ rsvpBadge(guest.rsvp_status).label }}</span>
-                        <span v-if="guest.last_sent_at" class="text-xs text-stone-400">
-                            Kirim: {{ formatDate(guest.last_sent_at) }}
-                        </span>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center gap-2 pt-2 border-t border-stone-50">
-                        <button @click="openSendModal(guest)"
-                                class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+                        <!-- Row 2: phone -->
+                        <p class="text-xs text-stone-400 mb-2">
+                            {{ guest.normalized_phone ? formatPhone(guest.normalized_phone) : guest.phone_number }}
+                        </p>
+                        <!-- Row 3: category + RSVP chips -->
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 font-medium">
+                                {{ guest.category || 'Lainnya' }}
+                            </span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                                  :class="rsvpBadge(guest.rsvp_status).cls">
+                                {{ rsvpBadge(guest.rsvp_status).label }}
+                            </span>
+                        </div>
+                        <!-- Row 4: Kirim WA (primary CTA) -->
+                        <button v-if="hasValidPhone(guest)"
+                                @click="openSendModal(guest)"
+                                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white mb-2 transition-opacity hover:opacity-90"
                                 style="background-color:#25D366">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
-                            Kirim WA
+                            {{ sendLabel(guest) }}
                         </button>
-                        <button @click="openEdit(guest)"
-                                class="px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm transition-colors">Edit</button>
-                        <button @click="showDeleteConfirm = guest"
-                                class="px-3 py-2 rounded-lg border border-red-100 text-red-500 hover:bg-red-50 text-sm transition-colors">Hapus</button>
+                        <div v-else class="w-full flex items-center justify-center py-2.5 rounded-xl bg-stone-50 text-xs text-stone-300 mb-2 cursor-not-allowed">
+                            Nomor belum diisi
+                        </div>
+                        <!-- Row 5: secondary actions -->
+                        <div class="flex items-center gap-2 pt-2 border-t border-stone-50">
+                            <button @click="openEdit(guest)"
+                                    class="flex-1 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 text-xs font-medium transition-colors">
+                                Edit
+                            </button>
+                            <button @click="showDeleteConfirm = guest"
+                                    class="flex-1 py-1.5 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-500 text-xs font-medium transition-colors">
+                                Hapus
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
 
             <!-- ── Pagination ─────────────────────────────────────── -->
             <div v-if="guestsMeta.last_page > 1"
@@ -815,14 +1048,105 @@ function formatPhone(phone) {
 
         </template><!-- end v-else -->
 
-        <!-- ── FAB mobile ─────────────────────────────────────────── -->
-        <button @click="openCreate"
-                class="fixed bottom-6 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
-                style="background-color:#D4A373">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-        </button>
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!--  MOBILE FILTER BOTTOM SHEET                            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Transition name="fade">
+            <div v-if="showFilterSheet"
+                 class="fixed inset-0 z-50 flex items-end md:hidden bg-black/40"
+                 @click.self="showFilterSheet = false">
+                <div class="bg-white w-full rounded-t-2xl shadow-xl p-5 max-h-[80vh] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold text-stone-800">Filter & Urutan</h2>
+                        <button @click="showFilterSheet = false" class="text-stone-400 hover:text-stone-600">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Status Kirim -->
+                        <div>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Status Kirim</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button v-for="opt in [{v:'',l:'Semua'},{v:'not_sent',l:'Belum Kirim'},{v:'sent',l:'Sudah Kirim'},{v:'opened',l:'Sudah Dibuka'}]"
+                                        :key="opt.v"
+                                        @click="filters.send_status = opt.v"
+                                        class="py-2 px-3 rounded-xl text-sm border transition-colors"
+                                        :class="filters.send_status === opt.v
+                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                    {{ opt.l }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- RSVP -->
+                        <div>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">RSVP</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button v-for="opt in [{v:'',l:'Semua'},{v:'pending',l:'Belum Respon'},{v:'attending',l:'Hadir'},{v:'not_attending',l:'Tidak Hadir'},{v:'maybe',l:'Mungkin'}]"
+                                        :key="opt.v"
+                                        @click="filters.rsvp_status = opt.v"
+                                        class="py-2 px-3 rounded-xl text-sm border transition-colors"
+                                        :class="filters.rsvp_status === opt.v
+                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                    {{ opt.l }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Kategori -->
+                        <div v-if="categories.length > 0">
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Kategori</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button @click="filters.category = ''"
+                                        class="py-1.5 px-3 rounded-xl text-sm border transition-colors"
+                                        :class="filters.category === '' ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                    Semua
+                                </button>
+                                <button v-for="cat in categories" :key="cat"
+                                        @click="filters.category = cat"
+                                        class="py-1.5 px-3 rounded-xl text-sm border transition-colors"
+                                        :class="filters.category === cat ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                    {{ cat }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Urutan -->
+                        <div>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Urutan</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button v-for="opt in [{v:'newest',l:'Terbaru'},{v:'name_asc',l:'Nama A–Z'},{v:'not_sent',l:'Belum Kirim Dulu'},{v:'not_rsvp',l:'Belum RSVP Dulu'}]"
+                                        :key="opt.v"
+                                        @click="sort = opt.v"
+                                        class="py-2 px-3 rounded-xl text-sm border transition-colors"
+                                        :class="sort === opt.v
+                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                    {{ opt.l }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-5 pt-4 border-t border-stone-100">
+                        <button @click="resetAllFilters; showFilterSheet = false"
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">
+                            Reset
+                        </button>
+                        <button @click="showFilterSheet = false"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white"
+                                style="background-color:#D4A373">
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
 
         <!-- ═══════════════════════════════════════════════════════ -->
         <!--  MODAL: Add / Edit Guest                               -->
@@ -837,7 +1161,6 @@ function formatPhone(phone) {
                     </h2>
 
                     <div class="space-y-3">
-                        <!-- Name -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Nama tamu <span class="text-red-400">*</span></label>
                             <input v-model="guestForm.name" type="text" placeholder="Bapak Andi"
@@ -846,7 +1169,6 @@ function formatPhone(phone) {
                             <p v-if="guestErrors.name" class="text-xs text-red-500 mt-1">{{ guestErrors.name[0] }}</p>
                         </div>
 
-                        <!-- Phone -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Nomor WhatsApp <span class="text-red-400">*</span></label>
                             <input v-model="guestForm.phone_number" type="tel" placeholder="08123456789"
@@ -856,7 +1178,6 @@ function formatPhone(phone) {
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <!-- Category -->
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Kategori</label>
                                 <input v-model="guestForm.category" type="text" placeholder="Keluarga"
@@ -866,7 +1187,6 @@ function formatPhone(phone) {
                                     <option v-for="cat in suggestedCategories" :key="cat" :value="cat"/>
                                 </datalist>
                             </div>
-                            <!-- Greeting -->
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Sapaan</label>
                                 <input v-model="guestForm.greeting" type="text" placeholder="Bapak / Ibu / Kak"
@@ -874,7 +1194,6 @@ function formatPhone(phone) {
                             </div>
                         </div>
 
-                        <!-- Invitation -->
                         <div v-if="invitations.length > 0">
                             <label class="text-xs text-stone-500 mb-1 block">Undangan terkait</label>
                             <select v-model="guestForm.invitation_id"
@@ -884,7 +1203,6 @@ function formatPhone(phone) {
                             </select>
                         </div>
 
-                        <!-- Note -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Catatan</label>
                             <textarea v-model="guestForm.note" rows="2" placeholder="Tambahkan catatan…"
@@ -931,6 +1249,61 @@ function formatPhone(phone) {
         </Transition>
 
         <!-- ═══════════════════════════════════════════════════════ -->
+        <!--  MODAL: Bulk Delete Confirm                            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Transition name="fade">
+            <div v-if="showBulkDeleteConfirm"
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                 @click.self="showBulkDeleteConfirm = false">
+                <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
+                    <h2 class="text-base font-semibold text-stone-800 mb-2">Hapus {{ selected.length }} Tamu</h2>
+                    <p class="text-sm text-stone-500 mb-5">
+                        Semua tamu yang dipilih akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                    </p>
+                    <div class="flex gap-3">
+                        <button @click="showBulkDeleteConfirm = false"
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                        <button @click="bulkDelete" :disabled="bulkDeleteLoading"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 transition-colors">
+                            {{ bulkDeleteLoading ? 'Menghapus…' : 'Hapus Semua' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!--  MODAL: Bulk Update Category                           -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Transition name="fade">
+            <div v-if="showBulkCategoryModal"
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                 @click.self="showBulkCategoryModal = false">
+                <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
+                    <h2 class="text-base font-semibold text-stone-800 mb-1">Ubah Kategori</h2>
+                    <p class="text-sm text-stone-500 mb-4">{{ selected.length }} tamu akan diubah kategorinya.</p>
+
+                    <input v-model="bulkCategoryValue" type="text" placeholder="Keluarga"
+                           list="bulk-category-list"
+                           class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200 mb-4"/>
+                    <datalist id="bulk-category-list">
+                        <option v-for="cat in suggestedCategories" :key="cat" :value="cat"/>
+                    </datalist>
+
+                    <div class="flex gap-3">
+                        <button @click="showBulkCategoryModal = false"
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                        <button @click="bulkUpdateCategory" :disabled="!bulkCategoryValue || bulkCategoryLoading"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-opacity hover:opacity-90"
+                                style="background-color:#D4A373">
+                            {{ bulkCategoryLoading ? 'Menyimpan…' : 'Simpan' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
         <!--  MODAL: WhatsApp Template Editor                       -->
         <!-- ═══════════════════════════════════════════════════════ -->
         <Transition name="fade">
@@ -948,7 +1321,6 @@ function formatPhone(phone) {
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-4">
-                        <!-- Left: editor -->
                         <div class="space-y-3">
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Nama template</label>
@@ -962,8 +1334,6 @@ function formatPhone(phone) {
                                           :class="templateErrors.content ? 'border-red-300' : ''"/>
                                 <p v-if="templateErrors.content" class="text-xs text-red-500 mt-1">{{ templateErrors.content[0] }}</p>
                             </div>
-
-                            <!-- Placeholder chips -->
                             <div>
                                 <p class="text-xs text-stone-400 mb-2">Placeholder (klik untuk sisipkan):</p>
                                 <div class="flex flex-wrap gap-1.5">
@@ -977,7 +1347,6 @@ function formatPhone(phone) {
                             </div>
                         </div>
 
-                        <!-- Right: preview -->
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <p class="text-xs text-stone-500">Preview pesan</p>
@@ -986,13 +1355,10 @@ function formatPhone(phone) {
                                     {{ previewLoading ? 'Memuat…' : 'Refresh preview' }}
                                 </button>
                             </div>
-
-                            <!-- Warnings -->
                             <div v-if="templateWarnings.length > 0" class="space-y-1">
                                 <p v-for="w in templateWarnings" :key="w"
                                    class="text-xs text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg">{{ w }}</p>
                             </div>
-
                             <div class="bg-stone-50 rounded-xl p-4 min-h-40 text-sm text-stone-700 whitespace-pre-wrap font-sans border border-stone-100">
                                 <span v-if="!templatePreview" class="text-stone-300 text-xs">Klik "Refresh preview" untuk melihat hasil pesan.</span>
                                 <span v-else>{{ templatePreview }}</span>
@@ -1033,21 +1399,20 @@ function formatPhone(phone) {
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-semibold text-stone-800">Kirim Undangan</h2>
+                            <h2 class="text-base font-semibold text-stone-800">
+                                {{ sendTarget?.send_status === 'sent' || sendTarget?.send_status === 'opened' ? 'Kirim Ulang Undangan' : 'Kirim Undangan' }}
+                            </h2>
                             <p class="text-xs text-stone-400">{{ sendTarget?.name }} · {{ sendTarget?.normalized_phone ? formatPhone(sendTarget.normalized_phone) : sendTarget?.phone_number }}</p>
                         </div>
                     </div>
 
-                    <!-- Loading -->
                     <div v-if="generating" class="flex justify-center py-8">
                         <div class="w-6 h-6 rounded-full border-2 border-amber-300 border-t-amber-600 animate-spin"/>
                     </div>
 
                     <template v-else>
-                        <!-- Message preview -->
                         <div class="bg-stone-50 rounded-xl p-4 text-sm text-stone-700 whitespace-pre-wrap max-h-48 overflow-y-auto mb-4 border border-stone-100">{{ generatedMsg }}</div>
 
-                        <!-- Actions -->
                         <div class="flex gap-2 mb-3">
                             <button @click="copyMessage"
                                     class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-700 hover:bg-stone-50 transition-colors">
@@ -1055,10 +1420,10 @@ function formatPhone(phone) {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
-                                Copy Text
+                                Copy
                             </button>
                             <button @click="openWhatsApp"
-                                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+                                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                                     style="background-color:#25D366">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -1067,7 +1432,6 @@ function formatPhone(phone) {
                             </button>
                         </div>
 
-                        <!-- Mark sent -->
                         <button @click="confirmSent" :disabled="markingSent"
                                 class="w-full py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 disabled:opacity-50 transition-colors">
                             {{ markingSent ? 'Memperbarui…' : 'Tandai sudah dikirim' }}
@@ -1094,9 +1458,7 @@ function formatPhone(phone) {
                         </button>
                     </div>
 
-                    <!-- Step: input -->
                     <template v-if="importStep === 'input'">
-                        <!-- Mode tabs -->
                         <div class="flex rounded-xl border border-stone-200 overflow-hidden mb-4">
                             <button @click="importMode = 'paste'"
                                     :class="importMode === 'paste' ? 'text-white' : 'text-stone-600 hover:bg-stone-50'"
@@ -1108,7 +1470,6 @@ function formatPhone(phone) {
                                     class="flex-1 py-2 text-sm font-medium transition-colors">Upload CSV</button>
                         </div>
 
-                        <!-- Invitation select -->
                         <div v-if="invitations.length > 0" class="mb-4">
                             <label class="text-xs text-stone-500 mb-1 block">Undangan terkait (opsional)</label>
                             <select v-model="importInvId"
@@ -1118,18 +1479,14 @@ function formatPhone(phone) {
                             </select>
                         </div>
 
-                        <!-- Paste mode -->
                         <template v-if="importMode === 'paste'">
-                            <label class="text-xs text-stone-500 mb-1 block">
-                                Paste daftar tamu (satu baris = satu tamu)
-                            </label>
+                            <label class="text-xs text-stone-500 mb-1 block">Paste daftar tamu (satu baris = satu tamu)</label>
                             <p class="text-xs text-stone-300 mb-2">Format: Nama, Nomor WA, Kategori (opsional)</p>
                             <textarea v-model="importText" rows="8"
                                       placeholder="Bapak Andi,08123456789,Keluarga&#10;Ibu Rina,08234567890,Teman"
                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-amber-200"/>
                         </template>
 
-                        <!-- CSV mode -->
                         <template v-else>
                             <label class="text-xs text-stone-500 mb-1 block">Upload file CSV</label>
                             <p class="text-xs text-stone-300 mb-2">Header: name, phone, category, greeting, note</p>
@@ -1149,7 +1506,6 @@ function formatPhone(phone) {
                         </div>
                     </template>
 
-                    <!-- Step: preview -->
                     <template v-else-if="importStep === 'preview'">
                         <div class="mb-3 flex items-center gap-3">
                             <span class="text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-medium">
@@ -1200,7 +1556,6 @@ function formatPhone(phone) {
                         </div>
                     </template>
 
-                    <!-- Step: done -->
                     <template v-else>
                         <div class="text-center py-8">
                             <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
@@ -1222,7 +1577,7 @@ function formatPhone(phone) {
         <!-- ── Toast ──────────────────────────────────────────────── -->
         <Transition name="slide-up">
             <div v-if="toast"
-                 class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg">
+                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg whitespace-nowrap">
                 {{ toast }}
             </div>
         </Transition>

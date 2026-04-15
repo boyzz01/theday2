@@ -11,6 +11,7 @@ enum GuestRsvpStatus: string
     case Pending      = 'pending';
     case Attending    = 'attending';
     case NotAttending = 'not_attending';
+    case Maybe        = 'maybe';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum GuestRsvpStatus: string
             self::Pending      => 'Belum Respon',
             self::Attending    => 'Hadir',
             self::NotAttending => 'Tidak Hadir',
+            self::Maybe        => 'Mungkin',
         };
     }
 }

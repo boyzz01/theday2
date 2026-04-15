@@ -37,7 +37,9 @@
       "Bash(ls -la public/build/assets/*.js)",
       "Bash(date -d @1776253452)",
       "Bash(python3 -c \"import datetime; print\\(datetime.datetime.fromtimestamp\\(1776253452\\)\\)\")",
-      "Bash(node -e \"console.log\\(new Date\\(1776253452000\\).toISOString\\(\\)\\)\")"
+      "Bash(node -e \"console.log\\(new Date\\(1776253452000\\).toISOString\\(\\)\\)\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(npx vue-tsc *)"
     ]
   }
 }

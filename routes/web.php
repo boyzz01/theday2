@@ -144,6 +144,9 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post(  '/guest-list',                              [GuestListController::class, 'store'])->name('guest-list.store');
     Route::patch( '/guest-list/{guest}',                      [GuestListController::class, 'update'])->name('guest-list.update');
     Route::delete('/guest-list/{guest}',                      [GuestListController::class, 'destroy'])->name('guest-list.destroy');
+    Route::post(  '/guest-list/bulk/destroy',                 [GuestListController::class, 'bulkDestroy'])->name('guest-list.bulk.destroy');
+    Route::post(  '/guest-list/bulk/category',                [GuestListController::class, 'bulkUpdateCategory'])->name('guest-list.bulk.category');
+    Route::get(   '/guest-list/export',                       [GuestListController::class, 'export'])->name('guest-list.export');
 
     Route::post('/guest-list/import/preview',                 [GuestImportController::class, 'preview'])->name('guest-list.import.preview');
     Route::post('/guest-list/import',                         [GuestImportController::class, 'store'])->name('guest-list.import.store');

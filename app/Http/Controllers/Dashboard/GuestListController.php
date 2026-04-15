@@ -221,6 +221,93 @@ class GuestListController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    // ─── API: Bulk destroy ────────────────────────────────────────
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer',
+        ]);
+
+        $userId = Auth::id();
+
+        $deleted = GuestList::whereIn('id', $data['ids'])
+            ->where('user_id', $userId)
+            ->delete();
+
+        return response()->json(['deleted' => $deleted]);
+    }
+
+    // ─── API: Bulk update category ────────────────────────────────
+
+    public function bulkUpdateCategory(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids'      => 'required|array|min:1',
+            'ids.*'    => 'integer',
+            'category' => 'required|string|max:50',
+        ]);
+
+        $userId = Auth::id();
+
+        $updated = GuestList::whereIn('id', $data['ids'])
+            ->where('user_id', $userId)
+            ->update(['category' => $data['category']]);
+
+        return response()->json(['updated' => $updated]);
+    }
+
+    // ─── API: Export CSV ──────────────────────────────────────────
+
+    public function export(Request $request)
+    {
+        $userId = Auth::id();
+
+        $query = GuestList::with('invitation:id,title')
+            ->where('user_id', $userId);
+
+        if ($ids = $request->get('ids')) {
+            $query->whereIn('id', explode(',', $ids));
+        }
+        if ($status = $request->get('send_status')) {
+            $query->filterSendStatus($status);
+        }
+        if ($rsvp = $request->get('rsvp_status')) {
+            $query->filterRsvpStatus($rsvp);
+        }
+        if ($category = $request->get('category')) {
+            $query->filterCategory($category);
+        }
+
+        $guests = $query->orderBy('name')->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="guest-list.csv"',
+        ];
+
+        $callback = function () use ($guests) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
+            fputcsv($handle, ['Nama', 'Nomor WA', 'Kategori', 'Status Kirim', 'RSVP', 'Terakhir Kirim', 'Undangan']);
+            foreach ($guests as $g) {
+                fputcsv($handle, [
+                    $g->name,
+                    $g->phone_number,
+                    $g->category ?? '',
+                    $g->send_status->label(),
+                    $g->rsvp_status->label(),
+                    $g->last_sent_at?->format('Y-m-d H:i') ?? '',
+                    $g->invitation?->title ?? '',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────
 
     private function authorizeGuest(GuestList $guest): void
