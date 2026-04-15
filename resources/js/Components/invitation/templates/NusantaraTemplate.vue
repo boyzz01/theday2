@@ -417,7 +417,7 @@ onUnmounted(() => clearInterval(cdTimer));
                         :style="{ borderColor: primaryLight, color: primaryLight, fontFamily: fontHeading }"
                         @click.stop="triggerGate"
                     >
-                        Buka Undangan
+                        {{ sectionData('cover').button_text || 'Buka Undangan' }}
                         <span class="n-open-arrow">↓</span>
                     </button>
 

@@ -31,7 +31,13 @@
       "Bash(php -l /c/laragon/www/theday/app/Models/BlogCategory.php)",
       "Bash(grep -n \"UserRole\\\\|App\\\\\\\\\\\\\\\\Enums\" /c/laragon/www/theday/app/Enums/UserRole.php)",
       "Bash(php -r ' *)",
-      "Bash(rtk tsc *)"
+      "Bash(rtk tsc *)",
+      "Bash(tasklist /FI \"IMAGENAME eq node.exe\")",
+      "Read(//c/laragon/www/theday/**)",
+      "Bash(ls -la public/build/assets/*.js)",
+      "Bash(date -d @1776253452)",
+      "Bash(python3 -c \"import datetime; print\\(datetime.datetime.fromtimestamp\\(1776253452\\)\\)\")",
+      "Bash(node -e \"console.log\\(new Date\\(1776253452000\\).toISOString\\(\\)\\)\")"
     ]
   }
 }
