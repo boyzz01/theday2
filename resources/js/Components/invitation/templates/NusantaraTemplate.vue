@@ -33,6 +33,74 @@ const events    = computed(() => props.invitation.events   ?? []);
 const galleries = computed(() => props.invitation.galleries ?? []);
 const groomName = computed(() => details.value.groom_name ?? '—');
 const brideName = computed(() => details.value.bride_name ?? '—');
+// Nickname: pakai panggilan jika ada, fallback ke nama lengkap
+const groomNick = computed(() => details.value.groom_nickname?.trim() || groomName.value);
+const brideNick = computed(() => details.value.bride_nickname?.trim() || brideName.value);
+
+// ── Section visibility + data ─────────────────────────────────────────────────
+// invitation.sections is a section_key → { enabled, data } map (null = old invitation)
+// When null/missing → default true (backwards compat: show everything)
+const sectionsMap = computed(() => props.invitation.sections ?? null);
+function sectionEnabled(key) {
+    if (!sectionsMap.value) return true;
+    const s = sectionsMap.value[key];
+    if (s === undefined || s === null) return true;
+    if (typeof s === 'boolean') return s; // old format compat
+    return s.enabled ?? true;
+}
+function sectionData(key) {
+    if (!sectionsMap.value) return {};
+    const s = sectionsMap.value[key];
+    if (!s || typeof s === 'boolean') return {};
+    return s.data ?? {};
+}
+
+// ── Video embed URL ────────────────────────────────────────────────────────────
+function videoEmbedUrl(url) {
+    if (!url) return null;
+    let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/\s]+)/);
+    if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0`;
+    m = url.match(/vimeo\.com\/(\d+)/);
+    if (m) return `https://player.vimeo.com/video/${m[1]}`;
+    return null;
+}
+
+// ── Toast notification ────────────────────────────────────────────────────────
+const toastMsg     = ref('');
+const toastVisible = ref(false);
+let toastTimer;
+function showToast(msg) {
+    toastMsg.value   = msg;
+    toastVisible.value = true;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastVisible.value = false; }, 2500);
+}
+
+// ── Copy to clipboard (gift section) ─────────────────────────────────────────
+const copiedAccount = ref(null);
+async function copyToClipboard(text) {
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            // Fallback: execCommand for HTTP / older browsers
+            const el = Object.assign(document.createElement('textarea'), {
+                value: text,
+                style: 'position:fixed;opacity:0;top:0;left:0',
+            });
+            document.body.appendChild(el);
+            el.focus();
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+        copiedAccount.value = text;
+        showToast('Nomor rekening berhasil disalin ✓');
+        setTimeout(() => { copiedAccount.value = null; }, 2500);
+    } catch {
+        showToast('Gagal menyalin — salin manual ya');
+    }
+}
 
 const firstEvent     = computed(() => events.value[0] ?? null);
 const firstEventDate = computed(() => firstEvent.value?.event_date_formatted ?? '');
@@ -223,7 +291,7 @@ onUnmounted(() => clearInterval(cdTimer));
 
         <!-- Background audio -->
         <audio
-            v-if="invitation.music?.file_url"
+            v-if="invitation.music?.file_url && sectionEnabled('music')"
             ref="audioEl"
             :src="invitation.music.file_url"
             loop preload="none"
@@ -326,14 +394,14 @@ onUnmounted(() => clearInterval(cdTimer));
 
                     <h1 class="n-name-display shimmer-gold"
                         :style="{ fontFamily: fontTitle }">
-                        {{ groomName }}
+                        {{ groomNick }}
                     </h1>
                     <p class="n-ampersand" :style="{ color: primaryLight, fontFamily: fontHeading }">
                         &amp;
                     </p>
                     <h1 class="n-name-display shimmer-gold"
                         :style="{ fontFamily: fontTitle }">
-                        {{ brideName }}
+                        {{ brideNick }}
                     </h1>
 
                     <SulurDivider :color="primaryLight"/>
@@ -363,7 +431,7 @@ onUnmounted(() => clearInterval(cdTimer));
         <!-- ══ Floating music button ══════════════════════════════════════ -->
         <Transition name="n-fade">
             <button
-                v-if="gateOpen && invitation.music?.file_url"
+                v-if="gateOpen && invitation.music?.file_url && sectionEnabled('music')"
                 @click="toggleMusic"
                 class="n-music-btn"
                 :class="{ 'is-playing': musicPlaying }"
@@ -400,12 +468,12 @@ onUnmounted(() => clearInterval(cdTimer));
 
                         <h1 class="n-cover-name shimmer-gold"
                             :style="{ fontFamily: fontTitle }">
-                            {{ groomName }}
+                            {{ groomNick }}
                         </h1>
                         <p class="n-cover-amp" :style="{ color: primary, fontFamily: fontHeading }">&amp;</p>
                         <h1 class="n-cover-name shimmer-gold"
                             :style="{ fontFamily: fontTitle }">
-                            {{ brideName }}
+                            {{ brideNick }}
                         </h1>
 
                         <p v-if="firstEventDate"
@@ -550,6 +618,30 @@ onUnmounted(() => clearInterval(cdTimer));
                 </div>
             </section>
 
+            <!-- ── Quote ──────────────────────────────────────────────── -->
+            <section
+                v-if="sectionEnabled('quote') && sectionData('quote').text"
+                class="n-section n-section-light"
+                :style="{ background: bgColor }"
+            >
+                <BatikKawung :color="primary" :opacity="0.025"/>
+                <div class="n-section-inner">
+                    <div :ref="el => vReveal(el)" class="n-reveal n-quote-block">
+                        <div class="n-quote-mark" :style="{ color: primary }">&#10077;</div>
+                        <p class="n-quote-text" :style="{ fontFamily: fontHeading, color: darkBg }">
+                            {{ sectionData('quote').text }}
+                        </p>
+                        <div class="n-quote-line" :style="{ background: primary + '40' }"/>
+                        <p v-if="sectionData('quote').source"
+                           class="n-quote-source"
+                           :style="{ fontFamily: fontBody, color: primary }">
+                            — {{ sectionData('quote').source }}
+                        </p>
+                    </div>
+                    <SulurDivider :color="primary"/>
+                </div>
+            </section>
+
             <!-- ── Section 3: Events (dark) ─────────────────────────── -->
             <section
                 class="n-section n-section-dark"
@@ -656,7 +748,7 @@ onUnmounted(() => clearInterval(cdTimer));
                     <SulurDivider :color="primaryLight"/>
 
                     <!-- Countdown -->
-                    <div v-if="targetDate" :ref="el => vReveal(el)" class="n-reveal n-countdown-block">
+                    <div v-if="targetDate && sectionEnabled('countdown')" :ref="el => vReveal(el)" class="n-reveal n-countdown-block">
                         <p class="n-countdown-label"
                            :style="{ fontFamily: fontHeading, color: primaryLight + 'cc', fontStyle: 'italic' }">
                             Menghitung Hari
@@ -688,12 +780,58 @@ onUnmounted(() => clearInterval(cdTimer));
                             </div>
                         </div>
                     </div>
+
+                    <!-- ── Live Streaming ─────────────────────────────── -->
+                    <template v-if="sectionEnabled('live_streaming') && sectionData('live_streaming').url">
+                        <SulurDivider :color="primaryLight"/>
+                        <div :ref="el => vReveal(el)" class="n-reveal n-livestream-block">
+                            <div class="n-livestream-icon" :style="{ color: primaryLight }">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="n-livestream-heading"
+                                :style="{ fontFamily: fontHeading, color: primaryLight }">
+                                Live Streaming
+                            </h3>
+                            <p v-if="sectionData('live_streaming').platform"
+                               class="n-livestream-platform"
+                               :style="{ fontFamily: fontBody, color: primaryLight + '80' }">
+                                via {{ sectionData('live_streaming').platform }}
+                            </p>
+                            <a
+                                :href="sectionData('live_streaming').url"
+                                target="_blank" rel="noopener noreferrer"
+                                class="n-livestream-btn"
+                                :style="{ borderColor: primaryLight + '60', color: primaryLight, fontFamily: fontHeading }"
+                            >
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Saksikan Live
+                            </a>
+                        </div>
+                    </template>
+
+                    <!-- ── Additional Info ────────────────────────────── -->
+                    <template v-if="sectionEnabled('additional_info') && sectionData('additional_info').text">
+                        <SulurDivider :color="primaryLight"/>
+                        <div :ref="el => vReveal(el)" class="n-reveal n-additional-block">
+                            <p class="n-additional-text"
+                               :style="{ fontFamily: fontBody, color: bgColor + 'cc' }">
+                                {{ sectionData('additional_info').text }}
+                            </p>
+                        </div>
+                    </template>
+
                 </div>
             </section>
 
             <!-- ── Section 4: Gallery ────────────────────────────────── -->
             <section
-                v-if="galleries.length"
+                v-if="galleries.length && sectionEnabled('gallery')"
                 class="n-section n-section-light n-gallery-section"
                 :style="{ background: bgColor }"
             >
@@ -720,8 +858,114 @@ onUnmounted(() => clearInterval(cdTimer));
                 </div>
             </section>
 
+            <!-- ── Love Story ─────────────────────────────────────────── -->
+            <section
+                v-if="sectionEnabled('love_story') && sectionData('love_story').stories?.length"
+                class="n-section n-section-light"
+                :style="{ background: bgColor }"
+            >
+                <BatikKawung :color="primary" :opacity="0.025"/>
+                <div class="n-section-inner">
+                    <div :ref="el => vReveal(el)" class="n-reveal n-section-heading-block">
+                        <SulurDivider :color="primary"/>
+                        <h2 class="n-section-heading"
+                            :style="{ fontFamily: fontHeading, color: darkBg }">
+                            Kisah Cinta Kami
+                        </h2>
+                        <p class="n-section-subheading"
+                           :style="{ fontFamily: fontBody, color: primary + 'aa' }">
+                            Perjalanan menuju hari istimewa
+                        </p>
+                    </div>
+
+                    <div class="n-timeline">
+                        <div
+                            v-for="(story, i) in sectionData('love_story').stories"
+                            :key="i"
+                            :ref="el => vReveal(el)"
+                            class="n-reveal n-timeline-item"
+                            :style="{ transitionDelay: `${i * 120}ms` }"
+                        >
+                            <div class="n-timeline-dot" :style="{ background: primary, boxShadow: `0 0 0 4px ${bgColor}, 0 0 0 5px ${primary}40` }"/>
+                            <div class="n-timeline-body">
+                                <span class="n-timeline-year" :style="{ fontFamily: fontTitle, color: primary }">
+                                    {{ story.year }}
+                                </span>
+                                <h3 class="n-timeline-title" :style="{ fontFamily: fontHeading, color: darkBg }">
+                                    {{ story.title }}
+                                </h3>
+                                <p class="n-timeline-desc" :style="{ fontFamily: fontBody, color: darkBg + 'aa' }">
+                                    {{ story.description }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <SulurDivider :color="primary"/>
+                </div>
+            </section>
+
+            <!-- ── Video ──────────────────────────────────────────────── -->
+            <section
+                v-if="sectionEnabled('video') && sectionData('video').url"
+                class="n-section n-section-light"
+                :style="{ background: bgColor }"
+            >
+                <BatikKawung :color="primary" :opacity="0.025"/>
+                <div class="n-section-inner">
+                    <div :ref="el => vReveal(el)" class="n-reveal n-section-heading-block">
+                        <SulurDivider :color="primary"/>
+                        <h2 class="n-section-heading"
+                            :style="{ fontFamily: fontHeading, color: darkBg }">
+                            Video Kami
+                        </h2>
+                    </div>
+
+                    <!-- YouTube / Vimeo embed -->
+                    <div v-if="videoEmbedUrl(sectionData('video').url)"
+                         :ref="el => vReveal(el)"
+                         class="n-reveal n-video-wrap">
+                        <div class="n-video-frame" :style="{ borderColor: primary + '40' }">
+                            <iframe
+                                :src="videoEmbedUrl(sectionData('video').url)"
+                                class="n-video-iframe"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                            />
+                        </div>
+                    </div>
+                    <!-- Fallback link for other URLs -->
+                    <div v-else :ref="el => vReveal(el)" class="n-reveal n-video-fallback">
+                        <a
+                            :href="sectionData('video').url"
+                            target="_blank" rel="noopener noreferrer"
+                            class="n-video-link"
+                            :style="{ borderColor: primary + '60', color: primary, fontFamily: fontHeading }"
+                        >
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Tonton Video
+                        </a>
+                    </div>
+
+                    <p v-if="sectionData('video').caption"
+                       class="n-video-caption"
+                       :style="{ fontFamily: fontBody, color: darkBg + '70' }">
+                        {{ sectionData('video').caption }}
+                    </p>
+
+                    <SulurDivider :color="primary"/>
+                </div>
+            </section>
+
             <!-- ── Section 5: RSVP (dark) ────────────────────────────── -->
             <section
+                v-if="sectionEnabled('rsvp')"
                 class="n-section n-section-dark"
                 :style="{ background: darkBg }"
             >
@@ -845,8 +1089,75 @@ onUnmounted(() => clearInterval(cdTimer));
                 </div>
             </section>
 
+            <!-- ── Gift / Amplop Digital ──────────────────────────────── -->
+            <section
+                v-if="sectionEnabled('gift') && sectionData('gift').accounts?.length"
+                class="n-section n-section-dark"
+                :style="{ background: darkBg }"
+            >
+                <BatikKawung :color="primaryLight" :opacity="0.04"/>
+                <div class="n-section-inner">
+                    <div :ref="el => vReveal(el)" class="n-reveal n-section-heading-block">
+                        <SulurDivider :color="primaryLight"/>
+                        <h2 class="n-section-heading"
+                            :style="{ fontFamily: fontHeading, color: primaryLight }">
+                            Hadiah &amp; Amplop Digital
+                        </h2>
+                        <p class="n-section-subheading"
+                           :style="{ fontFamily: fontBody, color: primaryLight + '80' }">
+                            Doa tulus lebih berarti dari apapun
+                        </p>
+                    </div>
+
+                    <div class="n-gift-list">
+                        <div
+                            v-for="(account, i) in sectionData('gift').accounts"
+                            :key="i"
+                            :ref="el => vReveal(el)"
+                            class="n-reveal n-gift-card"
+                            :style="{
+                                borderColor: primaryLight + '40',
+                                transitionDelay: `${i * 120}ms`,
+                            }"
+                        >
+                            <div class="n-gift-accent"
+                                 :style="{ background: `linear-gradient(90deg, transparent, ${primaryLight}, transparent)` }"/>
+                            <p class="n-gift-bank"
+                               :style="{ fontFamily: fontTitle, color: primaryLight }">
+                                {{ account.bank }}
+                            </p>
+                            <p class="n-gift-owner"
+                               :style="{ fontFamily: fontBody, color: bgColor + '80' }">
+                                {{ account.name }}
+                            </p>
+                            <div class="n-gift-number-row">
+                                <p class="n-gift-number"
+                                   :style="{ fontFamily: fontHeading, color: bgColor }">
+                                    {{ account.number }}
+                                </p>
+                                <button
+                                    @click="copyToClipboard(account.number)"
+                                    class="n-gift-copy"
+                                    :class="{ 'is-copied': copiedAccount === account.number }"
+                                    :style="{
+                                        borderColor: primaryLight + '50',
+                                        color: copiedAccount === account.number ? primaryLight : primaryLight + '60',
+                                        fontFamily: fontBody,
+                                    }"
+                                >
+                                    {{ copiedAccount === account.number ? '✓ Disalin' : 'Salin' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <SulurDivider :color="primaryLight"/>
+                </div>
+            </section>
+
             <!-- ── Section 6: Messages ───────────────────────────────── -->
             <section
+                v-if="sectionEnabled('wishes')"
                 class="n-section n-section-light"
                 :style="{ background: bgColor }"
             >
@@ -952,7 +1263,7 @@ onUnmounted(() => clearInterval(cdTimer));
                             </p>
                             <h2 class="n-closing-names shimmer-gold"
                                 :style="{ fontFamily: fontTitle }">
-                                {{ groomName }} &amp; {{ brideName }}
+                                {{ groomNick }} &amp; {{ brideNick }}
                             </h2>
                         </div>
 
@@ -976,6 +1287,14 @@ onUnmounted(() => clearInterval(cdTimer));
             </Transition>
 
         </div><!-- /n-main -->
+
+    <!-- ══ Toast ══════════════════════════════════════════════════════════════ -->
+    <Transition name="n-toast">
+        <div v-if="toastVisible" class="n-toast" :style="{ background: darkBg, borderColor: primaryLight, color: primaryLight, fontFamily: fontBody }">
+            {{ toastMsg }}
+        </div>
+    </Transition>
+
     </div><!-- /n-root -->
 </template>
 
@@ -1799,6 +2118,269 @@ onUnmounted(() => clearInterval(cdTimer));
 /* Sections reveal transition */
 .n-sections-enter-active { transition: opacity 0.9s ease; }
 .n-sections-enter-from   { opacity: 0; }
+
+/* ─── Quote section ────────────────────────────────────────────────────────── */
+.n-quote-block {
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+.n-quote-mark {
+    font-size: 64px;
+    line-height: 0.6;
+    opacity: 0.5;
+    font-family: Georgia, serif;
+    margin-bottom: 8px;
+}
+.n-quote-text {
+    font-size: clamp(17px, 4vw, 22px);
+    font-style: italic;
+    line-height: 1.7;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+.n-quote-line {
+    width: 40px;
+    height: 1px;
+}
+.n-quote-source {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    font-style: normal;
+    margin: 0;
+}
+
+/* ─── Live streaming block ──────────────────────────────────────────────────── */
+.n-livestream-block {
+    text-align: center;
+    padding: 24px 0;
+}
+.n-livestream-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+.n-livestream-heading {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px;
+}
+.n-livestream-platform {
+    font-size: 13px;
+    font-style: italic;
+    margin: 0 0 20px;
+}
+.n-livestream-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: 1px solid;
+    border-radius: 2px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.3s;
+}
+.n-livestream-btn:hover { background: rgba(201, 168, 76, 0.12); }
+
+/* ─── Additional info block ─────────────────────────────────────────────────── */
+.n-additional-block {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 8px 0 24px;
+}
+.n-additional-text {
+    font-size: 15px;
+    line-height: 1.9;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+}
+
+/* ─── Love story timeline ───────────────────────────────────────────────────── */
+.n-timeline {
+    position: relative;
+    max-width: 560px;
+    margin: 32px auto;
+    padding-left: 32px;
+}
+.n-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--n-primary), var(--n-primary), transparent);
+    opacity: 0.4;
+}
+.n-timeline-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 0 36px 24px;
+}
+.n-timeline-item:last-child { padding-bottom: 0; }
+.n-timeline-dot {
+    position: absolute;
+    left: -6px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.n-timeline-body { display: flex; flex-direction: column; gap: 4px; }
+.n-timeline-year {
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0;
+}
+.n-timeline-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+.n-timeline-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* ─── Video section ─────────────────────────────────────────────────────────── */
+.n-video-wrap {
+    max-width: 600px;
+    margin: 0 auto 24px;
+}
+.n-video-frame {
+    border: 1px solid;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    padding-top: 56.25%; /* 16:9 */
+}
+.n-video-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.n-video-fallback { text-align: center; padding: 24px 0; }
+.n-video-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border: 1px solid;
+    border-radius: 2px;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.3s;
+}
+.n-video-link:hover { background: rgba(139, 105, 20, 0.08); }
+.n-video-caption {
+    text-align: center;
+    font-size: 13px;
+    font-style: italic;
+    margin: 0 auto 16px;
+    max-width: 480px;
+}
+
+/* ─── Gift / amplop digital ─────────────────────────────────────────────────── */
+.n-gift-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 480px;
+    margin: 32px auto;
+}
+.n-gift-card {
+    border: 1px solid;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    position: relative;
+}
+.n-gift-accent {
+    height: 2px;
+    width: 100%;
+}
+.n-gift-bank {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    padding: 16px 20px 4px;
+    margin: 0;
+}
+.n-gift-owner {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 20px 12px;
+    margin: 0;
+}
+.n-gift-number-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.n-gift-number {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin: 0;
+}
+.n-gift-copy {
+    padding: 6px 14px;
+    border: 1px solid;
+    border-radius: 2px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.n-gift-copy.is-copied {
+    background: rgba(201, 168, 76, 0.15);
+}
+
+/* ─── Toast ────────────────────────────────────────────────────────────────── */
+.n-toast {
+    position: fixed;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 12px 24px;
+    border: 1px solid;
+    border-radius: 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.n-toast-enter-active,
+.n-toast-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.n-toast-enter-from,
+.n-toast-leave-to     { opacity: 0; transform: translateX(-50%) translateY(10px); }
 
 /* ─── Reduced motion ───────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

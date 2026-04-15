@@ -30,7 +30,8 @@
       "Bash(php -l /c/laragon/www/theday/app/Models/Article.php)",
       "Bash(php -l /c/laragon/www/theday/app/Models/BlogCategory.php)",
       "Bash(grep -n \"UserRole\\\\|App\\\\\\\\\\\\\\\\Enums\" /c/laragon/www/theday/app/Enums/UserRole.php)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(rtk tsc *)"
     ]
   }
 }

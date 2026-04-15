@@ -30,6 +30,7 @@ class PublicInvitationController extends Controller
                 'events'    => fn ($q) => $q->orderBy('sort_order')->orderBy('event_date'),
                 'galleries' => fn ($q) => $q->orderBy('sort_order'),
                 'music'     => fn ($q) => $q->where('is_default', true)->limit(1),
+                'sections',
                 'template:id,name,slug,default_config',
             ])
             ->firstOrFail();
@@ -76,7 +77,9 @@ class PublicInvitationController extends Controller
                 'event_type' => $invitation->event_type->value,
                 'details'    => $invitation->details ? [
                     'groom_name'           => $invitation->details->groom_name,
+                    'groom_nickname'       => $invitation->details->groom_nickname,
                     'bride_name'           => $invitation->details->bride_name,
+                    'bride_nickname'       => $invitation->details->bride_nickname,
                     'groom_parent_names'   => $invitation->details->groom_parent_names,
                     'bride_parent_names'   => $invitation->details->bride_parent_names,
                     'groom_photo_url'      => $invitation->details->groom_photo_url,
@@ -112,6 +115,17 @@ class PublicInvitationController extends Controller
                 'config'        => $config,
                 'template_slug' => $invitation->template?->slug,
                 'expires_at'    => $invitation->expires_at?->toIso8601String(),
+                // section_key → { enabled, data } map (null = no sections yet → show all)
+                'sections'      => $invitation->sections->isNotEmpty()
+                    ? $invitation->sections
+                        ->mapWithKeys(fn ($s) => [
+                            $s->section_key => [
+                                'enabled' => $s->is_required ? true : (bool) $s->is_enabled,
+                                'data'    => $s->data_json ?? [],
+                            ],
+                        ])
+                        ->toArray()
+                    : null,
             ],
             'messages'     => $messages,
             'needPassword' => $needPassword,
