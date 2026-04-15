@@ -130,10 +130,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::patch( '/budget-planner/categories/{category}', [BudgetCategoryController::class, 'update'])->name('budget-planner.categories.update');
     Route::delete('/budget-planner/categories/{category}', [BudgetCategoryController::class, 'destroy'])->name('budget-planner.categories.destroy');
 
-    Route::get(   '/budget-planner/items',         [BudgetItemController::class, 'index'])->name('budget-planner.items.index');
-    Route::post(  '/budget-planner/items',         [BudgetItemController::class, 'store'])->name('budget-planner.items.store');
-    Route::patch( '/budget-planner/items/{item}',  [BudgetItemController::class, 'update'])->name('budget-planner.items.update');
-    Route::delete('/budget-planner/items/{item}',  [BudgetItemController::class, 'destroy'])->name('budget-planner.items.destroy');
+    Route::get(   '/budget-planner/items',                  [BudgetItemController::class, 'index'])->name('budget-planner.items.index');
+    Route::post(  '/budget-planner/items',                  [BudgetItemController::class, 'store'])->name('budget-planner.items.store');
+    Route::patch( '/budget-planner/items/{item}',           [BudgetItemController::class, 'update'])->name('budget-planner.items.update');
+    Route::patch( '/budget-planner/items/{item}/payment',   [BudgetItemController::class, 'updatePayment'])->name('budget-planner.items.payment');
+    Route::delete('/budget-planner/items/{item}',           [BudgetItemController::class, 'destroy'])->name('budget-planner.items.destroy');
 
     // ── Guest List ───────────────────────────────────────────────────────
     Route::get(   '/guest-list',                              [GuestListController::class, 'index'])->name('guest-list.index');
@@ -159,14 +160,16 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     // ── Checklist ────────────────────────────────────────────────────────
     Route::get( '/checklist',                          [ChecklistController::class, 'index'])->name('checklist.index');
     Route::post('/checklist/initialize',               [ChecklistController::class, 'initialize'])->name('checklist.initialize');
-    Route::get( '/checklist/tasks',                    [ChecklistController::class, 'tasks'])->name('checklist.tasks');
-    Route::post('/checklist/tasks',                    [ChecklistController::class, 'store'])->name('checklist.tasks.store');
-    Route::patch('/checklist/tasks/{id}',              [ChecklistController::class, 'update'])->name('checklist.tasks.update');
-    Route::patch('/checklist/tasks/{id}/toggle',       [ChecklistController::class, 'toggle'])->name('checklist.tasks.toggle');
-    Route::patch('/checklist/tasks/{id}/archive',      [ChecklistController::class, 'archive'])->name('checklist.tasks.archive');
-    Route::patch('/checklist/tasks/{id}/restore',      [ChecklistController::class, 'restore'])->name('checklist.tasks.restore');
-    Route::get(  '/checklist/summary',                 [ChecklistController::class, 'summary'])->name('checklist.summary');
-    Route::patch('/checklist/event-date',              [ChecklistController::class, 'updateEventDate'])->name('checklist.event-date');
+    Route::get(   '/checklist/tasks',                    [ChecklistController::class, 'tasks'])->name('checklist.tasks');
+    Route::post(  '/checklist/tasks',                    [ChecklistController::class, 'store'])->name('checklist.tasks.store');
+    Route::post(  '/checklist/tasks/bulk',               [ChecklistController::class, 'bulkAction'])->name('checklist.tasks.bulk');
+    Route::patch( '/checklist/tasks/{id}',               [ChecklistController::class, 'update'])->name('checklist.tasks.update');
+    Route::patch( '/checklist/tasks/{id}/toggle',        [ChecklistController::class, 'toggle'])->name('checklist.tasks.toggle');
+    Route::patch( '/checklist/tasks/{id}/archive',       [ChecklistController::class, 'archive'])->name('checklist.tasks.archive');
+    Route::patch( '/checklist/tasks/{id}/restore',       [ChecklistController::class, 'restore'])->name('checklist.tasks.restore');
+    Route::delete('/checklist/tasks/{id}',               [ChecklistController::class, 'destroy'])->name('checklist.tasks.destroy');
+    Route::get(   '/checklist/summary',                  [ChecklistController::class, 'summary'])->name('checklist.summary');
+    Route::patch( '/checklist/event-date',               [ChecklistController::class, 'updateEventDate'])->name('checklist.event-date');
 });
 
 // Keep legacy route alias so Breeze redirects still work

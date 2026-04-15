@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\BudgetPlanner;
 
-use App\Enums\BudgetPaymentStatus;
 use App\Models\WeddingBudget;
 use App\Support\Formatters\RupiahFormatter;
-use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 final class GetBudgetItemsTableAction
 {
@@ -58,38 +57,93 @@ final class GetBudgetItemsTableAction
         };
 
         $items = $query->get();
+        $today = Carbon::today();
 
-        return $items->map(fn ($item) => $this->itemResource($item))->values()->toArray();
+        return $items->map(fn ($item) => $this->itemResource($item, $today))->values()->toArray();
     }
 
-    public function itemResource(mixed $item): array
+    public function itemResource(mixed $item, ?Carbon $today = null): array
     {
+        $today    ??= Carbon::today();
+        $terpakai   = $item->terpakai;
+        $sisa       = $item->planned_amount - $terpakai;
+        $payStatus  = $item->computed_payment_status;
+
+        $dueDateLabel   = null;
+        $dueDateWarning = null;
+        if ($item->due_date) {
+            $diff = $today->diffInDays($item->due_date, false);
+            $dueDateLabel = $item->due_date->translatedFormat('d M Y');
+            if ($diff < 0) {
+                $dueDateWarning = 'overdue';
+            } elseif ($diff <= 7) {
+                $dueDateWarning = 'soon';
+            }
+        }
+
         return [
-            'id'                   => $item->id,
-            'title'                => $item->title,
-            'vendor_name'          => $item->vendor_name,
-            'notes'                => $item->notes,
-            'category'             => $item->category ? [
+            'id'                    => $item->id,
+            'title'                 => $item->title,
+            'vendor_name'           => $item->vendor_name,
+            'notes'                 => $item->notes,
+            'category'              => $item->category ? [
                 'id'   => $item->category->id,
                 'name' => $item->category->name,
             ] : null,
-            'planned_amount'       => $item->planned_amount,
-            'actual_amount'        => $item->actual_amount,
-            'payment_status'       => $item->payment_status->value,
-            'payment_status_label' => $item->payment_status->label(),
-            'payment_status_badge' => $item->payment_status->badgeClass(),
-            'payment_date'         => $item->payment_date?->format('Y-m-d'),
-            'payment_date_label'   => $item->payment_date?->translatedFormat('d M Y'),
-            'is_archived'          => $item->is_archived,
-            'formatted'            => [
-                'planned_amount'    => RupiahFormatter::formatOrZero($item->planned_amount),
-                'actual_amount'     => $item->actual_amount !== null
+            'planned_amount'        => $item->planned_amount,
+            'actual_amount'         => $item->actual_amount,
+            'terpakai'              => $terpakai,
+            'sisa'                  => $sisa,
+            'dp_amount'             => $item->dp_amount,
+            'dp_paid'               => $item->dp_paid,
+            'dp_paid_at'            => $item->dp_paid_at?->toISOString(),
+            'final_amount'          => $item->final_amount,
+            'final_paid'            => $item->final_paid,
+            'final_paid_at'         => $item->final_paid_at?->toISOString(),
+            'due_date'              => $item->due_date?->format('Y-m-d'),
+            'due_date_label'        => $dueDateLabel,
+            'due_date_warning'      => $dueDateWarning,
+            'payment_status'        => $payStatus,
+            'payment_status_label'  => $this->paymentLabel($payStatus),
+            'payment_status_badge'  => $this->paymentBadge($payStatus),
+            'payment_date'          => $item->payment_date?->format('Y-m-d'),
+            'payment_date_label'    => $item->payment_date?->translatedFormat('d M Y'),
+            'is_archived'           => $item->is_archived,
+            'formatted'             => [
+                'planned_amount'        => RupiahFormatter::formatOrZero($item->planned_amount),
+                'terpakai'              => RupiahFormatter::formatOrZero($terpakai),
+                'sisa'                  => RupiahFormatter::formatOrZero(abs($sisa)),
+                'actual_amount'         => $item->actual_amount !== null
                     ? RupiahFormatter::format($item->actual_amount)
                     : null,
                 'actual_amount_display' => $item->actual_amount !== null
                     ? RupiahFormatter::format($item->actual_amount)
                     : 'Belum dicatat',
+                'dp_amount'             => $item->dp_amount !== null
+                    ? RupiahFormatter::formatOrZero($item->dp_amount)
+                    : null,
+                'final_amount'          => $item->final_amount !== null
+                    ? RupiahFormatter::formatOrZero($item->final_amount)
+                    : null,
             ],
         ];
+    }
+
+    private function paymentLabel(string $status): string
+    {
+        return match ($status) {
+            'paid'   => 'Lunas',
+            'dp'     => 'DP Terbayar',
+            default  => 'Belum Bayar',
+        };
+    }
+
+    private function paymentBadge(string $status): string
+    {
+        return match ($status) {
+            'paid'   => 'bg-emerald-100 text-emerald-700',
+            'dp'     => 'bg-amber-100 text-amber-700',
+            default  => 'bg-stone-100 text-stone-600',
+        };
     }
 }

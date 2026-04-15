@@ -62,6 +62,36 @@ class BudgetItemController extends Controller
         ]);
     }
 
+    public function updatePayment(Request $request, WeddingBudgetItem $item): JsonResponse
+    {
+        $this->authorizeItem($request, $item);
+
+        $data = $request->validate([
+            'dp_paid'    => ['sometimes', 'boolean'],
+            'final_paid' => ['sometimes', 'boolean'],
+        ]);
+
+        $update = [];
+
+        if (isset($data['dp_paid'])) {
+            $update['dp_paid']    = $data['dp_paid'];
+            $update['dp_paid_at'] = $data['dp_paid'] ? now() : null;
+        }
+
+        if (isset($data['final_paid'])) {
+            $update['final_paid']    = $data['final_paid'];
+            $update['final_paid_at'] = $data['final_paid'] ? now() : null;
+        }
+
+        $item->update($update);
+        $item->load('category');
+
+        return response()->json([
+            'message' => 'Status pembayaran diperbarui.',
+            'item'    => $this->itemsTable->itemResource($item),
+        ]);
+    }
+
     public function destroy(Request $request, WeddingBudgetItem $item): JsonResponse
     {
         $this->authorizeItem($request, $item);

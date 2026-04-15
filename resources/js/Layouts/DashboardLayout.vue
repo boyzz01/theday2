@@ -63,6 +63,8 @@ const navItems = [
     },
 ];
 
+const checklistTodo = computed(() => page.props.checklist_todo ?? 0);
+
 const isActive = (item) => !item.noActive && route().current(item.route);
 
 const logout = async () => {
@@ -139,7 +141,12 @@ const avatarInitials = computed(() => {
                     >
                         <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-amber-600' : 'text-stone-400'"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
-                        <span v-if="!sidebarCollapsed">{{ item.label }}</span>
+                        <span v-if="!sidebarCollapsed" class="flex-1">{{ item.label }}</span>
+                        <span
+                            v-if="!sidebarCollapsed && item.route === 'dashboard.checklist.index' && checklistTodo > 0"
+                            class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold flex items-center justify-center text-white"
+                            style="background-color: #D4A373"
+                        >{{ checklistTodo }}</span>
                     </Link>
                 </template>
             </nav>

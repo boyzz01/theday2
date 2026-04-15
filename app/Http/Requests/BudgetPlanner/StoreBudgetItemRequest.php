@@ -18,12 +18,17 @@ class StoreBudgetItemRequest extends FormRequest
     {
         return [
             'category_id'    => ['required', 'integer', Rule::exists('wedding_budget_categories', 'id')],
-            'title'          => ['required', 'string', 'max:150'],
-            'vendor_name'    => ['nullable', 'string', 'max:150'],
+            'title'          => ['required', 'string', 'max:200'],
+            'vendor_name'    => ['nullable', 'string', 'max:100'],
             'notes'          => ['nullable', 'string', 'max:1000'],
             'planned_amount' => ['nullable', 'integer', 'min:0'],
             'actual_amount'  => ['nullable', 'integer', 'min:0'],
-            'payment_status' => ['required', Rule::in(['unpaid', 'dp', 'paid'])],
+            'dp_amount'      => ['nullable', 'integer', 'min:0'],
+            'dp_paid'        => ['sometimes', 'boolean'],
+            'final_amount'   => ['nullable', 'integer', 'min:0'],
+            'final_paid'     => ['sometimes', 'boolean'],
+            'due_date'       => ['nullable', 'date'],
+            'payment_status' => ['sometimes', Rule::in(['unpaid', 'dp', 'paid'])],
             'payment_date'   => ['nullable', 'date'],
             'invitation_id'  => ['nullable', 'integer', 'exists:invitations,id'],
         ];

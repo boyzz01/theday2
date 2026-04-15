@@ -18,11 +18,16 @@ class UpdateBudgetItemRequest extends FormRequest
     {
         return [
             'category_id'    => ['sometimes', 'integer', Rule::exists('wedding_budget_categories', 'id')],
-            'title'          => ['sometimes', 'string', 'max:150'],
-            'vendor_name'    => ['nullable', 'string', 'max:150'],
+            'title'          => ['sometimes', 'string', 'max:200'],
+            'vendor_name'    => ['nullable', 'string', 'max:100'],
             'notes'          => ['nullable', 'string', 'max:1000'],
             'planned_amount' => ['nullable', 'integer', 'min:0'],
             'actual_amount'  => ['nullable', 'integer', 'min:0'],
+            'dp_amount'      => ['nullable', 'integer', 'min:0'],
+            'dp_paid'        => ['sometimes', 'boolean'],
+            'final_amount'   => ['nullable', 'integer', 'min:0'],
+            'final_paid'     => ['sometimes', 'boolean'],
+            'due_date'       => ['nullable', 'date'],
             'payment_status' => ['sometimes', Rule::in(['unpaid', 'dp', 'paid'])],
             'payment_date'   => ['nullable', 'date'],
             'is_archived'    => ['sometimes', 'boolean'],

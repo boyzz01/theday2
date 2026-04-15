@@ -71,11 +71,11 @@ class ChecklistController extends Controller
         $plan = $this->resolveOrCreatePlan();
 
         $data = $request->validate([
-            'title'       => 'required|string|min:3|max:120',
-            'category'    => 'required|string|in:administrasi,venue,vendor,busana,undangan,tamu,acara,dokumentasi,lainnya',
+            'title'       => 'required|string|min:3|max:200',
+            'category'    => 'required|string|max:50',
             'priority'    => 'sometimes|string|in:low,medium,high',
-            'due_date'    => 'nullable|date|after_or_equal:today',
-            'description' => 'nullable|string|max:500',
+            'due_date'    => 'nullable|date',
+            'description' => 'nullable|string|max:1000',
         ], [
             'title.required' => 'Nama task wajib diisi.',
             'title.min'      => 'Nama task minimal 3 karakter.',
@@ -94,11 +94,11 @@ class ChecklistController extends Controller
         $task = $this->resolveTask($id);
 
         $data = $request->validate([
-            'title'       => 'sometimes|string|min:3|max:120',
-            'category'    => 'sometimes|string|in:administrasi,venue,vendor,busana,undangan,tamu,acara,dokumentasi,lainnya',
+            'title'       => 'sometimes|string|min:3|max:200',
+            'category'    => 'sometimes|string|max:50',
             'priority'    => 'sometimes|string|in:low,medium,high',
             'due_date'    => 'nullable|date',
-            'description' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         $task = $this->service->updateTask($task, $data);
@@ -134,6 +134,45 @@ class ChecklistController extends Controller
         $task = $this->service->restore($task);
 
         return response()->json($this->taskResource($task));
+    }
+
+    // ─── API: Delete task ─────────────────────────────────────────
+
+    public function destroy(string $id): \Illuminate\Http\Response
+    {
+        $task = $this->resolveTask($id);
+        $task->delete();
+
+        return response()->noContent();
+    }
+
+    // ─── API: Bulk action ─────────────────────────────────────────
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids'    => 'required|array|min:1|max:100',
+            'ids.*'  => 'uuid',
+            'action' => 'required|string|in:done,archive,delete',
+        ]);
+
+        $plan = $this->resolveOrCreatePlan();
+
+        $tasks = ChecklistTask::whereIn('id', $data['ids'])
+            ->where('wedding_plan_id', $plan->id)
+            ->get();
+
+        foreach ($tasks as $task) {
+            if ($data['action'] === 'done' && ! $task->isDone() && ! $task->isArchived()) {
+                $this->service->toggle($task);
+            } elseif ($data['action'] === 'archive' && ! $task->isArchived()) {
+                $this->service->archive($task);
+            } elseif ($data['action'] === 'delete') {
+                $task->delete();
+            }
+        }
+
+        return response()->json(['affected' => $tasks->count()]);
     }
 
     // ─── API: Update event date ───────────────────────────────────

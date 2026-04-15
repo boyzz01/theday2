@@ -11,11 +11,13 @@ enum ChecklistTaskCategory: string
     case Administrasi = 'administrasi';
     case Venue        = 'venue';
     case Vendor       = 'vendor';
-    case Busana       = 'busana';
     case Undangan     = 'undangan';
+    case Keuangan     = 'keuangan';
+    case Busana       = 'busana';
+    case Dekorasi     = 'dekorasi';
+    case Dokumentasi  = 'dokumentasi';
     case Tamu         = 'tamu';
     case Acara        = 'acara';
-    case Dokumentasi  = 'dokumentasi';
     case Lainnya      = 'lainnya';
 
     public function label(): string
@@ -24,11 +26,13 @@ enum ChecklistTaskCategory: string
             self::Administrasi => 'Administrasi',
             self::Venue        => 'Venue',
             self::Vendor       => 'Vendor',
-            self::Busana       => 'Busana',
             self::Undangan     => 'Undangan',
+            self::Keuangan     => 'Keuangan',
+            self::Busana       => 'Busana',
+            self::Dekorasi     => 'Dekorasi',
+            self::Dokumentasi  => 'Dokumentasi',
             self::Tamu         => 'Tamu',
             self::Acara        => 'Acara',
-            self::Dokumentasi  => 'Dokumentasi',
             self::Lainnya      => 'Lainnya',
         };
     }
