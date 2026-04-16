@@ -28,6 +28,7 @@ return [
     'login_submit'     => 'Masuk',
     'login_submitting' => 'Masuk…',
     'or'               => 'atau',
+    'login_with_google'=> 'Masuk dengan Google',
     'back_home'        => '← Kembali ke beranda',
 
     // Login — Decorative card

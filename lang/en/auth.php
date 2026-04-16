@@ -28,6 +28,7 @@ return [
     'login_submit'     => 'Sign In',
     'login_submitting' => 'Signing in…',
     'or'               => 'or',
+    'login_with_google'=> 'Continue with Google',
     'back_home'        => '← Back to home',
 
     // Login — Decorative card

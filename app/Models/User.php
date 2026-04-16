@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'avatar_url',
+        'google_id',
         'role',
         'onboarding_completed_at',
     ];
