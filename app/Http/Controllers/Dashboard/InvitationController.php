@@ -10,6 +10,7 @@ use App\Actions\ChangeTemplateAction;
 use App\Actions\DuplicateInvitationAction;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\Plan;
 use App\Models\InvitationSection;
 use App\Models\Template;
 use Illuminate\Http\JsonResponse;
@@ -112,8 +113,10 @@ class InvitationController extends Controller
         ]);
 
         $user  = Auth::user();
-        $limit = $user->currentPlan()?->max_invitations;
-        if ($limit !== null && $user->invitations()->count() >= $limit) {
+        $limit = $user->currentPlan()?->max_invitations
+            ?? Plan::where('price', 0)->value('max_invitations')
+            ?? 1;
+        if ($user->invitations()->count() >= $limit) {
             return redirect()->route('dashboard.invitations.index')
                 ->with('error', 'Batas undangan paketmu sudah tercapai. Upgrade untuk membuat undangan baru.');
         }

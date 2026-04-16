@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -82,7 +82,9 @@ const navItems = [
     },
 ];
 
-const checklistTodo = computed(() => page.props.checklist_todo ?? 0);
+const checklistTodo        = computed(() => page.props.checklist_todo ?? 0);
+const canCreateInvitation  = computed(() => page.props.can_create_invitation ?? true);
+const showLimitModal       = ref(false);
 
 const isActive = (item) => {
     if (item.noActive) return false;
@@ -104,12 +106,28 @@ const toggleGroup = (label) => {
 };
 
 // auto-expand group yang berisi halaman aktif
+let removeBeforeListener = null;
+
 onMounted(() => {
     navItems.forEach(item => {
         if (item.group && isGroupActive(item)) {
             expandedGroups.value[item.label] = true;
         }
     });
+
+    // Intercept any navigation to the templates page when invitation limit is reached
+    removeBeforeListener = router.on('before', (event) => {
+        if (canCreateInvitation.value) return;
+        const url = event.detail.visit.url.pathname;
+        if (url === '/dashboard/templates') {
+            event.preventDefault();
+            showLimitModal.value = true;
+        }
+    });
+});
+
+onBeforeUnmount(() => {
+    if (removeBeforeListener) removeBeforeListener();
 });
 
 const logout = async () => {
@@ -336,6 +354,48 @@ const avatarInitials = computed(() => {
                 <slot />
             </main>
         </div>
+
+    <!-- ── Invitation Limit Modal ──────────────────────────────── -->
+    <Teleport to="body">
+        <Transition name="fade">
+            <div v-if="showLimitModal"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 @click.self="showLimitModal = false">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                         style="background-color: #FEF3C7">
+                        <svg class="w-7 h-7" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">
+                        Batas Undangan Tercapai
+                    </h3>
+                    <p class="text-sm text-stone-500 text-center mb-6 leading-relaxed">
+                        Paket aktifmu sudah mencapai batas jumlah undangan.
+                        Upgrade paket untuk membuat undangan baru.
+                    </p>
+                    <div class="flex gap-3">
+                        <button
+                            @click="showLimitModal = false"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
+                        >
+                            Tutup
+                        </button>
+                        <Link
+                            :href="route('dashboard')"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white text-center transition-all hover:opacity-90"
+                            style="background-color: #D4A373"
+                            @click="showLimitModal = false"
+                        >
+                            Upgrade Paket
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 
     </div>
 </template>
