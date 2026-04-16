@@ -39,8 +39,8 @@ const navItems = [
             },
             {
                 label: 'Buku Tamu',
-                route: 'dashboard.guest-book.index',
-                comingSoon: true,
+                route: 'dashboard.buku-tamu.index',
+                activePattern: 'dashboard.buku-tamu.*',
             },
         ],
     },
@@ -81,7 +81,10 @@ const checklistTodo = computed(() => page.props.checklist_todo ?? 0);
 
 const isActive = (item) => {
     if (item.noActive) return false;
-    if (item.activePattern && route().current(item.activePattern)) return true;
+    if (item.activePattern) {
+        const patterns = Array.isArray(item.activePattern) ? item.activePattern : [item.activePattern];
+        if (patterns.some(p => route().current(p))) return true;
+    }
     if (item.comingSoon) return false;
     try { return route().current(item.route); } catch { return false; }
 };

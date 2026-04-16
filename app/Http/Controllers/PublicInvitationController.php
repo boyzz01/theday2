@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -56,16 +57,18 @@ class PublicInvitationController extends Controller
             $invitation->custom_config             ?? []
         );
 
-        // ── Load approved messages ────────────────────────────────
+        // ── Load visible messages (pinned first) ──────────────────
         $messages = $invitation->guestMessages()
-            ->approved()
+            ->visible()
+            ->orderByDesc('is_pinned')
             ->latest()
             ->limit(50)
             ->get()
             ->map(fn ($m) => [
                 'id'         => $m->id,
-                'name'       => $m->name,
+                'name'       => $m->displayName(),
                 'message'    => $m->message,
+                'is_pinned'  => $m->is_pinned,
                 'created_at' => $m->created_at->diffForHumans(),
             ]);
 
@@ -208,29 +211,47 @@ class PublicInvitationController extends Controller
             return response()->json(['message' => 'Undangan tidak tersedia.'], 404);
         }
 
+        // ── Rate limiting: max 3 per IP per invitation per hour ───
+        $rateLimitKey = 'msg.' . $invitation->id . '.' . $request->ip();
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
+            return response()->json([
+                'message' => 'Kamu sudah mengirim ucapan. Terima kasih! 🤍',
+            ], 429);
+        }
+        RateLimiter::hit($rateLimitKey, 3600);
+
         $data = $request->validate([
-            'name'    => 'required|string|max:255',
-            'message' => 'required|string|min:2|max:1000',
+            'name'         => 'required|string|min:2|max:100',
+            'message'      => 'required|string|min:5|max:500',
+            'is_anonymous' => 'sometimes|boolean',
         ], [
             'name.required'    => 'Nama wajib diisi.',
+            'name.min'         => 'Nama minimal 2 karakter.',
             'message.required' => 'Ucapan wajib diisi.',
-            'message.min'      => 'Ucapan minimal 2 karakter.',
-            'message.max'      => 'Ucapan maksimal 1000 karakter.',
+            'message.min'      => 'Ucapan minimal 5 karakter.',
+            'message.max'      => 'Ucapan maksimal 500 karakter.',
         ]);
+
+        // Strip HTML — store plain text only
+        $data['name']    = strip_tags($data['name']);
+        $data['message'] = strip_tags($data['message']);
 
         $msg = GuestMessage::create([
             'invitation_id' => $invitation->id,
             'name'          => $data['name'],
             'message'       => $data['message'],
+            'is_anonymous'  => $data['is_anonymous'] ?? false,
             'is_approved'   => true,
+            'ip_address'    => $request->ip(),
         ]);
 
         return response()->json([
-            'message' => 'Ucapan berhasil dikirim.',
+            'message' => 'Ucapanmu sudah terkirim 🤍',
             'data'    => [
                 'id'         => $msg->id,
-                'name'       => $msg->name,
+                'name'       => $msg->displayName(),
                 'message'    => $msg->message,
+                'is_pinned'  => false,
                 'created_at' => $msg->created_at->diffForHumans(),
             ],
         ], 201);
@@ -243,14 +264,16 @@ class PublicInvitationController extends Controller
         $invitation = Invitation::where('slug', $slug)->firstOrFail();
 
         $messages = $invitation->guestMessages()
-            ->approved()
+            ->visible()
+            ->orderByDesc('is_pinned')
             ->latest()
             ->limit(100)
             ->get()
             ->map(fn ($m) => [
                 'id'         => $m->id,
-                'name'       => $m->name,
+                'name'       => $m->displayName(),
                 'message'    => $m->message,
+                'is_pinned'  => $m->is_pinned,
                 'created_at' => $m->created_at->diffForHumans(),
             ]);
 

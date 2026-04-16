@@ -7,6 +7,8 @@ use App\Http\Controllers\Dashboard\BudgetPlanner\InitializeBudgetPlannerControll
 use App\Http\Controllers\Dashboard\BudgetPlanner\UpdateBudgetController;
 use App\Http\Controllers\Dashboard\ChecklistController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\BukuTamuHubController;
+use App\Http\Controllers\Dashboard\DashboardGuestMessageController;
 use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
@@ -97,6 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates');
+    Route::get('/buku-tamu', [BukuTamuHubController::class, 'index'])->name('buku-tamu.index');
 
     // Invitation list & wizard
     Route::get( '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');
@@ -119,6 +122,15 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     // File uploads
     Route::post('/invitations/{invitation}/upload', [InvitationController::class, 'upload'])->name('invitations.upload');
     Route::post('/invitations/{invitation}/upload-audio', [InvitationController::class, 'uploadAudio'])->name('invitations.upload-audio');
+
+    // ── Buku Tamu (guest messages per invitation) ────────────────────────
+    Route::get(   '/invitations/{invitation}/buku-tamu',            [DashboardGuestMessageController::class, 'index'])->name('buku-tamu.show');
+    Route::get(   '/invitations/{invitation}/messages',             [DashboardGuestMessageController::class, 'messages'])->name('invitations.messages.list');
+    Route::get(   '/invitations/{invitation}/messages/summary',     [DashboardGuestMessageController::class, 'summary'])->name('invitations.messages.summary');
+    Route::get(   '/invitations/{invitation}/messages/export',      [DashboardGuestMessageController::class, 'export'])->name('invitations.messages.export');
+    Route::post(  '/invitations/{invitation}/messages/bulk',        [DashboardGuestMessageController::class, 'bulk'])->name('invitations.messages.bulk');
+    Route::patch( '/invitations/{invitation}/messages/{message}',   [DashboardGuestMessageController::class, 'update'])->name('invitations.messages.update');
+    Route::delete('/invitations/{invitation}/messages/{message}',   [DashboardGuestMessageController::class, 'destroy'])->name('invitations.messages.destroy');
 
     // ── Budget Planner ───────────────────────────────────────────────────
     Route::get( '/budget-planner',                    [BudgetPlannerPageController::class, 'index'])->name('budget-planner.index');
