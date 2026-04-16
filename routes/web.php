@@ -16,7 +16,9 @@ use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
+use App\Http\Controllers\Dashboard\SubscriptionController;
 use App\Http\Controllers\Dashboard\TemplateController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Blog\BlogController;
@@ -183,6 +185,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post('/guest-list/{guest}/mark-sent',              [GuestMessageController::class, 'markSent'])->name('guest-list.message.mark-sent');
     Route::post('/guest-list/{guest}/copy-log',               [GuestMessageController::class, 'storeCopyLog'])->name('guest-list.message.copy-log');
 
+    // ── Paket & Langganan ────────────────────────────────────────────────
+    Route::get( '/paket',                                [SubscriptionController::class, 'index'])->name('paket');
+    Route::post('/subscriptions/checkout',               [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+    Route::get( '/transactions/{transaction}/invoice',   [SubscriptionController::class, 'invoice'])->name('transactions.invoice');
+
     // ── Checklist ────────────────────────────────────────────────────────
     Route::get( '/checklist',                          [ChecklistController::class, 'index'])->name('checklist.index');
     Route::post('/checklist/initialize',               [ChecklistController::class, 'initialize'])->name('checklist.initialize');
@@ -224,6 +231,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch( '/articles/{article}/unpublish',     [ArticleController::class, 'unpublish'])->name('articles.unpublish');
     Route::patch( '/articles/{article}/featured',      [ArticleController::class, 'toggleFeatured'])->name('articles.featured');
 });
+
+// ── Webhooks (no auth) ──────────────────────────────────────────────────
+Route::post('/webhooks/midtrans', [WebhookController::class, 'midtrans'])->name('webhooks.midtrans');
 
 // ── Contact page ────────────────────────────────────────────────────────
 Route::get( '/kontak', [ContactController::class, 'index'])->name('contact');

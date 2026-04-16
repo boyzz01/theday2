@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
@@ -20,6 +21,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'plan_id',
+        'subscription_id',
         'invoice_number',
         'amount',
         'payment_method',
@@ -50,6 +52,11 @@ class Transaction extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
     }
 
     // ─── Scopes ───────────────────────────────────────────────────

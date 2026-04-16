@@ -69,8 +69,7 @@ const navItems = [
     },
     {
         label: 'Paket & Langganan',
-        route: 'dashboard',
-        noActive: true,
+        route: 'dashboard.paket',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
     },
@@ -85,6 +84,14 @@ const navItems = [
 const checklistTodo        = computed(() => page.props.checklist_todo ?? 0);
 const canCreateInvitation  = computed(() => page.props.can_create_invitation ?? true);
 const showLimitModal       = ref(false);
+
+// Expiry warning banner
+const showExpiryBanner = computed(() => {
+    const sub = plan.value;
+    if (!sub || sub.plan_slug !== 'premium') return false;
+    return (sub.days_remaining ?? 999) <= 7;
+});
+const dismissedExpiry  = ref(false);
 
 const isActive = (item) => {
     if (item.noActive) return false;
@@ -124,10 +131,13 @@ onMounted(() => {
             showLimitModal.value = true;
         }
     });
+
+    document.addEventListener('click', handleClickOutsideAvatar);
 });
 
 onBeforeUnmount(() => {
     if (removeBeforeListener) removeBeforeListener();
+    document.removeEventListener('click', handleClickOutsideAvatar);
 });
 
 const logout = async () => {
@@ -139,6 +149,15 @@ const avatarInitials = computed(() => {
     if (!user.value?.name) return '?';
     return user.value.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 });
+
+const avatarDropdownOpen = ref(false);
+const avatarDropdownRef  = ref(null);
+
+const handleClickOutsideAvatar = (e) => {
+    if (avatarDropdownRef.value && !avatarDropdownRef.value.contains(e.target)) {
+        avatarDropdownOpen.value = false;
+    }
+};
 </script>
 
 <template>
@@ -163,8 +182,8 @@ const avatarInitials = computed(() => {
                 sidebarCollapsed ? 'lg:w-16' : 'w-64',
             ]"
         >
-            <!-- Logo -->
-            <div class="flex items-center gap-3 px-5 py-5 border-b border-stone-100">
+            <!-- Logo — expanded -->
+            <div v-if="!sidebarCollapsed" class="flex items-center gap-3 px-5 py-5 border-b border-stone-100">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                      style="background-color: #D4A373">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -172,19 +191,31 @@ const avatarInitials = computed(() => {
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </div>
-                <span v-if="!sidebarCollapsed"
-                      class="font-semibold text-lg text-stone-800 tracking-tight"
+                <span class="font-semibold text-lg text-stone-800 tracking-tight"
                       style="font-family: 'Playfair Display', serif">
                     TheDay
                 </span>
-                <!-- Collapse toggle desktop -->
+                <!-- Collapse button -->
                 <button
                     class="hidden lg:flex ml-auto p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
-                    @click="sidebarCollapsed = !sidebarCollapsed"
+                    @click="sidebarCollapsed = true"
+                    title="Sembunyikan sidebar"
                 >
-                    <svg class="w-4 h-4 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Logo — collapsed: hanya tombol expand -->
+            <div v-else class="hidden lg:flex justify-center items-center py-5 border-b border-stone-100">
+                <button
+                    class="p-1.5 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
+                    @click="sidebarCollapsed = false"
+                    title="Tampilkan sidebar"
+                >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
                     </svg>
                 </button>
             </div>
@@ -271,14 +302,24 @@ const avatarInitials = computed(() => {
                 </template>
             </nav>
 
-            <!-- Plan badge -->
-            <div v-if="!sidebarCollapsed && plan" class="mx-3 mb-3 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
-                <p class="text-xs text-amber-600 font-medium">Paket Aktif</p>
-                <p class="text-sm font-semibold text-amber-800 mt-0.5">{{ plan.plan_name }}</p>
-                <Link :href="route('dashboard')"
+            <!-- Plan badge — always visible -->
+            <div v-if="!sidebarCollapsed"
+                 class="mx-3 mb-3 px-3 py-2.5 rounded-xl border"
+                 :class="plan?.plan_slug === 'premium'
+                    ? 'bg-amber-50 border-amber-200'
+                    : 'bg-stone-50 border-stone-200'">
+                <p class="text-xs font-medium"
+                   :class="plan?.plan_slug === 'premium' ? 'text-amber-600' : 'text-stone-400'">
+                    Paket Aktif
+                </p>
+                <p class="text-sm font-semibold mt-0.5"
+                   :class="plan?.plan_slug === 'premium' ? 'text-amber-800' : 'text-stone-600'">
+                    {{ plan?.plan_name ?? 'Gratis' }}
+                </p>
+                <Link :href="route('dashboard.paket')"
                       class="text-xs mt-1 inline-block font-medium"
                       style="color: #D4A373">
-                    Upgrade →
+                    {{ plan?.plan_slug === 'premium' ? 'Kelola →' : 'Upgrade →' }}
                 </Link>
             </div>
 
@@ -341,13 +382,78 @@ const avatarInitials = computed(() => {
                         </div>
                     </Transition>
 
-                    <!-- Avatar dropdown shortcut -->
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                         style="background-color: #D4A373">
-                        {{ avatarInitials }}
+                    <!-- Avatar dropdown -->
+                    <div class="relative" ref="avatarDropdownRef">
+                        <button
+                            @click.stop="avatarDropdownOpen = !avatarDropdownOpen"
+                            class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold focus:outline-none ring-2 ring-transparent focus:ring-amber-300 transition-all"
+                            style="background-color: #D4A373"
+                        >
+                            {{ avatarInitials }}
+                        </button>
+
+                        <Transition name="fade">
+                            <div v-if="avatarDropdownOpen"
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-stone-100 py-1 z-50">
+                                <!-- User info -->
+                                <div class="px-4 py-2.5 border-b border-stone-100">
+                                    <p class="text-sm font-medium text-stone-800 truncate">{{ user?.name }}</p>
+                                    <p class="text-xs text-stone-400 truncate">{{ user?.email }}</p>
+                                </div>
+                                <!-- Profile link -->
+                                <Link
+                                    :href="route('profile.edit')"
+                                    class="flex items-center gap-2.5 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+                                    @click="avatarDropdownOpen = false"
+                                >
+                                    <svg class="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    Pengaturan Akun
+                                </Link>
+                                <!-- Logout -->
+                                <button
+                                    @click="logout"
+                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    </svg>
+                                    Keluar
+                                </button>
+                            </div>
+                        </Transition>
                     </div>
                 </div>
             </header>
+
+            <!-- Expiry Warning Banner -->
+            <Transition name="slide-down">
+                <div v-if="showExpiryBanner && !dismissedExpiry"
+                     class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
+                     style="background-color:#FEF3C7;border-bottom:1px solid #FDE68A">
+                    <span class="text-amber-800">
+                        ⏰ Paket Premiummu berakhir dalam
+                        <strong>{{ plan.days_remaining }} hari</strong>.
+                        Perpanjang sekarang agar tidak terputus.
+                    </span>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <Link :href="route('dashboard.paket')"
+                              class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white"
+                              style="background-color:#D97706">
+                            Perpanjang →
+                        </Link>
+                        <button @click="dismissedExpiry = true"
+                                class="text-amber-600 hover:text-amber-800 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </Transition>
 
             <!-- Page content -->
             <main class="flex-1 p-4 lg:p-6 overflow-auto">
@@ -384,7 +490,7 @@ const avatarInitials = computed(() => {
                             Tutup
                         </button>
                         <Link
-                            :href="route('dashboard')"
+                            :href="route('dashboard.paket')"
                             class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white text-center transition-all hover:opacity-90"
                             style="background-color: #D4A373"
                             @click="showLimitModal = false"
