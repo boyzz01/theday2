@@ -115,7 +115,8 @@ final class DuplicateInvitationAction
         $slug  = $base;
         $count = 2;
 
-        while (Invitation::where('slug', $slug)->exists()) {
+        // withTrashed() so soft-deleted records still block slug reuse
+        while (Invitation::withTrashed()->where('slug', $slug)->exists()) {
             $slug = "{$base}-{$count}";
             $count++;
         }
@@ -134,7 +135,8 @@ final class DuplicateInvitationAction
         $count = 2;
 
         while (
-            Invitation::where('user_id', $userId)
+            Invitation::withTrashed()
+                ->where('user_id', $userId)
                 ->where('title', $title)
                 ->exists()
         ) {

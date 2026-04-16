@@ -47,6 +47,11 @@ class HandleInertiaRequests extends Middleware
                 })() : null,
                 'isGuest' => ! $user,
             ],
+            'can_create_invitation' => fn () => $user ? (function () use ($user) {
+                $limit = $user->currentPlan()?->max_invitations;
+                if ($limit === null) return true;
+                return $user->invitations()->count() < $limit;
+            })() : true,
             'checklist_todo' => fn () => $user
                 ? ChecklistTask::whereHas('weddingPlan', fn ($q) => $q->where('user_id', $user->id))
                     ->todo()

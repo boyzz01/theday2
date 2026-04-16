@@ -111,6 +111,13 @@ class InvitationController extends Controller
             'template_id' => 'required|uuid|exists:templates,id',
         ]);
 
+        $user  = Auth::user();
+        $limit = $user->currentPlan()?->max_invitations;
+        if ($limit !== null && $user->invitations()->count() >= $limit) {
+            return redirect()->route('dashboard.invitations.index')
+                ->with('error', 'Batas undangan paketmu sudah tercapai. Upgrade untuk membuat undangan baru.');
+        }
+
         $template  = Template::findOrFail($data['template_id']);
         $eventType = 'pernikahan';
 
@@ -600,7 +607,15 @@ class InvitationController extends Controller
     {
         $this->authorizeOwner($invitation);
 
-        $invitation->delete(); // soft delete
+        $hasRsvps = $invitation->rsvps()->exists();
+
+        if ($invitation->status->value === 'published' && $hasRsvps) {
+            // Preserve data — soft delete so RSVP records remain traceable
+            $invitation->delete();
+        } else {
+            // Draft / no RSVPs — hard delete, slug freed immediately
+            $invitation->forceDelete();
+        }
 
         return redirect()->route('dashboard.invitations.index')
             ->with('success', 'Undangan berhasil dihapus.');
