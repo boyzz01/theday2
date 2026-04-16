@@ -9,6 +9,7 @@ use App\Http\Controllers\Dashboard\ChecklistController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\BukuTamuHubController;
 use App\Http\Controllers\Dashboard\DashboardGuestMessageController;
+use App\Http\Controllers\Dashboard\DashboardRsvpController;
 use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
@@ -100,6 +101,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates');
     Route::get('/buku-tamu', [BukuTamuHubController::class, 'index'])->name('buku-tamu.index');
+
+    // ── RSVP ────────────────────────────────────────────────────────────
+    Route::get('/rsvp',                              [DashboardRsvpController::class, 'index'])->name('rsvp.index');
+    Route::get('/rsvp/{invitation}',                 [DashboardRsvpController::class, 'show'])->name('rsvp.show');
+    Route::get('/rsvp/{invitation}/export',          [DashboardRsvpController::class, 'export'])->name('rsvp.export');
 
     // Invitation list & wizard
     Route::get( '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');

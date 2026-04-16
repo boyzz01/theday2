@@ -38,6 +38,11 @@ const navItems = [
                 activePattern: 'dashboard.guest-list.*',
             },
             {
+                label: 'RSVP',
+                route: 'dashboard.rsvp.index',
+                activePattern: 'dashboard.rsvp.*',
+            },
+            {
                 label: 'Buku Tamu',
                 route: 'dashboard.buku-tamu.index',
                 activePattern: 'dashboard.buku-tamu.*',
