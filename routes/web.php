@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Dashboard\BudgetPlanner\BudgetCategoryController;
 use App\Http\Controllers\Dashboard\BudgetPlanner\BudgetItemController;
 use App\Http\Controllers\Dashboard\BudgetPlanner\BudgetPlannerPageController;
@@ -221,10 +222,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch( '/articles/{article}/featured',      [ArticleController::class, 'toggleFeatured'])->name('articles.featured');
 });
 
+// ── Legal pages ─────────────────────────────────────────────────────────
+Route::get('/kebijakan-privasi', [LegalController::class, 'privacyPolicy'])->name('legal.privacy');
+Route::get('/syarat-ketentuan',  [LegalController::class, 'termsOfService'])->name('legal.terms');
+Route::get('/kebijakan-cookie',  [LegalController::class, 'cookiePolicy'])->name('legal.cookie');
+
 // ── Public invitation pages ─────────────────────────────────────────────
 // IMPORTANT: keep this LAST so /{slug} doesn't swallow other routes.
 // The where() constraint excludes known top-level paths.
-$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|use-template|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap|blog).*';
+$slugExclusion = '^(?!login|register|logout|dashboard|admin|templates|editor|use-template|profile|up|verify-email|confirm-password|forgot-password|reset-password|email|sitemap|blog|kebijakan-privasi|syarat-ketentuan|kebijakan-cookie).*';
 
 // Two-segment literal routes defined BEFORE wildcard so they take precedence.
 Route::post('/{slug}/unlock',   [PublicInvitationController::class, 'unlock'])->where('slug', $slugExclusion)->name('invitation.unlock');

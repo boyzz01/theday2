@@ -1238,10 +1238,11 @@
                     ['id' => 'Press Kit',   'en' => 'Press Kit'],
                 ]],
                 ['id_cat' => 'Bantuan',     'en_cat' => 'Support',  'links' => [
-                    ['id' => 'Pusat Bantuan',        'en' => 'Help Center'],
-                    ['id' => 'Kontak',               'en' => 'Contact'],
-                    ['id' => 'Kebijakan Privasi',    'en' => 'Privacy Policy'],
-                    ['id' => 'Syarat & Ketentuan',   'en' => 'Terms & Conditions'],
+                    ['id' => 'Pusat Bantuan',        'en' => 'Help Center',        'href' => '#'],
+                    ['id' => 'Kontak',               'en' => 'Contact',            'href' => 'mailto:hello@theday.id'],
+                    ['id' => 'Kebijakan Privasi',    'en' => 'Privacy Policy',     'href' => route('legal.privacy')],
+                    ['id' => 'Syarat & Ketentuan',   'en' => 'Terms & Conditions', 'href' => route('legal.terms')],
+                    ['id' => 'Kebijakan Cookie',     'en' => 'Cookie Policy',      'href' => route('legal.cookie')],
                 ]],
             ];
             @endphp
@@ -1252,7 +1253,7 @@
                 <ul class="space-y-3">
                     @foreach($section['links'] as $link)
                     <li>
-                        <a href="#" class="text-sm transition-colors hover:text-white" style="color: #888"
+                        <a href="{{ $link['href'] ?? '#' }}" class="text-sm transition-colors hover:text-white" style="color: #888"
                            data-id="{{ $link['id'] }}" data-en="{{ $link['en'] }}">{{ $link['id'] }}</a>
                     </li>
                     @endforeach
@@ -1267,9 +1268,9 @@
                data-id="© {{ date('Y') }} TheDay. Dibuat dengan ❤️ di Indonesia."
                data-en="© {{ date('Y') }} TheDay. Made with ❤️ in Indonesia.">© {{ date('Y') }} TheDay. Dibuat dengan ❤️ di Indonesia.</p>
             <div class="flex items-center gap-6">
-                <a href="#" class="text-xs hover:text-white transition-colors" data-id="Privasi" data-en="Privacy">Privasi</a>
-                <a href="#" class="text-xs hover:text-white transition-colors" data-id="Ketentuan" data-en="Terms">Ketentuan</a>
-                <a href="#" class="text-xs hover:text-white transition-colors" data-id="Cookies" data-en="Cookies">Cookies</a>
+                <a href="{{ route('legal.privacy') }}" class="text-xs hover:text-white transition-colors" data-id="Privasi" data-en="Privacy">Privasi</a>
+                <a href="{{ route('legal.terms') }}" class="text-xs hover:text-white transition-colors" data-id="Ketentuan" data-en="Terms">Ketentuan</a>
+                <a href="{{ route('legal.cookie') }}" class="text-xs hover:text-white transition-colors" data-id="Cookies" data-en="Cookies">Cookies</a>
             </div>
         </div>
     </div>
@@ -1327,12 +1328,22 @@
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
     mobileBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
+        const isNowHidden = mobileMenu.classList.toggle('hidden');
+        if (!isNowHidden) {
+            navbar.classList.add('nav-scroll');
+        } else if (window.scrollY <= 10) {
+            navbar.classList.remove('nav-scroll');
+        }
     });
 
     // Close mobile menu on link click
     mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            if (window.scrollY <= 10) {
+                navbar.classList.remove('nav-scroll');
+            }
+        });
     });
 
     // ============================================================
