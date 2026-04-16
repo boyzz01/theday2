@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { useInvitationEditor } from '@/Composables/useInvitationEditor.js';
@@ -11,13 +11,22 @@ import StepTampilan   from './Steps/StepTampilan.vue';
 import StepPublikasi  from './Steps/StepPublikasi.vue';
 
 const props = defineProps({
-    template:     { type: Object, required: true },
-    invitation:   { type: Object, default: null },
-    defaultMusic: { type: Array,  default: () => [] },
-    fonts:        { type: Array,  default: () => [] },
+    template:      { type: Object,  required: true },
+    invitation:    { type: Object,  default: null },
+    defaultMusic:  { type: Array,   default: () => [] },
+    fonts:         { type: Array,   default: () => [] },
+    templates:     { type: Array,   default: () => [] },
+    canUsePremium: { type: Boolean, default: false },
 });
 
 const editor = reactive(useInvitationEditor(props.template, props.invitation));
+
+// Local reactive template — updated when user changes template
+const currentTemplate = ref({ ...props.template });
+
+function onTemplateChanged(newTemplate) {
+    currentTemplate.value = newTemplate;
+}
 
 const steps = [
     { number: 1, label: 'Informasi',  key: 'informasi' },
@@ -69,7 +78,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
             <div class="flex items-center gap-2">
                 <span class="text-sm text-stone-400">Buat Undangan</span>
                 <span class="text-stone-300">/</span>
-                <span class="text-sm font-medium text-stone-700 truncate max-w-xs">{{ template.name }}</span>
+                <span class="text-sm font-medium text-stone-700 truncate max-w-xs">{{ currentTemplate.name }}</span>
             </div>
         </template>
 
@@ -183,7 +192,12 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :invitation-id="editor.invitationId"
                         :upload-audio="editor.uploadAudio"
                         :on-toggle-section="editor.toggleSection"
+                        :template="currentTemplate"
+                        :templates="templates"
+                        :can-use-premium="canUsePremium"
+                        :invitation-status="editor.publish?.status ?? invitation?.status ?? 'draft'"
                         @update:selected-music="editor.selectedMusic = $event"
+                        @template-changed="onTemplateChanged"
                     />
                     <StepPublikasi
                         v-else-if="editor.currentStep === 6"
@@ -192,7 +206,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :invitation-id="editor.invitationId"
                         :is-saving="editor.isSaving"
                         :save-step6="editor.saveStep6"
-                        :template="template"
+                        :template="currentTemplate"
                         :basic="editor.basic"
                         :details="editor.details"
                         :on-toggle-section="editor.toggleSection"

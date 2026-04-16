@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Actions\ChangeTemplateAction;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\InvitationSection;
@@ -41,14 +42,21 @@ class InvitationController extends Controller
                 'published_at' => $inv->published_at?->format('d M Y'),
                 'expires_at'  => $inv->expires_at?->format('d M Y'),
                 'template'    => $inv->template ? [
+                    'id'             => $inv->template->id,
                     'name'           => $inv->template->name,
                     'thumbnail_url'  => $inv->template->thumbnail_url,
                     'default_config' => $inv->template->default_config,
                 ] : null,
             ]);
 
+        $user         = $request->user();
+        $canUsePremium = $user->currentPlan()?->remove_watermark ?? false;
+        $templates    = $this->templateList();
+
         return Inertia::render('Dashboard/Invitations/Index', [
-            'invitations' => $invitations,
+            'invitations'   => $invitations,
+            'templates'     => $templates,
+            'canUsePremium' => $canUsePremium,
         ]);
     }
 
@@ -172,6 +180,8 @@ class InvitationController extends Controller
 
         $details = $invitation->details;
 
+        $canUsePremium = auth()->user()->currentPlan()?->remove_watermark ?? false;
+
         return Inertia::render('Dashboard/Invitations/Create', [
             'template' => [
                 'id'             => $template->id,
@@ -185,6 +195,8 @@ class InvitationController extends Controller
                     'slug' => $template->category->slug,
                 ],
             ],
+            'templates'     => $this->templateList(),
+            'canUsePremium' => $canUsePremium,
             'invitation' => [
                 'id'                   => $invitation->id,
                 'title'                => $invitation->title,
@@ -517,6 +529,43 @@ class InvitationController extends Controller
         ]);
     }
 
+    // ─── API – Change Template ────────────────────────────────────────
+
+    public function changeTemplate(Request $request, Invitation $invitation, ChangeTemplateAction $action): JsonResponse
+    {
+        $this->authorizeOwner($invitation);
+
+        $data = $request->validate([
+            'template_id' => 'required|uuid|exists:templates,id',
+        ]);
+
+        $newTemplate = Template::active()->findOrFail($data['template_id']);
+
+        // Premium gate: free users cannot switch to premium templates
+        $canUsePremium = $request->user()->currentPlan()?->remove_watermark ?? false;
+        if ($newTemplate->isPremium() && ! $canUsePremium) {
+            return response()->json(['error' => 'upgrade_required'], 403);
+        }
+
+        $action->execute($invitation, $newTemplate);
+
+        return response()->json([
+            'success'  => true,
+            'template' => [
+                'id'            => $newTemplate->id,
+                'name'          => $newTemplate->name,
+                'slug'          => $newTemplate->slug,
+                'thumbnail_url' => $newTemplate->thumbnail_url,
+                'tier'          => $newTemplate->tier->value,
+                'default_config' => $newTemplate->default_config ?? [],
+                'category'      => [
+                    'name' => $newTemplate->category?->name,
+                    'slug' => $newTemplate->category?->slug,
+                ],
+            ],
+        ]);
+    }
+
     public function destroy(Invitation $invitation): \Illuminate\Http\RedirectResponse
     {
         $this->authorizeOwner($invitation);
@@ -528,6 +577,26 @@ class InvitationController extends Controller
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────
+
+    private function templateList(): array
+    {
+        return Template::active()
+            ->with('category:id,name,slug')
+            ->ordered()
+            ->get()
+            ->map(fn($t) => [
+                'id'            => $t->id,
+                'name'          => $t->name,
+                'slug'          => $t->slug,
+                'thumbnail_url' => $t->thumbnail_url,
+                'tier'          => $t->tier->value,
+                'category'      => $t->category ? [
+                    'name' => $t->category->name,
+                    'slug' => $t->category->slug,
+                ] : null,
+            ])
+            ->toArray();
+    }
 
     private function authorizeOwner(Invitation $invitation): void
     {

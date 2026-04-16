@@ -22,6 +22,7 @@ class InvitationSection extends Model
         'section_type',
         'is_enabled',
         'is_required',
+        'is_visible_in_template',
         'completion_status',
         'data_json',
         'sort_order',
@@ -30,9 +31,10 @@ class InvitationSection extends Model
     protected function casts(): array
     {
         return [
-            'is_enabled'  => 'boolean',
-            'is_required' => 'boolean',
-            'data_json'   => 'array',
+            'is_enabled'             => 'boolean',
+            'is_required'            => 'boolean',
+            'is_visible_in_template' => 'boolean',
+            'data_json'              => 'array',
         ];
     }
 

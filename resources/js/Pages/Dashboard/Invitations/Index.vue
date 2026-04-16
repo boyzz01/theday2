@@ -2,9 +2,12 @@
 import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import TemplatePicker from '@/Components/Wizard/TemplatePicker.vue';
 
 const props = defineProps({
-    invitations: { type: Array, default: () => [] },
+    invitations:   { type: Array,   default: () => [] },
+    templates:     { type: Array,   default: () => [] },
+    canUsePremium: { type: Boolean, default: false },
 });
 
 const statusConfig = {
@@ -19,7 +22,8 @@ const eventTypeLabel = {
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
 
-const confirmTarget = ref(null);
+const confirmTarget   = ref(null);
+const pickerTarget    = ref(null); // invitation whose template is being changed
 
 function confirmDelete(inv) {
     confirmTarget.value = inv;
@@ -34,6 +38,21 @@ function doDelete() {
     router.delete(route('dashboard.invitations.destroy', confirmTarget.value.id), {
         onFinish: () => { confirmTarget.value = null; },
     });
+}
+
+function openPicker(inv) {
+    pickerTarget.value = inv;
+}
+
+function onTemplateChanged(newTemplate) {
+    if (!pickerTarget.value) return;
+    // Mutate the local invitation so card updates without a full page reload
+    pickerTarget.value.template = {
+        name:           newTemplate.name,
+        thumbnail_url:  newTemplate.thumbnail_url,
+        default_config: newTemplate.default_config ?? {},
+    };
+    pickerTarget.value = null;
 }
 </script>
 
@@ -157,6 +176,13 @@ function doDelete() {
                         >
                             Edit
                         </Link>
+                        <button
+                            @click="openPicker(inv)"
+                            class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"
+                            title="Ganti template"
+                        >
+                            Template
+                        </button>
                         <a
                             :href="`/${inv.slug}`"
                             target="_blank"
@@ -195,6 +221,20 @@ function doDelete() {
                 </p>
             </Link>
         </div>
+        <!-- Template Picker -->
+        <Teleport to="body">
+            <TemplatePicker
+                v-if="pickerTarget"
+                :invitation-id="pickerTarget.id"
+                :current-template-id="pickerTarget.template?.id ?? ''"
+                :templates="templates"
+                :can-use-premium="canUsePremium"
+                :invitation-status="pickerTarget.status"
+                @changed="onTemplateChanged"
+                @close="pickerTarget = null"
+            />
+        </Teleport>
+
         <!-- Delete confirm modal -->
         <Transition name="fade">
             <div v-if="confirmTarget"
