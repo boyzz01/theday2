@@ -108,10 +108,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::get('/rsvp/{invitation}/export',          [DashboardRsvpController::class, 'export'])->name('rsvp.export');
 
     // Invitation list & wizard
-    Route::get( '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');
-    Route::get( '/invitations/create',             [InvitationController::class, 'create'])->name('invitations.create');
-    Route::get( '/invitations/{invitation}/edit',  [InvitationController::class, 'edit'])->name('invitations.edit');
-    Route::post('/invitations/from-template',      [InvitationController::class, 'createFromTemplate'])->name('invitations.from-template');
+    Route::get(   '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');
+    Route::get(   '/invitations/create',             [InvitationController::class, 'create'])->name('invitations.create');
+    Route::get(   '/invitations/{invitation}/edit',  [InvitationController::class, 'edit'])->name('invitations.edit');
+    Route::post(  '/invitations/from-template',      [InvitationController::class, 'createFromTemplate'])->name('invitations.from-template');
+    Route::delete('/invitations/{invitation}',        [InvitationController::class, 'destroy'])->name('invitations.destroy');
 
     // Invitation CRUD API
     Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');

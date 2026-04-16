@@ -51,6 +51,16 @@ class User extends Authenticatable
         return $this->onboarding_completed_at !== null;
     }
 
+    // ─── Model Events ─────────────────────────────────────────────
+
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            // Soft-delete semua undangan milik user ini
+            $user->invitations()->each(fn ($inv) => $inv->delete());
+        });
+    }
+
     // ─── Relationships ────────────────────────────────────────────
 
     public function invitations(): HasMany

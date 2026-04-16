@@ -40,7 +40,9 @@
       "Bash(node -e \"console.log\\(new Date\\(1776253452000\\).toISOString\\(\\)\\)\")",
       "Bash(grep -v \"^$\")",
       "Bash(npx vue-tsc *)",
-      "Bash(php -r \"require 'vendor/autoload.php'; echo 'ok';\")"
+      "Bash(php -r \"require 'vendor/autoload.php'; echo 'ok';\")",
+      "Bash(php -r \"require 'vendor/autoload.php'; require 'bootstrap/app.php'; echo 'syntax ok';\")",
+      "Bash(composer show *)"
     ]
   }
 }

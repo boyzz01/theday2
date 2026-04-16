@@ -252,7 +252,7 @@ const priorityDot = {
             <div>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-semibold text-stone-700">Undangan Terbaru</h3>
-                    <Link :href="route('dashboard')"
+                    <Link :href="route('dashboard.invitations.index')"
                           class="text-xs font-medium transition-colors hover:opacity-80"
                           style="color: #D4A373">
                         Lihat semua →

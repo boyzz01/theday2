@@ -517,6 +517,16 @@ class InvitationController extends Controller
         ]);
     }
 
+    public function destroy(Invitation $invitation): \Illuminate\Http\RedirectResponse
+    {
+        $this->authorizeOwner($invitation);
+
+        $invitation->delete(); // soft delete
+
+        return redirect()->route('dashboard.invitations.index')
+            ->with('success', 'Undangan berhasil dihapus.');
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────
 
     private function authorizeOwner(Invitation $invitation): void

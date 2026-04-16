@@ -1,5 +1,6 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 
 const props = defineProps({
@@ -17,6 +18,23 @@ const eventTypeLabel = {
 };
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
+
+const confirmTarget = ref(null);
+
+function confirmDelete(inv) {
+    confirmTarget.value = inv;
+}
+
+function cancelDelete() {
+    confirmTarget.value = null;
+}
+
+function doDelete() {
+    if (!confirmTarget.value) return;
+    router.delete(route('dashboard.invitations.destroy', confirmTarget.value.id), {
+        onFinish: () => { confirmTarget.value = null; },
+    });
+}
 </script>
 
 <template>
@@ -147,6 +165,16 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                         >
                             Lihat
                         </a>
+                        <button
+                            @click="confirmDelete(inv)"
+                            class="px-3 py-2 rounded-xl text-xs font-semibold border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            title="Hapus undangan"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -167,5 +195,44 @@ const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#
                 </p>
             </Link>
         </div>
+        <!-- Delete confirm modal -->
+        <Transition name="fade">
+            <div v-if="confirmTarget"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 @click.self="cancelDelete">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">Hapus Undangan?</h3>
+                    <p class="text-sm text-stone-500 text-center mb-6">
+                        "<span class="font-medium text-stone-700">{{ confirmTarget.title || '(Tanpa judul)' }}</span>"
+                        akan dihapus. Tindakan ini dapat dibatalkan oleh admin.
+                    </p>
+                    <div class="flex gap-3">
+                        <button
+                            @click="cancelDelete"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            @click="doDelete"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </DashboardLayout>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
