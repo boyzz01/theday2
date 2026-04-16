@@ -1239,7 +1239,7 @@
                 ]],
                 ['id_cat' => 'Bantuan',     'en_cat' => 'Support',  'links' => [
                     ['id' => 'Pusat Bantuan',        'en' => 'Help Center',        'href' => '#'],
-                    ['id' => 'Kontak',               'en' => 'Contact',            'href' => 'mailto:hello@theday.id'],
+                    ['id' => 'Kontak',               'en' => 'Contact',            'href' => route('contact')],
                     ['id' => 'Kebijakan Privasi',    'en' => 'Privacy Policy',     'href' => route('legal.privacy')],
                     ['id' => 'Syarat & Ketentuan',   'en' => 'Terms & Conditions', 'href' => route('legal.terms')],
                     ['id' => 'Kebijakan Cookie',     'en' => 'Cookie Policy',      'href' => route('legal.cookie')],
