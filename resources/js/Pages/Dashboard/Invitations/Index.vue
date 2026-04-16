@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import TemplatePicker from '@/Components/Wizard/TemplatePicker.vue';
@@ -22,16 +23,11 @@ const eventTypeLabel = {
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
 
-const confirmTarget   = ref(null);
-const pickerTarget    = ref(null); // invitation whose template is being changed
+// ── Delete ────────────────────────────────────────────────────────────
+const confirmTarget = ref(null);
 
-function confirmDelete(inv) {
-    confirmTarget.value = inv;
-}
-
-function cancelDelete() {
-    confirmTarget.value = null;
-}
+function confirmDelete(inv) { confirmTarget.value = inv; }
+function cancelDelete()     { confirmTarget.value = null; }
 
 function doDelete() {
     if (!confirmTarget.value) return;
@@ -40,19 +36,51 @@ function doDelete() {
     });
 }
 
-function openPicker(inv) {
-    pickerTarget.value = inv;
-}
+// ── Template picker ───────────────────────────────────────────────────
+const pickerTarget = ref(null); // invitation whose template is being changed
+
+function openPicker(inv) { pickerTarget.value = inv; }
 
 function onTemplateChanged(newTemplate) {
     if (!pickerTarget.value) return;
-    // Mutate the local invitation so card updates without a full page reload
     pickerTarget.value.template = {
         name:           newTemplate.name,
         thumbnail_url:  newTemplate.thumbnail_url,
         default_config: newTemplate.default_config ?? {},
     };
     pickerTarget.value = null;
+}
+
+// ── Duplicate ─────────────────────────────────────────────────────────
+const duplicateTarget  = ref(null);
+const isDuplicating    = ref(false);
+const duplicateSuccess = ref(null); // { title, editUrl }
+const duplicateError   = ref(null); // string message
+
+function confirmDuplicate(inv) { duplicateTarget.value = inv; }
+function cancelDuplicate()     { duplicateTarget.value = null; }
+
+async function doDuplicate() {
+    if (!duplicateTarget.value) return;
+    isDuplicating.value = true;
+    try {
+        const { data } = await axios.post(
+            route('dashboard.invitations.duplicate', duplicateTarget.value.id)
+        );
+        duplicateTarget.value = null;
+        duplicateSuccess.value = { title: data.title, editUrl: data.edit_url };
+        router.reload({ only: ['invitations'] });
+        setTimeout(() => { duplicateSuccess.value = null; }, 6000);
+    } catch (err) {
+        const error = err.response?.data?.error;
+        duplicateError.value = error === 'invitation_limit_reached'
+            ? 'Batas undangan aktif paketmu sudah tercapai. Upgrade untuk membuat salinan baru.'
+            : 'Gagal menduplikat undangan. Silakan coba lagi.';
+        duplicateTarget.value = null;
+        setTimeout(() => { duplicateError.value = null; }, 5000);
+    } finally {
+        isDuplicating.value = false;
+    }
 }
 </script>
 
@@ -192,6 +220,16 @@ function onTemplateChanged(newTemplate) {
                             Lihat
                         </a>
                         <button
+                            @click="confirmDuplicate(inv)"
+                            class="px-3 py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors"
+                            title="Duplikat undangan"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        <button
                             @click="confirmDelete(inv)"
                             class="px-3 py-2 rounded-xl text-xs font-semibold border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
                             title="Hapus undangan"
@@ -269,10 +307,103 @@ function onTemplateChanged(newTemplate) {
                 </div>
             </div>
         </Transition>
+        <!-- Duplicate confirm modal -->
+        <Transition name="fade">
+            <div v-if="duplicateTarget"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 @click.self="cancelDuplicate">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6" style="color: #D4A373" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">Duplikat undangan ini?</h3>
+                    <p class="text-sm text-stone-500 text-center mb-6">
+                        Kami akan membuat salinan baru dari
+                        "<span class="font-medium text-stone-700">{{ duplicateTarget.title || '(Tanpa judul)' }}</span>"
+                        sebagai draft. Data tamu, RSVP, ucapan, dan statistik tidak akan ikut disalin.
+                    </p>
+                    <div class="flex gap-3">
+                        <button
+                            @click="cancelDuplicate"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            @click="doDuplicate"
+                            :disabled="isDuplicating"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
+                            style="background-color: #D4A373"
+                        >
+                            <span v-if="isDuplicating" class="flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                Menduplikat…
+                            </span>
+                            <span v-else>Ya, Duplikat</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Duplicate success toast -->
+        <Transition name="toast">
+            <div v-if="duplicateSuccess"
+                 class="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-stone-100 p-4 flex items-start gap-3 max-w-xs">
+                <div class="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-stone-800">Undangan berhasil diduplikat.</p>
+                    <a :href="duplicateSuccess.editUrl"
+                       class="text-xs font-medium hover:underline"
+                       style="color: #D4A373">
+                        Buka salinan →
+                    </a>
+                </div>
+                <button @click="duplicateSuccess = null" class="text-stone-300 hover:text-stone-500 flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </Transition>
+
+        <!-- Duplicate error toast -->
+        <Transition name="toast">
+            <div v-if="duplicateError"
+                 class="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-red-100 p-4 flex items-start gap-3 max-w-xs">
+                <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-stone-700">{{ duplicateError }}</p>
+                </div>
+                <button @click="duplicateError = null" class="text-stone-300 hover:text-stone-500 flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </Transition>
     </DashboardLayout>
 </template>
 
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.15s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.2s; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(8px); }
 </style>

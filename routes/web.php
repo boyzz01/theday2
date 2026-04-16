@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::put('/invitations/{invitation}/music', [InvitationController::class, 'syncMusic'])->name('invitations.music');
     Route::patch('/invitations/{invitation}/config', [InvitationController::class, 'updateConfig'])->name('invitations.config');
     Route::patch('/invitations/{invitation}/template', [InvitationController::class, 'changeTemplate'])->name('invitations.change-template');
+    Route::post('/invitations/{invitation}/duplicate', [InvitationController::class, 'duplicate'])->name('invitations.duplicate');
     Route::post('/invitations/{invitation}/publish', [InvitationController::class, 'publish'])->name('invitations.publish');
 
     // File uploads

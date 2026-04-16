@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard;
 
 use App\Actions\ChangeTemplateAction;
+use App\Actions\DuplicateInvitationAction;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\InvitationSection;
@@ -564,6 +565,35 @@ class InvitationController extends Controller
                 ],
             ],
         ]);
+    }
+
+    // ─── API – Duplicate ──────────────────────────────────────────────
+
+    public function duplicate(Request $request, Invitation $invitation, DuplicateInvitationAction $action): JsonResponse
+    {
+        $this->authorizeOwner($invitation);
+
+        // Check plan invitation limit
+        $user  = $request->user();
+        $plan  = $user->currentPlan();
+        $limit = $plan?->max_invitations;
+
+        if ($limit !== null) {
+            $count = $user->invitations()->count();
+            if ($count >= $limit) {
+                return response()->json(['error' => 'invitation_limit_reached'], 422);
+            }
+        }
+
+        $clone = $action->execute($invitation);
+
+        return response()->json([
+            'success'  => true,
+            'id'       => $clone->id,
+            'title'    => $clone->title,
+            'slug'     => $clone->slug,
+            'edit_url' => route('dashboard.invitations.edit', $clone->id),
+        ], 201);
     }
 
     public function destroy(Invitation $invitation): \Illuminate\Http\RedirectResponse
