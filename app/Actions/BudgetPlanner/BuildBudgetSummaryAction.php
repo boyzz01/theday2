@@ -14,7 +14,7 @@ final class BuildBudgetSummaryAction
         $items = $budget->activeItems()->get();
 
         $totalPlanned = $items->sum('planned_amount');
-        $totalActual  = $items->sum(fn ($i) => $i->actual_amount ?? 0);
+        $totalActual  = $items->sum(fn ($i) => $i->terpakai);
 
         $totalBudget      = $budget->total_budget;
         $remainingBudget  = $totalBudget !== null ? ($totalBudget - $totalActual) : null;
@@ -27,13 +27,15 @@ final class BuildBudgetSummaryAction
             $usagePercentage = min(round(($totalActual / $totalBudget) * 100, 2), 100);
         }
 
-        // Count overbudget categories
+        // Count overbudget categories — use terpakai accessor for each item so DP tracking is included
         $overbudgetCategoriesCount = $budget->activeCategories()
-            ->withSum(['activeItems' => fn ($q) => $q->whereNotNull('actual_amount')], 'actual_amount')
-            ->withSum('activeItems', 'planned_amount')
+            ->with('activeItems')
             ->get()
-            ->filter(fn ($cat) => ($cat->active_items_sum_planned_amount ?? 0) > 0
-                && ($cat->active_items_sum_actual_amount ?? 0) > ($cat->active_items_sum_planned_amount ?? 0))
+            ->filter(function ($cat) {
+                $planned = $cat->activeItems->sum('planned_amount');
+                $actual  = $cat->activeItems->sum(fn ($i) => $i->terpakai);
+                return $planned > 0 && $actual > $planned;
+            })
             ->count();
 
         return [

@@ -321,7 +321,7 @@ function openEditItem(item) {
     editingItem.value = item;
     itemForm.value = {
         title:           item.title,
-        category_id:     item.category?.id ?? '',
+        category_id:     item.category_id ?? item.category?.id ?? '',
         vendor_name:     item.vendor_name ?? '',
         planned_amount:  item.planned_amount ?? '',
         actual_amount:   item.actual_amount ?? '',
