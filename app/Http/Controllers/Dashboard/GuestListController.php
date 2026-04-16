@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Exports\GuestListExport;
 use App\Http\Controllers\Controller;
 use App\Models\GuestList;
 use App\Models\Invitation;
@@ -17,6 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class GuestListController extends Controller
 {
@@ -258,9 +261,9 @@ class GuestListController extends Controller
         return response()->json(['updated' => $updated]);
     }
 
-    // ─── API: Export CSV ──────────────────────────────────────────
+    // ─── API: Export XLSX ─────────────────────────────────────────
 
-    public function export(Request $request)
+    public function export(Request $request): BinaryFileResponse
     {
         $userId = Auth::id();
 
@@ -280,32 +283,10 @@ class GuestListController extends Controller
             $query->filterCategory($category);
         }
 
-        $guests = $query->orderBy('name')->get();
+        $guests   = $query->orderBy('name')->get();
+        $filename = 'guest-list-' . now()->format('Ymd') . '.xlsx';
 
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="guest-list.csv"',
-        ];
-
-        $callback = function () use ($guests) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
-            fputcsv($handle, ['Nama', 'Nomor WA', 'Kategori', 'Status Kirim', 'RSVP', 'Terakhir Kirim', 'Undangan']);
-            foreach ($guests as $g) {
-                fputcsv($handle, [
-                    $g->name,
-                    $g->phone_number,
-                    $g->category ?? '',
-                    $g->send_status->label(),
-                    $g->rsvp_status->label(),
-                    $g->last_sent_at?->format('Y-m-d H:i') ?? '',
-                    $g->invitation?->title ?? '',
-                ]);
-            }
-            fclose($handle);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new GuestListExport($guests), $filename);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────

@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Exports\GuestMessageExport;
 use App\Http\Controllers\Controller;
 use App\Models\GuestMessage;
 use App\Models\Invitation;
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DashboardGuestMessageController extends Controller
 {
@@ -157,9 +160,9 @@ class DashboardGuestMessageController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    // ─── API: Export CSV ──────────────────────────────────────────
+    // ─── API: Export XLSX ─────────────────────────────────────────
 
-    public function export(Request $request, Invitation $invitation)
+    public function export(Request $request, Invitation $invitation): BinaryFileResponse
     {
         $this->authorizeOwner($invitation);
 
@@ -172,34 +175,10 @@ class DashboardGuestMessageController extends Controller
             default   => null,
         };
 
-        $messages = $query->latest()->get();
+        $messages  = $query->latest()->get();
+        $filename  = 'buku-tamu-' . now()->format('Ymd') . '.xlsx';
 
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="buku-tamu.csv"',
-        ];
-
-        $callback = function () use ($messages) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
-            fputcsv($handle, ['Nama', 'Ucapan', 'Waktu Kirim', 'Status']);
-            foreach ($messages as $m) {
-                $status = [];
-                if ($m->is_pinned) $status[] = 'Dipinned';
-                if ($m->is_hidden) $status[] = 'Disembunyikan';
-                if (empty($status)) $status[] = 'Tampil';
-
-                fputcsv($handle, [
-                    $m->displayName(),
-                    $m->message,
-                    $m->created_at->format('Y-m-d H:i'),
-                    implode(', ', $status),
-                ]);
-            }
-            fclose($handle);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new GuestMessageExport($messages), $filename);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────

@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Exports\RsvpExport;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\Rsvp;
@@ -13,7 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DashboardRsvpController extends Controller
 {
@@ -96,41 +98,12 @@ class DashboardRsvpController extends Controller
         ]);
     }
 
-    public function export(Invitation $invitation): StreamedResponse
+    public function export(Invitation $invitation): BinaryFileResponse
     {
         abort_if($invitation->user_id !== Auth::id(), 403);
 
-        $rsvps = Rsvp::where('invitation_id', $invitation->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $filename = 'rsvp-' . $invitation->slug . '-' . now()->format('Ymd') . '.xlsx';
 
-        $filename = 'rsvp-' . $invitation->slug . '-' . now()->format('Ymd') . '.csv';
-
-        return response()->streamDownload(function () use ($rsvps) {
-            $out = fopen('php://output', 'w');
-            // UTF-8 BOM for Excel
-            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($out, ['Nama', 'No. HP', 'Kehadiran', 'Jumlah Tamu', 'Catatan', 'Waktu Daftar']);
-
-            $label = [
-                'hadir'       => 'Hadir',
-                'tidak_hadir' => 'Tidak Hadir',
-                'ragu'        => 'Masih Ragu',
-            ];
-
-            foreach ($rsvps as $r) {
-                fputcsv($out, [
-                    $r->guest_name,
-                    $r->phone ?? '-',
-                    $label[$r->attendance->value] ?? $r->attendance->value,
-                    $r->guest_count,
-                    $r->notes ?? '-',
-                    $r->created_at->format('d/m/Y H:i'),
-                ]);
-            }
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return Excel::download(new RsvpExport($invitation), $filename);
     }
 }
