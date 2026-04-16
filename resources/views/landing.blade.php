@@ -964,7 +964,7 @@
             </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             @php
             $plans = [
                 [
@@ -984,30 +984,16 @@
                 [
                     'id_name'   => 'Premium',
                     'en_name'   => 'Premium',
-                    'price'     => 'Rp 99.000',
-                    'id_period' => 'per undangan',
-                    'en_period' => 'per invitation',
+                    'price'     => 'Rp 149.000',
+                    'id_period' => 'per bulan',
+                    'en_period' => 'per month',
                     'popular'   => true,
-                    'id_features' => ['1 undangan premium', 'Semua template (50+)', 'Konfirmasi RSVP', 'Custom URL slug', 'Password protection', 'Upload musik sendiri', '30 foto galeri', 'Analitik lengkap', 'Tanpa watermark'],
-                    'en_features' => ['1 premium invitation', 'All templates (50+)', 'RSVP confirmation', 'Custom URL slug', 'Password protection', 'Upload own music', '30 gallery photos', 'Full analytics', 'No watermark'],
+                    'id_features' => ['Undangan tidak terbatas', 'Semua template (50+)', 'Konfirmasi RSVP', 'Custom URL slug', 'Perlindungan kata sandi', 'Upload musik sendiri', 'Foto galeri tidak terbatas', 'Analitik lengkap', 'Tanpa watermark', 'Prioritas dukungan'],
+                    'en_features' => ['Unlimited invitations', 'All templates (50+)', 'RSVP confirmation', 'Custom URL slug', 'Password protection', 'Upload own music', 'Unlimited gallery photos', 'Full analytics', 'No watermark', 'Priority support'],
                     'id_disabled' => [],
                     'en_disabled' => [],
                     'id_cta'    => 'Pilih Premium',
                     'en_cta'    => 'Choose Premium',
-                ],
-                [
-                    'id_name'   => 'Bisnis',
-                    'en_name'   => 'Business',
-                    'price'     => 'Rp 299.000',
-                    'id_period' => 'per bulan',
-                    'en_period' => 'per month',
-                    'popular'   => false,
-                    'id_features' => ['Undangan tidak terbatas', 'Semua fitur Premium', 'Prioritas support', 'White label (tanpa branding)', 'Template eksklusif', 'Custom domain', 'Laporan Excel'],
-                    'en_features' => ['Unlimited invitations', 'All Premium features', 'Priority support', 'White label (no branding)', 'Exclusive templates', 'Custom domain', 'Excel reports'],
-                    'id_disabled' => [],
-                    'en_disabled' => [],
-                    'id_cta'    => 'Hubungi Kami',
-                    'en_cta'    => 'Contact Us',
                 ],
             ];
             @endphp

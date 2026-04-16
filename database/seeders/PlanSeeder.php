@@ -16,6 +16,7 @@ class PlanSeeder extends Seeder
         $plans = [
             [
                 'name'                => 'Free',
+                'slug'                => 'free',
                 'price'               => 0,
                 'duration_days'       => 0,
                 'max_invitations'     => 1,
@@ -34,29 +35,9 @@ class PlanSeeder extends Seeder
                 'sort_order'          => 1,
             ],
             [
-                'name'                => 'Silver',
-                'price'               => 99000,
-                'duration_days'       => 30,
-                'max_invitations'     => 5,
-                'max_gallery_photos'  => 20,
-                'custom_music'        => true,
-                'remove_watermark'    => true,
-                'custom_domain'       => false,
-                'analytics_access'    => true,
-                'features'            => [
-                    'Semua template (50+)',
-                    'Konfirmasi RSVP',
-                    'Custom URL slug',
-                    'Upload musik sendiri',
-                    'Analitik lengkap',
-                    'Tanpa watermark',
-                ],
-                'is_active'           => true,
-                'sort_order'          => 2,
-            ],
-            [
-                'name'                => 'Gold',
-                'price'               => 199000,
+                'name'                => 'Premium',
+                'slug'                => 'premium',
+                'price'               => 149000,
                 'duration_days'       => 30,
                 'max_invitations'     => 9999,
                 'max_gallery_photos'  => 9999,
@@ -67,21 +48,20 @@ class PlanSeeder extends Seeder
                 'features'            => [
                     'Undangan tidak terbatas',
                     'Semua template (50+)',
-                    'Custom URL slug',
-                    'Custom domain',
                     'Upload musik sendiri',
                     'Foto galeri tidak terbatas',
                     'Analitik lengkap',
                     'Tanpa watermark',
-                    'Prioritas support',
+                    'Perlindungan kata sandi',
+                    'Prioritas dukungan',
                 ],
                 'is_active'           => true,
-                'sort_order'          => 3,
+                'sort_order'          => 2,
             ],
         ];
 
         foreach ($plans as $plan) {
-            Plan::updateOrCreate(['name' => $plan['name']], $plan);
+            Plan::updateOrCreate(['slug' => $plan['slug']], $plan);
         }
     }
 }

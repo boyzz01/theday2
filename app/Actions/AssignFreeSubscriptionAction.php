@@ -14,7 +14,7 @@ class AssignFreeSubscriptionAction
 {
     public function execute(User $user): void
     {
-        $freePlan = Plan::where('name', 'Free')->where('price', 0)->firstOrFail();
+        $freePlan = Plan::where('slug', 'free')->firstOrFail();
 
         Subscription::create([
             'user_id'    => $user->id,

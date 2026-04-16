@@ -114,7 +114,7 @@ class InvitationController extends Controller
 
         $user  = Auth::user();
         $limit = $user->currentPlan()?->max_invitations
-            ?? Plan::where('price', 0)->value('max_invitations')
+            ?? Plan::where('slug', 'free')->value('max_invitations')
             ?? 1;
         if ($user->invitations()->count() >= $limit) {
             return redirect()->route('dashboard.invitations.index')

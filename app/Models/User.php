@@ -104,6 +104,21 @@ class User extends Authenticatable
         return $this->activeSubscription?->plan;
     }
 
+    public function isPremium(): bool
+    {
+        return $this->activeSubscription?->plan->slug === 'premium';
+    }
+
+    public function isFree(): bool
+    {
+        return ! $this->isPremium();
+    }
+
+    public function planSlug(): string
+    {
+        return $this->isPremium() ? 'premium' : 'free';
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

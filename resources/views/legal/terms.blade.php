@@ -77,11 +77,8 @@
             <strong>Paket Free</strong> — gratis selamanya, akses ke template dasar, dengan watermark TheDay
         </li>
         <li>
-            <strong>Paket Silver</strong> — tanpa watermark, fitur RSVP lanjutan, prioritas dukungan
-        </li>
-        <li>
-            <strong>Paket Gold</strong> — semua fitur Silver ditambah musik kustom, analitik, dan akses ke
-            semua template premium
+            <strong>Paket Premium</strong> — tanpa watermark, upload musik sendiri, analitik lengkap,
+            semua template premium, undangan tidak terbatas, prioritas dukungan
         </li>
     </ul>
     <p>

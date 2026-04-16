@@ -220,7 +220,7 @@ async function confirmChange() {
                         </svg>
                     </div>
                     <h3 class="text-base font-semibold text-stone-800 mb-1">Template Premium</h3>
-                    <p class="text-sm text-stone-500 mb-5">Template ini tersedia untuk paket Silver dan Gold.</p>
+                    <p class="text-sm text-stone-500 mb-5">Template ini tersedia untuk paket Premium.</p>
                     <div class="flex flex-col gap-2">
                         <a href="/dashboard/upgrade"
                             class="w-full px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-xl hover:bg-amber-600 transition-colors">
