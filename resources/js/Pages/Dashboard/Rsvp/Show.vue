@@ -20,9 +20,9 @@ const filters = [
 ];
 
 const attendanceBadge = {
-    hadir:       { label: 'Hadir',       bg: '#D1FAE5', color: '#059669' },
-    tidak_hadir: { label: 'Tidak Hadir', bg: '#FEE2E2', color: '#DC2626' },
-    ragu:        { label: 'Masih Ragu',  bg: '#EFF2F0', color: '#73877C' },
+    hadir:       { label: 'Hadir',       cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+    tidak_hadir: { label: 'Tidak Hadir', cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+    ragu:        { label: 'Masih Ragu',  cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
 };
 
 function setFilter(key) {
@@ -133,10 +133,10 @@ function doExport() {
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <p class="text-sm font-semibold text-stone-800">{{ r.guest_name }}</p>
-                        <span
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold"
-                            :style="`background-color: ${attendanceBadge[r.attendance]?.bg}; color: ${attendanceBadge[r.attendance]?.color}`"
-                        >
+                        <span :class="[
+                            'px-2 py-0.5 rounded-full text-xs font-semibold',
+                            attendanceBadge[r.attendance]?.cls ?? 'bg-stone-100 text-stone-500',
+                        ]">
                             {{ attendanceBadge[r.attendance]?.label ?? r.attendance }}
                         </span>
                         <span v-if="r.attendance === 'hadir'" class="text-xs text-stone-400">

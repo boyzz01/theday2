@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Template;
 use App\Models\TemplateCategory;
+use App\Support\SectionAccess;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -45,9 +46,10 @@ class TemplateController extends Controller
             ]);
 
         return Inertia::render('Dashboard/Templates', [
-            'categories'      => $categories,
-            'templates'       => $templates,
-            'filters'         => [
+            'categories'    => $categories,
+            'templates'     => $templates,
+            'canUsePremium' => SectionAccess::isPremium($request->user()),
+            'filters'       => [
                 'category' => $request->category ?? 'all',
                 'tier'     => $request->tier ?? 'all',
             ],

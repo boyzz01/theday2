@@ -52,15 +52,11 @@ function resolvedStatus() {
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-sm font-semibold text-stone-800 leading-tight">{{ title }}</span>
 
-                    <!-- Required / Optional badge -->
+                    <!-- Required badge — only shown when required; optional sections show nothing -->
                     <span
                         v-if="isRequired"
-                        class="text-xs font-medium px-1.5 py-0.5 rounded-md border bg-[#92A89C]/10 text-[#73877C] border-[#B8C7BF]"
+                        class="text-xs font-medium px-1.5 py-0.5 rounded-md border bg-rose-50 text-rose-600 border-rose-200"
                     >Wajib</span>
-                    <span
-                        v-else
-                        class="text-xs font-medium px-1.5 py-0.5 rounded-md border bg-stone-50 text-stone-500 border-stone-200"
-                    >Opsional</span>
 
                     <!-- Completion status badge -->
                     <span :class="[

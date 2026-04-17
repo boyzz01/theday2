@@ -113,8 +113,6 @@ const toggleGroup = (label) => {
 };
 
 // auto-expand group yang berisi halaman aktif
-let removeBeforeListener = null;
-
 onMounted(() => {
     navItems.forEach(item => {
         if (item.group && isGroupActive(item)) {
@@ -122,21 +120,10 @@ onMounted(() => {
         }
     });
 
-    // Intercept any navigation to the templates page when invitation limit is reached
-    removeBeforeListener = router.on('before', (event) => {
-        if (canCreateInvitation.value) return;
-        const url = event.detail.visit.url.pathname;
-        if (url === '/dashboard/templates') {
-            event.preventDefault();
-            showLimitModal.value = true;
-        }
-    });
-
     document.addEventListener('click', handleClickOutsideAvatar);
 });
 
 onBeforeUnmount(() => {
-    if (removeBeforeListener) removeBeforeListener();
     document.removeEventListener('click', handleClickOutsideAvatar);
 });
 

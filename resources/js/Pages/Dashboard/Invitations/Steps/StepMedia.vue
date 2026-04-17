@@ -2,8 +2,9 @@
 // Step 3 — Media
 // Sections: gallery (opt), video (opt), love_story (opt)
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
+import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
 
 const props = defineProps({
     galleries:          { type: Object,   required: true }, // ref([])
@@ -13,7 +14,11 @@ const props = defineProps({
     removeGallery:      { type: Function, required: true },
     moveGallery:        { type: Function, required: true },
     onToggleSection:    { type: Function, required: true },
+    canUsePremium:      { type: Boolean,  default: false },
+    maxGalleryPhotos:   { type: Number,   default: 5 },
 });
+
+const galleryAtLimit = computed(() => !props.canUsePremium && props.galleries.length >= props.maxGalleryPhotos);
 
 const expanded      = ref(null);
 const uploadingGallery = ref(false);
@@ -88,7 +93,16 @@ async function handleGalleryUpload(event) {
                     </div>
                 </div>
 
-                <label :class="[
+                <!-- Gallery photo limit indicator for free users -->
+                <div v-if="!canUsePremium" class="flex items-center justify-between text-xs text-stone-400">
+                    <span>{{ galleries.length }} / {{ maxGalleryPhotos }} foto</span>
+                    <a v-if="galleryAtLimit" href="/upgrade"
+                       class="font-semibold text-[#73877C] hover:underline">
+                        Upgrade untuk lebih
+                    </a>
+                </div>
+
+                <label v-if="!galleryAtLimit" :class="[
                     'w-full py-4 rounded-xl border-2 border-dashed text-sm font-medium flex items-center justify-center gap-2 cursor-pointer transition-all',
                     uploadingGallery
                         ? 'border-[#B8C7BF] text-[#73877C] bg-[#92A89C]/10'
@@ -106,12 +120,19 @@ async function handleGalleryUpload(event) {
                            :disabled="uploadingGallery || !invitationId"
                            @change="handleGalleryUpload"/>
                 </label>
+                <!-- Limit reached state -->
+                <div v-else class="w-full py-4 rounded-xl border-2 border-dashed border-[#B8C7BF]/60 bg-[#92A89C]/5 text-sm text-center text-stone-500">
+                    Batas {{ maxGalleryPhotos }} foto tercapai.
+                    <a href="/upgrade" class="font-semibold text-[#73877C] hover:underline">Upgrade ke Premium</a>
+                    untuk foto tidak terbatas.
+                </div>
                 <p v-if="!invitationId" class="text-xs text-[#92A89C]">Simpan Step 1 terlebih dahulu untuk upload foto.</p>
             </div>
         </SectionAccordionCard>
 
-        <!-- Video (optional) -->
+        <!-- Video — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Video"
             description="Link video YouTube atau Vimeo untuk ditampilkan"
             :is-required="sections.video?.is_required ?? false"
@@ -143,8 +164,9 @@ async function handleGalleryUpload(event) {
             </div>
         </SectionAccordionCard>
 
-        <!-- Love Story (optional) -->
+        <!-- Love Story — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Kisah Cinta"
             description="Ceritakan perjalanan kisah cinta kalian"
             :is-required="sections.love_story?.is_required ?? false"

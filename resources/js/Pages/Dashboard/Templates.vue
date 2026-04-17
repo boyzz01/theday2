@@ -1,12 +1,13 @@
 <script setup>
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
-    categories: Array,
-    templates:  Array,
-    filters:    Object,
+    categories:    Array,
+    templates:     Array,
+    filters:       Object,
+    canUsePremium: { type: Boolean, default: false },
 });
 
 // ── Filter state ──────────────────────────────────────────────────
@@ -24,6 +25,20 @@ watch([activeCategory, activeTier], ([cat, tier]) => {
 
 // ── Template selection ────────────────────────────────────────────
 const creatingId = ref(null);
+const canCreateInvitation = computed(() => usePage().props.can_create_invitation ?? true);
+
+// ── Limit modal (invitation quota reached) ────────────────────────
+const showLimitModal = ref(false);
+
+// ── Upgrade modal (premium template clicked by free user) ─────────
+const upgradeTemplate = ref(null); // template that triggered the modal
+
+function openUpgradeModal(template) {
+    upgradeTemplate.value = template;
+}
+function closeUpgradeModal() {
+    upgradeTemplate.value = null;
+}
 
 // ── Preview modal ─────────────────────────────────────────────────
 const previewTemplate = ref(null);
@@ -52,12 +67,22 @@ const secondaryColor = (t) => t.default_config?.secondary_color ?? '#FEFAE0';
 const accentColor    = (t) => t.default_config?.accent_color    ?? '#CCD5AE';
 const fontTitle      = (t) => t.default_config?.font_title      ?? 'serif';
 
-const useTemplate = (templateId) => {
+const useTemplate = (template) => {
     if (creatingId.value) return;
-    creatingId.value = templateId;
+    // Block if invitation quota reached — show limit modal
+    if (!canCreateInvitation.value) {
+        showLimitModal.value = true;
+        return;
+    }
+    // Block free users from using premium templates — show upgrade modal instead
+    if (template.tier === 'premium' && !props.canUsePremium) {
+        openUpgradeModal(template);
+        return;
+    }
+    creatingId.value = template.id;
     router.post(
         route('dashboard.invitations.from-template'),
-        { template_id: templateId },
+        { template_id: template.id },
         { onFinish: () => { creatingId.value = null; } }
     );
 };
@@ -220,8 +245,10 @@ const filteredCount = computed(() => props.templates.length);
                                 </svg>
                                 Preview
                             </button>
+                            <!-- Gunakan / lock button -->
                             <button
-                                @click="useTemplate(template.id)"
+                                v-if="template.tier === 'free' || canUsePremium"
+                                @click="useTemplate(template)"
                                 :disabled="!!creatingId"
                                 class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-md transition-all hover:opacity-90 disabled:opacity-60"
                                 :style="`background-color: ${primaryColor(template)}`"
@@ -234,6 +261,18 @@ const filteredCount = computed(() => props.templates.length);
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
                                 Gunakan
+                            </button>
+                            <!-- Free user + premium template: show upgrade button -->
+                            <button
+                                v-else
+                                @click="openUpgradeModal(template)"
+                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-800 text-[#C4D0C9] text-xs font-semibold shadow-md hover:bg-stone-700 transition-colors"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Premium
                             </button>
                         </div>
                     </div>
@@ -255,8 +294,10 @@ const filteredCount = computed(() => props.templates.length);
                             >
                                 Preview
                             </button>
+                            <!-- Free template OR premium user: direct use -->
                             <button
-                                @click="useTemplate(template.id)"
+                                v-if="template.tier === 'free' || canUsePremium"
+                                @click="useTemplate(template)"
                                 :disabled="!!creatingId"
                                 class="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-1.5"
                                 :style="`background-color: ${primaryColor(template)}`"
@@ -266,6 +307,18 @@ const filteredCount = computed(() => props.templates.length);
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
                                 {{ creatingId === template.id ? 'Membuat…' : 'Gunakan Template' }}
+                            </button>
+                            <!-- Premium template + free user: upgrade CTA -->
+                            <button
+                                v-else
+                                @click="openUpgradeModal(template)"
+                                class="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-stone-800 text-[#C4D0C9] hover:bg-stone-700 transition-colors"
+                            >
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Upgrade
                             </button>
                         </div>
                     </div>
@@ -312,8 +365,10 @@ const filteredCount = computed(() => props.templates.length);
                                 <span class="text-xs text-stone-400">· {{ previewTemplate.category.name }}</span>
                             </div>
                             <div class="flex items-center gap-2">
+                                <!-- Premium modal header CTA -->
                                 <button
-                                    @click="useTemplate(previewTemplate.id)"
+                                    v-if="previewTemplate.tier === 'free' || canUsePremium"
+                                    @click="useTemplate(previewTemplate)"
                                     :disabled="!!creatingId"
                                     class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
                                     :style="`background-color: ${primaryColor(previewTemplate)}`"
@@ -323,6 +378,17 @@ const filteredCount = computed(() => props.templates.length);
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                     </svg>
                                     {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template' }}
+                                </button>
+                                <button
+                                    v-else
+                                    @click="closePreview(); openUpgradeModal(previewTemplate)"
+                                    class="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-stone-800 text-[#C4D0C9] hover:bg-stone-700 transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                    Upgrade ke Premium
                                 </button>
                                 <button
                                     @click="closePreview"
@@ -456,8 +522,10 @@ const filteredCount = computed(() => props.templates.length);
                                     </ul>
                                 </div>
 
+                                <!-- Sidebar CTA -->
                                 <button
-                                    @click="useTemplate(previewTemplate.id)"
+                                    v-if="previewTemplate.tier === 'free' || canUsePremium"
+                                    @click="useTemplate(previewTemplate)"
                                     :disabled="!!creatingId"
                                     class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
                                     :style="`background-color: ${primaryColor(previewTemplate)}`"
@@ -468,11 +536,190 @@ const filteredCount = computed(() => props.templates.length);
                                     </svg>
                                     {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template Ini' }}
                                 </button>
+                                <button
+                                    v-else
+                                    @click="closePreview(); openUpgradeModal(previewTemplate)"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold bg-stone-800 text-[#C4D0C9] hover:bg-stone-700 transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                    Upgrade ke Premium
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </Transition>
+        <!-- ── Upgrade Modal ──────────────────────────────────────── -->
+        <Transition name="modal">
+            <div
+                v-if="upgradeTemplate"
+                class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4"
+                style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px)"
+                @click.self="closeUpgradeModal"
+            >
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+                    <!-- Template thumbnail strip -->
+                    <div
+                        class="relative h-36 overflow-hidden"
+                        :style="`background: linear-gradient(160deg, ${secondaryColor(upgradeTemplate)}, ${primaryColor(upgradeTemplate)}55)`"
+                    >
+                        <img
+                            v-if="upgradeTemplate.thumbnail_url"
+                            :src="upgradeTemplate.thumbnail_url"
+                            :alt="upgradeTemplate.name"
+                            class="w-full h-full object-cover object-top opacity-80"
+                        />
+                        <!-- Blur overlay -->
+                        <div class="absolute inset-0" style="background: rgba(0,0,0,0.25); backdrop-filter: blur(1px)"/>
+                        <!-- Crown badge center -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                            <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-semibold tracking-wide">
+                                Premium
+                            </span>
+                        </div>
+                        <!-- Close button -->
+                        <button
+                            @click="closeUpgradeModal"
+                            class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 transition-colors"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <h3 class="text-base font-semibold text-stone-800 mb-1">
+                            Template <span :style="`color: ${primaryColor(upgradeTemplate)}`">{{ upgradeTemplate.name }}</span> tersedia di Premium
+                        </h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                            Upgrade ke Premium untuk menggunakan template ini dan menikmati fitur lanjutan: live streaming, kisah cinta, amplop digital, dan lebih banyak lagi.
+                        </p>
+
+                        <!-- Benefit pills -->
+                        <div class="flex flex-wrap gap-2 mb-5">
+                            <span v-for="feat in ['Semua template', 'Live streaming', 'Kisah cinta', 'Amplop digital', 'Upload musik']"
+                                  :key="feat"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
+                                <svg class="w-3 h-3 flex-shrink-0" :style="`color: ${primaryColor(upgradeTemplate)}`"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                {{ feat }}
+                            </span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-2">
+                            <a
+                                href="/upgrade"
+                                class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                                :style="`background-color: ${primaryColor(upgradeTemplate)}`"
+                            >
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
+                                </svg>
+                                Upgrade ke Premium
+                            </a>
+                            <button
+                                @click="closeUpgradeModal(); activeTier = 'free'"
+                                class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
+                            >
+                                Lihat Template Gratis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- ── Limit Modal ─────────────────────────────────────────── -->
+        <Transition name="modal">
+            <div
+                v-if="showLimitModal"
+                class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4"
+                style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px)"
+                @click.self="showLimitModal = false"
+            >
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+                    <!-- Header strip -->
+                    <div class="relative h-28 overflow-hidden bg-gradient-to-br from-[#EFF2F0] to-[#B8C7BF]/40 flex items-center justify-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="w-12 h-12 rounded-2xl bg-[#92A89C]/20 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-[#73877C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-[#92A89C]/20 text-[#73877C] text-xs font-semibold">
+                                Batas Undangan
+                            </span>
+                        </div>
+                        <button
+                            @click="showLimitModal = false"
+                            class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/10 text-stone-600 flex items-center justify-center hover:bg-black/20 transition-colors"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <h3 class="text-base font-semibold text-stone-800 mb-1">
+                            Batas undangan tercapai
+                        </h3>
+                        <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                            Paket gratis hanya mendukung 1 undangan. Upgrade ke Premium untuk membuat undangan tanpa batas dan akses semua fitur lanjutan.
+                        </p>
+
+                        <!-- Benefit pills -->
+                        <div class="flex flex-wrap gap-2 mb-5">
+                            <span v-for="feat in ['Undangan tak terbatas', 'Semua template', 'Live streaming', 'Amplop digital', 'Upload musik']"
+                                  :key="feat"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
+                                <svg class="w-3 h-3 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                {{ feat }}
+                            </span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-2">
+                            <a
+                                href="/upgrade"
+                                class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
+                                </svg>
+                                Upgrade ke Premium
+                            </a>
+                            <button
+                                @click="showLimitModal = false"
+                                class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
         </Teleport>
 
     </DashboardLayout>

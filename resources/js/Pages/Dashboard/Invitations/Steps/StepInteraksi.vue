@@ -8,6 +8,7 @@ import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 const props = defineProps({
     sections:        { type: Object,   required: true },
     onToggleSection: { type: Function, required: true },
+    canUsePremium:   { type: Boolean,  default: false },
 });
 
 const expanded = ref(null);
@@ -85,8 +86,9 @@ function removeBankAccount(index) {
             </div>
         </SectionAccordionCard>
 
-        <!-- Gift (optional) -->
+        <!-- Gift — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Kado Digital"
             description="Rekening bank untuk kado pernikahan"
             :is-required="sections.gift?.is_required ?? false"

@@ -16,10 +16,11 @@ const props = defineProps({
     uploadAudio:      { type: Function, required: true },
     onToggleSection:  { type: Function, required: true },
     // Template picker
-    template:         { type: Object,   required: true },
-    templates:        { type: Array,    default: () => [] },
-    canUsePremium:    { type: Boolean,  default: false },
-    invitationStatus: { type: String,   default: 'draft' },
+    template:          { type: Object,   required: true },
+    templates:         { type: Array,    default: () => [] },
+    canUsePremium:     { type: Boolean,  default: false },
+    canUseCustomMusic: { type: Boolean,  default: false },
+    invitationStatus:  { type: String,   default: 'draft' },
 });
 
 const emit = defineEmits(['update:selectedMusic', 'template-changed']);
@@ -270,27 +271,50 @@ async function handleAudioUpload(event) {
                     </div>
                 </div>
 
-                <!-- Upload custom -->
+                <!-- Upload custom — Premium only -->
                 <div>
                     <p class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Upload Sendiri</p>
-                    <label :class="[
-                        'w-full py-3 rounded-xl border-2 border-dashed text-sm font-medium flex items-center justify-center gap-2 cursor-pointer transition-all',
-                        uploadingAudio ? 'border-[#B8C7BF] text-[#73877C]' : 'border-stone-200 text-stone-500 hover:border-[#92A89C]/50 hover:text-[#73877C]',
-                    ]">
-                        <svg v-if="uploadingAudio" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                        </svg>
-                        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                        </svg>
-                        {{ uploadingAudio ? 'Mengunggah…' : 'Upload MP3 / WAV' }}
-                        <input type="file" accept="audio/*" class="sr-only"
-                               :disabled="uploadingAudio || !invitationId"
-                               @change="handleAudioUpload"/>
-                    </label>
-                    <p v-if="!invitationId" class="text-xs text-[#92A89C] mt-1">Simpan Step 1 terlebih dahulu untuk upload audio.</p>
+
+                    <!-- Premium: show upload button -->
+                    <template v-if="canUseCustomMusic">
+                        <label :class="[
+                            'w-full py-3 rounded-xl border-2 border-dashed text-sm font-medium flex items-center justify-center gap-2 cursor-pointer transition-all',
+                            uploadingAudio ? 'border-[#B8C7BF] text-[#73877C]' : 'border-stone-200 text-stone-500 hover:border-[#92A89C]/50 hover:text-[#73877C]',
+                        ]">
+                            <svg v-if="uploadingAudio" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                            </svg>
+                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            {{ uploadingAudio ? 'Mengunggah…' : 'Upload MP3 / WAV' }}
+                            <input type="file" accept="audio/*" class="sr-only"
+                                   :disabled="uploadingAudio || !invitationId"
+                                   @change="handleAudioUpload"/>
+                        </label>
+                        <p v-if="!invitationId" class="text-xs text-[#92A89C] mt-1">Simpan Step 1 terlebih dahulu untuk upload audio.</p>
+                    </template>
+
+                    <!-- Free: locked teaser (Pattern B) -->
+                    <div v-else
+                         class="relative rounded-xl border border-[#B8C7BF]/60 bg-gradient-to-br from-stone-50 to-[#92A89C]/5 p-4 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-[#92A89C]/15 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-[#73877C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-stone-700">Upload musik sendiri</p>
+                            <p class="text-xs text-stone-400 mt-0.5">Tersedia di Premium.</p>
+                        </div>
+                        <a href="/upgrade"
+                           class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-stone-800 text-[#C4D0C9] text-xs font-semibold hover:bg-stone-700 transition-colors">
+                            Upgrade
+                        </a>
+                    </div>
                 </div>
             </div>
         </SectionAccordionCard>

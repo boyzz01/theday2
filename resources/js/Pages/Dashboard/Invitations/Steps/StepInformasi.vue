@@ -4,6 +4,7 @@
 
 import { ref } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
+import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
 
 const props = defineProps({
     basic:             { type: Object,   required: true },
@@ -12,6 +13,7 @@ const props = defineProps({
     uploadPhotoField:  { type: Function, required: true },
     deletePhotoField:  { type: Function, required: true },
     onToggleSection:   { type: Function, required: true },
+    canUsePremium:     { type: Boolean,  default: false },
 });
 
 // Which card is expanded (only one at a time)
@@ -258,8 +260,9 @@ function handlePhotoUpload(event, field) {
             </div>
         </SectionAccordionCard>
 
-        <!-- Quote (optional) -->
+        <!-- Quote — Premium only (Pattern B: visible locked teaser for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Kutipan"
             description="Kata-kata inspiratif atau ayat pilihan (opsional)"
             :is-required="sections.quote?.is_required ?? false"
@@ -290,6 +293,11 @@ function handlePhotoUpload(event, field) {
                 </div>
             </div>
         </SectionAccordionCard>
+        <PremiumUpsellCard
+            v-else
+            title="Kutipan"
+            description="Tampilkan kutipan inspiratif atau ayat pilihan yang mempercantik undangan kalian."
+        />
 
     </div>
 </template>

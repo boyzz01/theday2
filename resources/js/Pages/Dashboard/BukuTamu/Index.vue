@@ -7,9 +7,9 @@ const props = defineProps({
 });
 
 const statusConfig = {
-    draft:     { label: 'Draft',        bg: '#F3F4F6', color: '#6B7280' },
-    published: { label: 'Aktif',        bg: '#D1FAE5', color: '#059669' },
-    expired:   { label: 'Kedaluwarsa',  bg: '#FEE2E2', color: '#DC2626' },
+    draft:     { label: 'Draft',        cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
+    published: { label: 'Aktif',        cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+    expired:   { label: 'Kedaluwarsa',  cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
 };
 </script>
 
@@ -27,8 +27,7 @@ const statusConfig = {
         <!-- Empty state: no invitations -->
         <div v-if="!invitations.length"
              class="bg-white rounded-2xl border border-dashed border-stone-200 p-16 text-center">
-            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                 style="background-color: #EFF2F0">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-[#92A89C]/10">
                 <svg class="w-8 h-8 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -38,8 +37,7 @@ const statusConfig = {
             <p class="text-xs text-stone-400 mb-5">Buat undangan terlebih dahulu untuk melihat Buku Tamu.</p>
             <Link
                 :href="route('dashboard.templates')"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                style="background-color: #92A89C"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
             >
                 Buat Undangan
             </Link>
@@ -71,10 +69,10 @@ const statusConfig = {
                         <div class="w-8 h-px mx-auto mt-2" :style="`background-color: ${inv.template_color}`"/>
                     </div>
 
-                    <span
-                        class="absolute top-3 left-3 px-2 py-0.5 rounded-full text-xs font-semibold"
-                        :style="`background-color: ${statusConfig[inv.status]?.bg ?? '#F3F4F6'}; color: ${statusConfig[inv.status]?.color ?? '#6B7280'}`"
-                    >
+                    <span :class="[
+                        'absolute top-3 left-3 px-2 py-0.5 rounded-full text-xs font-semibold',
+                        statusConfig[inv.status]?.cls ?? 'bg-stone-100 text-stone-500',
+                    ]">
                         {{ statusConfig[inv.status]?.label ?? inv.status }}
                     </span>
                 </div>
@@ -112,8 +110,7 @@ const statusConfig = {
                     <!-- Single CTA -->
                     <Link
                         :href="route('dashboard.buku-tamu.show', inv.id)"
-                        class="block w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                        :style="`background-color: ${inv.template_color}`"
+                        class="block w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
                     >
                         Lihat Buku Tamu
                     </Link>

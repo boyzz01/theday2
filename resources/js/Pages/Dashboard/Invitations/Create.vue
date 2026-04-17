@@ -11,12 +11,14 @@ import StepTampilan   from './Steps/StepTampilan.vue';
 import StepPublikasi  from './Steps/StepPublikasi.vue';
 
 const props = defineProps({
-    template:      { type: Object,  required: true },
-    invitation:    { type: Object,  default: null },
-    defaultMusic:  { type: Array,   default: () => [] },
-    fonts:         { type: Array,   default: () => [] },
-    templates:     { type: Array,   default: () => [] },
-    canUsePremium: { type: Boolean, default: false },
+    template:          { type: Object,  required: true },
+    invitation:        { type: Object,  default: null },
+    defaultMusic:      { type: Array,   default: () => [] },
+    fonts:             { type: Array,   default: () => [] },
+    templates:         { type: Array,   default: () => [] },
+    canUsePremium:     { type: Boolean, default: false },
+    maxGalleryPhotos:  { type: Number,  default: 5 },
+    canUseCustomMusic: { type: Boolean, default: false },
 });
 
 const editor = reactive(useInvitationEditor(props.template, props.invitation));
@@ -157,6 +159,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :upload-photo-field="editor.uploadPhotoField"
                         :delete-photo-field="editor.deletePhotoField"
                         :on-toggle-section="editor.toggleSection"
+                        :can-use-premium="canUsePremium"
                     />
                     <StepAcara
                         v-else-if="editor.currentStep === 2"
@@ -166,6 +169,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :remove-event="editor.removeEvent"
                         :move-event="editor.moveEvent"
                         :on-toggle-section="editor.toggleSection"
+                        :can-use-premium="canUsePremium"
                     />
                     <StepMedia
                         v-else-if="editor.currentStep === 3"
@@ -176,11 +180,14 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :remove-gallery="editor.removeGallery"
                         :move-gallery="editor.moveGallery"
                         :on-toggle-section="editor.toggleSection"
+                        :can-use-premium="canUsePremium"
+                        :max-gallery-photos="maxGalleryPhotos"
                     />
                     <StepInteraksi
                         v-else-if="editor.currentStep === 4"
                         :sections="editor.sections"
                         :on-toggle-section="editor.toggleSection"
+                        :can-use-premium="canUsePremium"
                     />
                     <StepTampilan
                         v-else-if="editor.currentStep === 5"
@@ -195,6 +202,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :template="currentTemplate"
                         :templates="templates"
                         :can-use-premium="canUsePremium"
+                        :can-use-custom-music="canUseCustomMusic"
                         :invitation-status="editor.publish?.status ?? invitation?.status ?? 'draft'"
                         @update:selected-music="editor.selectedMusic = $event"
                         @template-changed="onTemplateChanged"
@@ -210,6 +218,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :basic="editor.basic"
                         :details="editor.details"
                         :on-toggle-section="editor.toggleSection"
+                        :can-use-premium="canUsePremium"
                     />
                 </Transition>
 

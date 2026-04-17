@@ -13,6 +13,7 @@ use App\Models\Invitation;
 use App\Models\Plan;
 use App\Models\InvitationSection;
 use App\Models\Template;
+use App\Support\SectionAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,9 +52,9 @@ class InvitationController extends Controller
                 ] : null,
             ]);
 
-        $user         = $request->user();
-        $canUsePremium = $user->currentPlan()?->remove_watermark ?? false;
-        $templates    = $this->templateList();
+        $user          = $request->user();
+        $canUsePremium = SectionAccess::isPremium($user);
+        $templates     = $this->templateList();
 
         return Inertia::render('Dashboard/Invitations/Index', [
             'invitations'   => $invitations,
@@ -124,6 +125,12 @@ class InvitationController extends Controller
         $template  = Template::findOrFail($data['template_id']);
         $eventType = 'pernikahan';
 
+        // Premium gate: free users may not use premium templates
+        if ($template->isPremium() && ! SectionAccess::isPremium($user)) {
+            return redirect()->route('dashboard.invitations.index')
+                ->with('error', 'Template ini hanya tersedia di Premium. Upgrade untuk menggunakannya.');
+        }
+
         // Reuse existing draft if one exists (max 1 draft per user)
         $invitation = Invitation::where('user_id', Auth::id())
             ->where('status', 'draft')
@@ -191,7 +198,8 @@ class InvitationController extends Controller
 
         $details = $invitation->details;
 
-        $canUsePremium = auth()->user()->currentPlan()?->remove_watermark ?? false;
+        $currentUser   = auth()->user();
+        $canUsePremium = SectionAccess::isPremium($currentUser);
 
         return Inertia::render('Dashboard/Invitations/Create', [
             'template' => [
@@ -207,7 +215,9 @@ class InvitationController extends Controller
                 ],
             ],
             'templates'     => $this->templateList(),
-            'canUsePremium' => $canUsePremium,
+            'canUsePremium'     => $canUsePremium,
+            'maxGalleryPhotos'  => SectionAccess::maxGalleryPhotos($currentUser),
+            'canUseCustomMusic' => SectionAccess::canUseCustomMusic($currentUser),
             'invitation' => [
                 'id'                   => $invitation->id,
                 'title'                => $invitation->title,
@@ -392,6 +402,15 @@ class InvitationController extends Controller
             'galleries.*.sort_order' => 'sometimes|integer|min:0',
         ]);
 
+        // Gallery photo limit for free users
+        $user      = $request->user();
+        $maxPhotos = SectionAccess::maxGalleryPhotos($user);
+        if (count($data['galleries']) > $maxPhotos) {
+            return response()->json([
+                'error' => "Paket Free hanya mendukung maksimal {$maxPhotos} foto di galeri. Upgrade ke Premium untuk foto tidak terbatas.",
+            ], 422);
+        }
+
         $invitation->galleries()->delete();
 
         foreach ($data['galleries'] as $i => $item) {
@@ -484,6 +503,14 @@ class InvitationController extends Controller
         }
 
         if ($data['action'] === 'publish') {
+            // Block free users from publishing with a premium template
+            $invitation->loadMissing('template');
+            if ($invitation->template?->isPremium() && ! SectionAccess::isPremium($request->user())) {
+                return response()->json([
+                    'error' => 'Template Premium hanya bisa dipublikasikan dengan paket Premium. Silakan upgrade atau pilih template gratis.',
+                ], 403);
+            }
+
             $updateData['status']       = 'published';
             $updateData['published_at'] = now();
         } else {
@@ -525,6 +552,13 @@ class InvitationController extends Controller
     {
         $this->authorizeOwner($invitation);
 
+        // Custom audio upload is a Premium feature
+        if (! SectionAccess::canUseCustomMusic($request->user())) {
+            return response()->json([
+                'error' => 'Upload musik sendiri tersedia di Premium. Upgrade untuk menggunakan audio pilihan sendiri.',
+            ], 403);
+        }
+
         $request->validate([
             'file' => 'required|file|mimes:mp3,wav,ogg,m4a|max:10240',
         ]);
@@ -553,8 +587,7 @@ class InvitationController extends Controller
         $newTemplate = Template::active()->findOrFail($data['template_id']);
 
         // Premium gate: free users cannot switch to premium templates
-        $canUsePremium = $request->user()->currentPlan()?->remove_watermark ?? false;
-        if ($newTemplate->isPremium() && ! $canUsePremium) {
+        if ($newTemplate->isPremium() && ! SectionAccess::isPremium($request->user())) {
             return response()->json(['error' => 'upgrade_required'], 403);
         }
 

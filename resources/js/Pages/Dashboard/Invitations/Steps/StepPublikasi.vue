@@ -17,6 +17,7 @@ const props = defineProps({
     basic:           { type: Object,   required: true },
     details:         { type: Object,   default: null },
     onToggleSection: { type: Function, required: true },
+    canUsePremium:   { type: Boolean,  default: false },
 });
 
 const expanded       = ref('slug_settings');
@@ -194,8 +195,9 @@ function goToDashboard() {
                 </div>
             </SectionAccordionCard>
 
-            <!-- Password Protection (optional) -->
+            <!-- Password Protection — Premium only (Pattern A: hidden for free users) -->
             <SectionAccordionCard
+                v-if="canUsePremium"
                 title="Proteksi Password"
                 description="Tamu harus memasukkan password untuk membuka undangan"
                 :is-required="sections.password_protection?.is_required ?? false"

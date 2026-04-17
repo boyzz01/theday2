@@ -4,6 +4,7 @@
 
 import { ref } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
+import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
 
 const props = defineProps({
     events:          { type: Object,   required: true }, // ref([])
@@ -12,6 +13,7 @@ const props = defineProps({
     removeEvent:     { type: Function, required: true },
     moveEvent:       { type: Function, required: true },
     onToggleSection: { type: Function, required: true },
+    canUsePremium:   { type: Boolean,  default: false },
 });
 
 const expanded = ref('events');
@@ -164,8 +166,9 @@ function onTimeInput(event, obj, key) {
             </p>
         </SectionAccordionCard>
 
-        <!-- Live Streaming (optional) -->
+        <!-- Live Streaming — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Live Streaming"
             description="Link siaran langsung acara untuk tamu yang tidak hadir"
             :is-required="sections.live_streaming?.is_required ?? false"
@@ -197,8 +200,9 @@ function onTimeInput(event, obj, key) {
             </div>
         </SectionAccordionCard>
 
-        <!-- Additional Info (optional) -->
+        <!-- Additional Info — Premium only (Pattern B: visible locked teaser for free users) -->
         <SectionAccordionCard
+            v-if="canUsePremium"
             title="Informasi Tambahan"
             description="Catatan khusus untuk tamu undangan"
             :is-required="sections.additional_info?.is_required ?? false"
@@ -218,6 +222,11 @@ function onTimeInput(event, obj, key) {
                 />
             </div>
         </SectionAccordionCard>
+        <PremiumUpsellCard
+            v-else
+            title="Informasi Tambahan"
+            description="Tambahkan catatan khusus seperti dress code, info parkir, atau pesan untuk tamu undangan."
+        />
 
     </div>
 </template>
