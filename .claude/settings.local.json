@@ -57,7 +57,9 @@
       "Bash(sed -i -e 's/background: #FEF3C7; color: #92400E/background: rgba\\(200,162,107,0.15\\); color: #C8A26B/g' resources/views/invoices/show.blade.php)",
       "Bash(sed -i -e 's/background: #FEF3C7; color: #92400E/background: rgba\\(200,162,107,0.15\\); color: #C8A26B/g' resources/views/mail/payment-success.blade.php resources/views/mail/subscription-expiry.blade.php)",
       "Bash(sed -i -e 's/primary_color ?? '\\\\''#D4A373'\\\\''/primary_color ?? '\\\\''#92A89C'\\\\''/g' resources/js/Components/invitation/InvitationRenderer.vue resources/js/Components/templates/TemplatePreviewModal.vue)",
-      "Bash(sed -i -e 's/premium: { bg: '\\\\''#FEF3C7'\\\\'', color: '\\\\''#92400E'\\\\'' }/premium: { bg: '\\\\''rgba\\(200,162,107,0.15\\)'\\\\'', color: '\\\\''#C8A26B'\\\\'' }/g' resources/js/Components/templates/TemplatePreviewModal.vue)"
+      "Bash(sed -i -e 's/premium: { bg: '\\\\''#FEF3C7'\\\\'', color: '\\\\''#92400E'\\\\'' }/premium: { bg: '\\\\''rgba\\(200,162,107,0.15\\)'\\\\'', color: '\\\\''#C8A26B'\\\\'' }/g' resources/js/Components/templates/TemplatePreviewModal.vue)",
+      "Bash(sed -i 's/style=\"background-color: #FFFCF7\"/style=\"background-color: #F4F7F5\"/g' resources/js/Layouts/DashboardLayout.vue)",
+      "Bash(sed -i 's/--brand-bg:             #FFFCF7/--brand-bg:             #F4F7F5/' resources/css/app.css)"
     ]
   }
 }

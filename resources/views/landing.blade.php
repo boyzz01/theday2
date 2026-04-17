@@ -51,10 +51,10 @@
         :root {
             --color-primary: #92A89C;
             --color-primary-dark: #B8865A;
-            --color-secondary: #FEFAE0;
+            --color-secondary: #E8EFEC;
             --color-accent: #CCD5AE;
             --color-dark: #1E1E1E;
-            --color-bg: #FFFDF7;
+            --color-bg: #F5F8F6;
         }
 
         body {
@@ -69,7 +69,7 @@
 
         /* Hero gradient */
         .hero-gradient {
-            background: linear-gradient(135deg, #FFFDF7 0%, #FEFAE0 40%, #EDE8D0 100%);
+            background: linear-gradient(135deg, #F5F8F6 0%, #EBF0ED 45%, #DDEAE4 100%);
         }
 
         /* Gold button */
@@ -88,7 +88,7 @@
         .btn-primary:hover {
             background-color: var(--color-primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(212,163,115,0.35);
+            box-shadow: 0 8px 25px rgba(146,168,156,0.35);
         }
 
         .btn-outline {
@@ -172,7 +172,7 @@
         .nav-scroll {
             backdrop-filter: blur(12px);
             background-color: rgba(255,253,247,0.85);
-            border-bottom: 1px solid rgba(212,163,115,0.15);
+            border-bottom: 1px solid rgba(146,168,156,0.15);
         }
 
         /* Pricing highlight */
@@ -184,7 +184,7 @@
         /* Stats counter */
         .stat-card {
             background: white;
-            border: 1px solid rgba(212,163,115,0.2);
+            border: 1px solid rgba(146,168,156,0.2);
             border-radius: 1rem;
             padding: 1.5rem 2rem;
         }
@@ -205,7 +205,7 @@
             gap: 0.375rem;
             padding: 0.35rem 0.75rem;
             border-radius: 0.5rem;
-            border: 1.5px solid rgba(212,163,115,0.4);
+            border: 1.5px solid rgba(146,168,156,0.4);
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
@@ -216,7 +216,7 @@
         }
         .lang-btn:hover {
             border-color: var(--color-primary);
-            background: rgba(212,163,115,0.08);
+            background: rgba(146,168,156,0.08);
         }
     </style>
 
@@ -447,7 +447,7 @@
             <div class="flex-1 text-center lg:text-left">
                 {{-- Badge --}}
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6"
-                     style="background-color: rgba(212,163,115,0.15); color: var(--color-primary-dark)">
+                     style="background-color: rgba(146,168,156,0.15); color: var(--color-primary-dark)">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
@@ -504,13 +504,13 @@
             <div class="flex-1 flex justify-center items-center relative">
                 {{-- Phone mockup --}}
                 <div class="relative w-72 float-animation">
-                    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100" style="box-shadow: 0 40px 80px rgba(212,163,115,0.25)">
+                    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100" style="box-shadow: 0 40px 80px rgba(146,168,156,0.25)">
                         {{-- Phone notch --}}
                         <div class="bg-gray-900 h-7 flex items-center justify-center">
                             <div class="w-20 h-4 bg-gray-800 rounded-full"></div>
                         </div>
                         {{-- Invitation preview --}}
-                        <div class="relative" style="background: linear-gradient(160deg, #FEFAE0, #EDE8D0); height: 480px;">
+                        <div class="relative" style="background: linear-gradient(160deg, #EBF0ED, #DDEAE4); height: 480px;">
                             {{-- Decorative elements --}}
                             <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
                                 <div class="w-16 h-px mb-4" style="background: var(--color-primary)"></div>
@@ -542,7 +542,7 @@
 
                     {{-- Floating badges --}}
                     <div class="absolute -right-6 top-16 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-2 float-animation-delay">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(212,163,115,0.15)">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(146,168,156,0.15)">
                             <svg class="w-4 h-4" style="color: var(--color-primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
@@ -631,7 +631,7 @@
                     'en_title' => 'Beautiful Templates',
                     'id_desc' => 'Pilih dari 50+ template undangan pernikahan elegan. Semua responsif & mobile-friendly.',
                     'en_desc' => 'Choose from 50+ elegant wedding invitation templates. All responsive & mobile-friendly.',
-                    'color' => 'rgba(212,163,115,0.12)',
+                    'color' => 'rgba(146,168,156,0.12)',
                     'iconColor' => '#92A89C',
                 ],
                 [
@@ -868,7 +868,7 @@
 {{-- ============================================================ --}}
 {{-- TESTIMONIALS --}}
 {{-- ============================================================ --}}
-<section class="py-24" style="background: linear-gradient(135deg, #FFFDF7, #FEFAE0)">
+<section class="py-24" style="background: linear-gradient(135deg, #F5F8F6, #EBF0ED)">
     <div class="max-w-6xl mx-auto px-6">
         <div class="text-center mb-16 reveal">
             <p class="text-sm font-semibold tracking-widest uppercase mb-3" style="color: var(--color-primary)"
@@ -1084,7 +1084,7 @@
                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     @else
                     <div class="w-full h-full flex items-center justify-center"
-                         style="background: linear-gradient(135deg, #FEFAE0, #EDE8D0)">
+                         style="background: linear-gradient(135deg, #EBF0ED, #DDEAE4)">
                         <svg class="w-10 h-10 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -1192,7 +1192,7 @@
                 <div class="flex items-center gap-3">
                     @foreach(['instagram', 'tiktok', 'whatsapp'] as $social)
                     <a href="#" class="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                       style="background: rgba(255,255,255,0.08)" onmouseover="this.style.background='rgba(212,163,115,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                       style="background: rgba(255,255,255,0.08)" onmouseover="this.style.background='rgba(146,168,156,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
                         <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                             @if($social === 'instagram')
                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>

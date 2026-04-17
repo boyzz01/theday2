@@ -161,7 +161,7 @@ const handleClickOutsideAvatar = (e) => {
 </script>
 
 <template>
-    <div class="min-h-screen flex" style="background-color: #FFFCF7">
+    <div class="min-h-screen flex" style="background-color: #F4F7F5">
 
         <!-- ── Sidebar Overlay (mobile) ─────────────────────────── -->
         <Transition name="fade">
@@ -468,7 +468,7 @@ const handleClickOutsideAvatar = (e) => {
             <div v-if="showLimitModal"
                  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
                  @click.self="showLimitModal = false">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" style="background-color: #FFFCF7">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" style="background-color: #F4F7F5">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
                          style="background-color: rgba(200,162,107,0.15)">
                         <svg class="w-7 h-7" style="color: #C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor">
