@@ -135,41 +135,40 @@ const features = [
 
             <!-- ── 1. Current Plan Status ──────────────────────────────── -->
             <div class="rounded-2xl border p-6"
-                 :style="isPremium
-                    ? 'background: linear-gradient(135deg,#FFF8F0,#FFF3E4); border-color:rgba(200,162,107,0.35)'
-                    : 'background:#FAFAF8; border-color:#E8DFD0'">
+                 :class="isPremium
+                    ? 'bg-gradient-to-br from-[#FFF8F0] to-[#FFF3E4] border-[#C8A26B]/35'
+                    : 'bg-white border-stone-100'">
 
                 <div class="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest mb-1"
-                           :style="isPremium ? 'color:#C8A26B' : 'color:#9C8B72'">
+                           :class="isPremium ? 'text-[#C8A26B]' : 'text-stone-400'">
                             Paket Aktif
                         </p>
-                        <h2 class="text-2xl font-bold" :style="isPremium ? 'color:#2C2417' : 'color:#2C2417'">
+                        <h2 class="text-2xl font-bold text-[#2C2417]">
                             {{ isPremium ? 'Premium ✨' : 'Gratis' }}
                         </h2>
 
                         <!-- Premium: expiry info -->
                         <template v-if="isPremium && expiresAt">
-                            <p class="text-sm mt-1" :style="expiryWarn ? 'color:#2C2417' : 'color:#78716C'">
+                            <p class="text-sm mt-1" :class="expiryWarn ? 'text-[#2C2417]' : 'text-stone-500'">
                                 Aktif hingga <strong>{{ expiresAt }}</strong>
                             </p>
                             <span v-if="expiryWarn"
-                                  class="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style="background:#FEE2E2;color:#991B1B">
+                                  class="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-800">
                                 ⚠ Segera berakhir ({{ daysLeft }} hari)
                             </span>
-                            <p v-else class="text-xs mt-1" style="color:#9C8B72">
+                            <p v-else class="text-xs mt-1 text-stone-400">
                                 Sisa {{ daysLeft }} hari
                             </p>
                         </template>
 
                         <!-- Free: limits summary -->
                         <template v-else-if="!isPremium">
-                            <p class="text-sm mt-1" style="color:#78716C">
+                            <p class="text-sm mt-1 text-stone-500">
                                 Kamu menggunakan paket gratis dengan fitur terbatas.
                             </p>
-                            <ul class="mt-2 space-y-0.5 text-xs" style="color:#9C8B72">
+                            <ul class="mt-2 space-y-0.5 text-xs text-stone-400">
                                 <li>• 1 undangan aktif</li>
                                 <li>• 5 foto per undangan</li>
                                 <li>• Template gratis saja</li>
@@ -183,8 +182,7 @@ const features = [
                             class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-shrink-0"
                             :class="premiumCtaDisabled
                                 ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
-                                : 'text-white hover:opacity-90'"
-                            :style="premiumCtaDisabled ? '' : 'background-color:#C8A26B'">
+                                : 'bg-[#C8A26B] hover:bg-[#B8905A] text-white'">
                         {{ isCheckingOut ? 'Memproses...' : (isPremium ? 'Perpanjang Premium →' : 'Upgrade ke Premium →') }}
                     </button>
                 </div>
@@ -192,18 +190,15 @@ const features = [
 
             <!-- Checkout state notices -->
             <div v-if="checkoutState === 'success'"
-                 class="rounded-xl p-4 text-sm font-medium"
-                 style="background:#D1FAE5;color:#065F46">
+                 class="rounded-xl p-4 text-sm font-medium bg-emerald-50 text-emerald-800 border border-emerald-100">
                 ✓ Pembayaran berhasil! Paket Premium kamu sudah aktif.
             </div>
             <div v-if="checkoutState === 'pending'"
-                 class="rounded-xl p-4 text-sm"
-                 style="background:#EFF2F0;color:#2C2417">
+                 class="rounded-xl p-4 text-sm bg-[#92A89C]/10 text-[#2C2417] border border-[#B8C7BF]/50">
                 ⏳ Pembayaran sedang diproses. Halaman akan diperbarui otomatis.
             </div>
             <div v-if="checkoutState === 'error'"
-                 class="rounded-xl p-4 text-sm"
-                 style="background:#FEE2E2;color:#991B1B">
+                 class="rounded-xl p-4 text-sm bg-red-50 text-red-700 border border-red-100">
                 {{ checkoutError }}
             </div>
 
@@ -211,12 +206,11 @@ const features = [
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- Free Card -->
-                <div class="rounded-2xl border border-stone-200 p-6 bg-white">
+                <div class="rounded-2xl border border-stone-100 p-6 bg-white">
                     <div class="flex items-center gap-2 mb-4">
                         <h3 class="text-base font-semibold text-stone-800">Gratis</h3>
                         <span v-if="!isPremium"
-                              class="text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style="background:rgba(146,168,156,0.15);color:#73877C">
+                              class="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#92A89C]/15 text-[#73877C]">
                             Paket Kamu
                         </span>
                     </div>
@@ -226,65 +220,59 @@ const features = [
                     <p class="text-xs text-stone-400 mb-5">selamanya</p>
                     <p class="text-sm text-stone-500 mb-5">Coba tanpa risiko</p>
                     <ul class="space-y-2.5 mb-6 text-sm text-stone-600">
-                        <li class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style="background:#E7F3E8">
-                                <svg class="w-2.5 h-2.5" style="color:#15803D" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        <li v-for="feat in ['1 undangan aktif', '5 foto gallery', 'Template gratis', 'Musik default']"
+                            :key="feat"
+                            class="flex items-center gap-2">
+                            <span class="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                </svg>
                             </span>
-                            1 undangan aktif
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style="background:#E7F3E8">
-                                <svg class="w-2.5 h-2.5" style="color:#15803D" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            </span>
-                            5 foto gallery
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style="background:#E7F3E8">
-                                <svg class="w-2.5 h-2.5" style="color:#15803D" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            </span>
-                            Template gratis
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style="background:#E7F3E8">
-                                <svg class="w-2.5 h-2.5" style="color:#15803D" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            </span>
-                            Musik default
+                            {{ feat }}
                         </li>
                         <li class="flex items-center gap-2 text-stone-400">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-stone-100">
-                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span class="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
                             </span>
                             Watermark "Dibuat dengan TheDay"
                         </li>
                     </ul>
                     <button disabled
-                            class="w-full py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-400 cursor-not-allowed">
+                            class="w-full py-2.5 rounded-xl text-sm font-semibold border border-stone-100 text-stone-400 cursor-not-allowed">
                         {{ isPremium ? 'Gratis' : 'Paket Kamu' }}
                     </button>
                 </div>
 
                 <!-- Premium Card -->
-                <div class="rounded-2xl p-6 relative"
-                     style="background:linear-gradient(135deg,#2C2417,#3D3020);border:2px solid #C8A26B;box-shadow:0 8px 32px rgba(200,162,107,0.25)">
+                <div class="rounded-2xl p-6 relative bg-gradient-to-br from-[#FFFCF7] to-[#FFF8F0] border-2 border-[#C8A26B]/60 shadow-[0_8px_32px_rgba(200,162,107,0.15)]">
                     <div class="absolute -top-3 left-6">
                         <span class="text-xs font-bold px-3 py-1 rounded-full text-white"
                               style="background:linear-gradient(90deg,#C8A26B,#E8C88B)">
                             ✨ Paling Populer
                         </span>
                     </div>
-                    <h3 class="text-base font-semibold text-white mt-2 mb-4">Premium</h3>
-                    <div class="mb-1">
-                        <span class="text-3xl font-bold text-white">Rp 149.000</span>
+
+                    <div class="flex items-center gap-2 mt-2 mb-4">
+                        <h3 class="text-base font-semibold text-[#2C2417]">Premium</h3>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#C8A26B]/15 text-[#C8A26B]" v-if="isPremium">
+                            Paket Kamu
+                        </span>
                     </div>
-                    <p class="text-xs mb-2" style="color:#C8A26B">/ 30 hari</p>
-                    <p class="text-sm mb-5" style="color:#C8A26B">Semua yang kamu butuhkan untuk undangan impian</p>
-                    <ul class="space-y-2.5 mb-6 text-sm text-stone-300">
+
+                    <div class="mb-1">
+                        <span class="text-3xl font-bold text-[#2C2417]">Rp 149.000</span>
+                    </div>
+                    <p class="text-xs mb-2 text-[#C8A26B] font-medium">/ 30 hari</p>
+                    <p class="text-sm mb-5 text-stone-500">Semua yang kamu butuhkan untuk undangan impian</p>
+
+                    <ul class="space-y-2.5 mb-6 text-sm text-stone-700">
                         <li v-for="feat in ['Unlimited undangan aktif','Unlimited foto gallery','Semua template (gratis + premium)','Upload musik sendiri','Tanpa watermark','Custom URL slug','Password protection','Analytics kunjungan','Prioritas dukungan']"
                             :key="feat"
                             class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                                  style="background:rgba(200,162,107,0.2)">
-                                <svg class="w-2.5 h-2.5" style="color:#C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <span class="w-4 h-4 rounded-full bg-[#C8A26B]/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-2.5 h-2.5 text-[#C8A26B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </span>
@@ -296,20 +284,19 @@ const features = [
                             :disabled="premiumCtaDisabled || isCheckingOut"
                             class="w-full py-3 rounded-xl text-sm font-bold transition-all"
                             :class="premiumCtaDisabled
-                                ? 'cursor-not-allowed text-stone-400 border border-stone-600'
-                                : 'text-stone-900 hover:opacity-90'"
-                            :style="premiumCtaDisabled ? '' : 'background:linear-gradient(90deg,#C8A26B,#E8C88B)'">
+                                ? 'cursor-not-allowed bg-stone-100 text-stone-400'
+                                : 'text-white hover:opacity-90 bg-[#C8A26B] hover:bg-[#B8905A]'">
                         {{ isCheckingOut ? 'Memproses...' : premiumCtaLabel }}
                     </button>
 
-                    <p class="text-center text-xs mt-3" style="color:#9C8B72">
+                    <p class="text-center text-xs mt-3 text-stone-400">
                         🔒 Pembayaran aman via Midtrans. Garansi uang kembali 7 hari.
                     </p>
                 </div>
             </div>
 
             <!-- ── 3. Feature Comparison Table ─────────────────────────── -->
-            <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div class="bg-white rounded-2xl border border-stone-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-stone-100">
                     <h3 class="text-base font-semibold text-stone-800">Perbandingan Fitur</h3>
                 </div>
@@ -318,7 +305,7 @@ const features = [
                         <tr class="border-b border-stone-100">
                             <th class="text-left px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider w-1/2">Fitur</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Gratis</th>
-                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:#C8A26B">Premium</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold text-[#C8A26B] uppercase tracking-wider">Premium</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -326,14 +313,14 @@ const features = [
                             :class="i % 2 === 0 ? 'bg-white' : 'bg-stone-50'">
                             <td class="px-6 py-3 text-stone-700">{{ row.label }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span v-if="row.free === true" class="text-green-600 font-bold">✓</span>
+                                <span v-if="row.free === true" class="text-emerald-600 font-bold">✓</span>
                                 <span v-else-if="row.free === false" class="text-stone-300">✗</span>
                                 <span v-else class="text-stone-600 font-medium text-xs">{{ row.free }}</span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span v-if="row.premium === true" style="color:#C8A26B" class="font-bold">✓</span>
+                                <span v-if="row.premium === true" class="text-[#C8A26B] font-bold">✓</span>
                                 <span v-else-if="row.premium === false" class="text-stone-300">✗</span>
-                                <span v-else style="color:#C8A26B" class="font-semibold text-xs">{{ row.premium }}</span>
+                                <span v-else class="text-[#C8A26B] font-semibold text-xs">{{ row.premium }}</span>
                             </td>
                         </tr>
                     </tbody>
@@ -341,18 +328,18 @@ const features = [
             </div>
 
             <!-- ── 4. Payment Methods ──────────────────────────────────── -->
-            <div class="bg-white rounded-2xl border border-stone-200 p-6">
+            <div class="bg-white rounded-2xl border border-stone-100 p-6">
                 <h3 class="text-sm font-semibold text-stone-700 mb-4">Kami mendukung berbagai metode pembayaran:</h3>
                 <div class="flex flex-wrap gap-3">
                     <span v-for="m in ['GoPay','OVO','Dana','QRIS','Transfer Bank','Kartu Kredit']" :key="m"
-                          class="px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-stone-600 bg-stone-50">
+                          class="px-3 py-1.5 rounded-lg border border-stone-100 text-xs font-semibold text-stone-600 bg-stone-50">
                         {{ m }}
                     </span>
                 </div>
             </div>
 
             <!-- ── 5. FAQ ──────────────────────────────────────────────── -->
-            <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div class="bg-white rounded-2xl border border-stone-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-stone-100">
                     <h3 class="text-base font-semibold text-stone-800">Pertanyaan Umum</h3>
                 </div>
@@ -377,7 +364,7 @@ const features = [
             </div>
 
             <!-- ── 6. Payment History ─────────────────────────────────── -->
-            <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div class="bg-white rounded-2xl border border-stone-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-stone-100">
                     <h3 class="text-base font-semibold text-stone-800">Riwayat Pembayaran</h3>
                 </div>
@@ -415,9 +402,9 @@ const features = [
                                 <td class="px-4 py-3 text-center">
                                     <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
                                           :class="{
-                                              'bg-green-100 text-green-700': t.status === 'paid',
-                                              'bg-[#C8A26B]/20 text-[#C8A26B]': t.status === 'pending',
-                                              'bg-red-100 text-red-700': t.status === 'failed' || t.status === 'refunded',
+                                              'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100': t.status === 'paid',
+                                              'bg-[#C8A26B]/15 text-[#C8A26B] ring-1 ring-[#C8A26B]/30': t.status === 'pending',
+                                              'bg-red-50 text-red-600 ring-1 ring-red-100': t.status === 'failed' || t.status === 'refunded',
                                           }">
                                         {{ t.status_label }}
                                     </span>
@@ -426,8 +413,7 @@ const features = [
                                     <a v-if="t.status === 'paid'"
                                        :href="route('dashboard.transactions.invoice', t.id)"
                                        target="_blank"
-                                       class="text-xs font-semibold hover:underline"
-                                       style="color:#C8A26B">
+                                       class="text-xs font-semibold text-[#C8A26B] hover:underline">
                                         Invoice
                                     </a>
                                     <span v-else class="text-xs text-stone-300">—</span>
