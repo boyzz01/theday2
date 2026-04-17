@@ -36,7 +36,7 @@ function handlePhotoUpload(event, field) {
                 v-model="basic.title"
                 type="text"
                 placeholder="Contoh: Pernikahan Budi & Ani"
-                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
             />
         </div>
 
@@ -50,12 +50,12 @@ function handlePhotoUpload(event, field) {
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-stone-700">Nama Mempelai Pria</label>
                         <input v-model="details.groom_name" type="text" placeholder="Ahmad Budi"
-                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-stone-700">Nama Orang Tua Pria</label>
                         <input v-model="details.groom_parent_names" type="text" placeholder="Bapak & Ibu Hasan"
-                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                     </div>
                 </div>
 
@@ -87,12 +87,12 @@ function handlePhotoUpload(event, field) {
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-stone-700">Nama Mempelai Wanita</label>
                         <input v-model="details.bride_name" type="text" placeholder="Siti Ani"
-                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-medium text-stone-700">Nama Orang Tua Wanita</label>
                         <input v-model="details.bride_parent_names" type="text" placeholder="Bapak & Ibu Rasyid"
-                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                     </div>
                 </div>
 
@@ -126,7 +126,7 @@ function handlePhotoUpload(event, field) {
                     v-model="details.opening_text"
                     rows="4"
                     placeholder="Dengan memohon rahmat dan ridho Allah SWT…"
-                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none"
+                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none"
                 />
             </div>
             <div class="space-y-1.5">
@@ -135,7 +135,7 @@ function handlePhotoUpload(event, field) {
                     v-model="details.closing_text"
                     rows="4"
                     placeholder="Merupakan suatu kehormatan dan kebahagiaan…"
-                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none"
+                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none"
                 />
             </div>
         </div>

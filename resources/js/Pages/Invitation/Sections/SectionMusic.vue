@@ -2,7 +2,7 @@
 defineProps({
     music:        { type: Object, default: null },
     playing:      { type: Boolean, default: false },
-    primaryColor: { type: String, default: '#D4A373' },
+    primaryColor: { type: String, default: '#92A89C' },
 });
 
 defineEmits(['toggle']);

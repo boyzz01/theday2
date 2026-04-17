@@ -112,7 +112,7 @@ function goToDashboard() {
                      class="flex items-center gap-2 bg-white rounded-xl border border-green-200 px-4 py-2.5 text-sm">
                     <span class="flex-1 truncate text-stone-700 font-mono text-xs">{{ invitationUrl }}</span>
                     <button @click="copyLink"
-                            class="flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-800 transition-colors flex-shrink-0">
+                            class="flex items-center gap-1 text-xs font-medium text-[#73877C] hover:text-[#2C2417] transition-colors flex-shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -122,7 +122,7 @@ function goToDashboard() {
                 </div>
                 <button @click="goToDashboard"
                         class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
-                        style="background-color: #D4A373">
+                        style="background-color: #92A89C">
                     Kembali ke Dashboard
                 </button>
             </div>
@@ -143,7 +143,7 @@ function goToDashboard() {
             >
                 <div class="space-y-3">
                     <div :class="[
-                        'flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-amber-300',
+                        'flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-[#92A89C]/50',
                         slugStatus === 'taken'     ? 'border-red-300'   :
                         slugStatus === 'available' ? 'border-green-300' : 'border-stone-200',
                     ]">
@@ -174,7 +174,7 @@ function goToDashboard() {
                         <p class="text-xs text-red-500">URL sudah dipakai.</p>
                         <button v-if="slugSuggestion"
                                 @click="publish.slug = slugSuggestion; slugSuggestion = null"
-                                class="text-xs font-semibold text-amber-700 underline hover:text-amber-900">
+                                class="text-xs font-semibold text-[#73877C] underline hover:text-[#2C2417]">
                             Pakai "/{{ slugSuggestion }}"
                         </button>
                     </div>
@@ -188,7 +188,7 @@ function goToDashboard() {
                         <input
                             v-model="publish.expires_at"
                             type="datetime-local"
-                            class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                            class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                         />
                     </div>
                 </div>
@@ -211,7 +211,7 @@ function goToDashboard() {
                         v-model="publish.password"
                         type="text"
                         placeholder="Masukkan password (min. 4 karakter)"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                     <p class="text-xs text-stone-400">Password akan diminta sebelum undangan terbuka.</p>
                 </div>
@@ -284,7 +284,7 @@ function goToDashboard() {
                             @click="handleAction('publish')"
                             :disabled="isSaving || !invitationId"
                             class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                            style="background-color: #D4A373"
+                            style="background-color: #92A89C"
                         >
                             <svg v-if="isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>

@@ -24,7 +24,7 @@ const cfg   = computed(() => props.template?.default_config ?? {});
 const demo  = computed(() => props.template?.demo_data      ?? {});
 const tier  = computed(() => props.template?.tier           ?? 'free');
 
-const primary   = computed(() => cfg.value.primary_color   ?? '#D4A373');
+const primary   = computed(() => cfg.value.primary_color   ?? '#92A89C');
 const secondary = computed(() => cfg.value.secondary_color ?? '#FEFAE0');
 const accent    = computed(() => cfg.value.accent_color    ?? '#CCD5AE');
 const fontTitle = computed(() => cfg.value.font_title      ?? 'Playfair Display');
@@ -73,7 +73,7 @@ const demoInvitation = computed(() => {
 
 const tierBadge = {
     free:    { bg: '#D1FAE5', color: '#065F46' },
-    premium: { bg: '#FEF3C7', color: '#92400E' },
+    premium: { bg: 'rgba(200,162,107,0.15)', color: '#C8A26B' },
 };
 
 const features = computed(() => [

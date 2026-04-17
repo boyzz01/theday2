@@ -18,8 +18,8 @@ const statCards = computed(() => [
         sub: `${props.stats.draft_count} draft · ${props.stats.published_count} aktif`,
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
-        bg: '#FEF3C7',
-        iconColor: '#D97706',
+        bg: '#EFF2F0',
+        iconColor: '#73877C',
     },
     {
         label: 'Total Dilihat',
@@ -62,11 +62,11 @@ const eventTypeLabel = {
     pernikahan: '💍 Pernikahan',
 };
 
-const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
+const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#92A89C';
 
 const priorityDot = {
     high:   'bg-red-400',
-    medium: 'bg-amber-400',
+    medium: 'bg-[#92A89C]',
     low:    'bg-stone-300',
 };
 </script>
@@ -92,7 +92,7 @@ const priorityDot = {
                 <Link
                     :href="route('dashboard.templates')"
                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
-                    style="background-color: #D4A373"
+                    style="background-color: #92A89C"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
@@ -130,15 +130,15 @@ const priorityDot = {
                 <div class="flex items-start justify-between mb-3">
                     <div>
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #FEF3C7">
-                                <svg class="w-4 h-4" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #EFF2F0">
+                                <svg class="w-4 h-4" style="color: #73877C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                                 </svg>
                             </div>
                             <p class="text-sm font-semibold text-stone-700">Budget Planner</p>
                         </div>
                     </div>
-                    <span class="text-xs font-medium" style="color: #D4A373">Lihat budget →</span>
+                    <span class="text-xs font-medium" style="color: #92A89C">Lihat budget →</span>
                 </div>
 
                 <template v-if="budgetWidget.has_budget">
@@ -157,13 +157,13 @@ const priorityDot = {
                             class="h-full rounded-full transition-all duration-500"
                             :style="{
                                 width: (budgetWidget.usage_percentage ?? 0) + '%',
-                                backgroundColor: budgetWidget.is_total_overbudget ? '#F87171' : (budgetWidget.usage_percentage >= 80 ? '#F59E0B' : '#D4A373'),
+                                backgroundColor: budgetWidget.is_total_overbudget ? '#F87171' : (budgetWidget.usage_percentage >= 80 ? '#92A89C' : '#92A89C'),
                             }"
                         />
                     </div>
                     <div class="flex items-center justify-between text-xs text-stone-400">
                         <span>{{ budgetWidget.usage_percentage ?? 0 }}% terpakai</span>
-                        <span v-if="budgetWidget.overbudget_categories_count > 0" class="text-amber-600 font-medium">
+                        <span v-if="budgetWidget.overbudget_categories_count > 0" class="text-[#73877C] font-medium">
                             {{ budgetWidget.overbudget_categories_count }} kategori overbudget
                         </span>
                     </div>
@@ -189,7 +189,7 @@ const priorityDot = {
                         </div>
                         <p class="text-sm font-semibold text-stone-700">Checklist Pernikahan</p>
                     </div>
-                    <span class="text-xs font-medium" style="color: #D4A373">Lihat semua →</span>
+                    <span class="text-xs font-medium" style="color: #92A89C">Lihat semua →</span>
                 </div>
 
                 <template v-if="!checklistWidget.initialized">
@@ -219,7 +219,7 @@ const priorityDot = {
                             class="h-full rounded-full transition-all duration-500"
                             :style="{
                                 width: checklistWidget.progress + '%',
-                                backgroundColor: checklistWidget.progress === 100 ? '#34D399' : '#D4A373',
+                                backgroundColor: checklistWidget.progress === 100 ? '#34D399' : '#92A89C',
                             }"
                         />
                     </div>
@@ -254,7 +254,7 @@ const priorityDot = {
                     <h3 class="text-sm font-semibold text-stone-700">Undangan Terbaru</h3>
                     <Link :href="route('dashboard.invitations.index')"
                           class="text-xs font-medium transition-colors hover:opacity-80"
-                          style="color: #D4A373">
+                          style="color: #92A89C">
                         Lihat semua →
                     </Link>
                 </div>
@@ -263,8 +263,8 @@ const priorityDot = {
                 <div v-if="!recentInvitations.length"
                      class="bg-white rounded-2xl border border-stone-100 border-dashed p-12 text-center">
                     <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                         style="background-color: #FEF3C7">
-                        <svg class="w-8 h-8" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         style="background-color: #EFF2F0">
+                        <svg class="w-8 h-8" style="color: #73877C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
@@ -274,7 +274,7 @@ const priorityDot = {
                     <Link
                         :href="route('dashboard.templates')"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                        style="background-color: #D4A373"
+                        style="background-color: #92A89C"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
@@ -376,11 +376,11 @@ const priorityDot = {
                     <Link
                         v-if="recentInvitations.length < 3"
                         :href="route('dashboard.templates')"
-                        class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-amber-300 hover:bg-amber-50/30 transition-all group min-h-[220px]"
+                        class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-[#92A89C]/50 hover:bg-[#92A89C]/8 transition-all group min-h-[220px]"
                     >
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-amber-100"
-                             style="background-color: #FEF3C7">
-                            <svg class="w-6 h-6" style="color: #D4A373" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-[#92A89C]/20"
+                             style="background-color: #EFF2F0">
+                            <svg class="w-6 h-6" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                             </svg>
                         </div>

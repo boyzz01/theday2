@@ -58,7 +58,7 @@ function onDrop(index) {
                     </div>
 
                     <!-- Badge -->
-                    <span class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg">
+                    <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">
                         Acara {{ index + 1 }}
                     </span>
 
@@ -102,36 +102,36 @@ function onDrop(index) {
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Nama Acara <span class="text-red-400">*</span></label>
                         <input v-model="event.event_name" type="text" placeholder="Akad Nikah / Resepsi"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Tanggal <span class="text-red-400">*</span></label>
                         <input v-model="event.event_date" type="date"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
                         <input :value="event.start_time ? event.start_time.slice(0, 5) : ''"
                                @input="onTimeInput($event, event, 'start_time')"
                                type="text" maxlength="5" placeholder="HH:MM"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Waktu Selesai</label>
                         <input :value="event.end_time ? event.end_time.slice(0, 5) : ''"
                                @input="onTimeInput($event, event, 'end_time')"
                                type="text" maxlength="5" placeholder="HH:MM"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Nama Venue <span class="text-red-400">*</span></label>
                         <input v-model="event.venue_name" type="text" placeholder="Gedung Serbaguna XYZ"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-stone-600">Link Google Maps</label>
                         <input v-model="event.maps_url" type="url" placeholder="https://maps.google.com/..."
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                 </div>
 
@@ -140,7 +140,7 @@ function onDrop(index) {
                     <label class="block text-xs font-medium text-stone-600">Alamat Lengkap</label>
                     <textarea v-model="event.venue_address" rows="2"
                               placeholder="Jl. Contoh No. 1, Kecamatan, Kota"
-                              class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none bg-white"/>
+                              class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none bg-white"/>
                 </div>
             </div>
         </div>
@@ -148,7 +148,7 @@ function onDrop(index) {
         <!-- Add event button -->
         <button
             @click="addEvent"
-            class="w-full py-3 rounded-2xl border-2 border-dashed border-stone-200 text-sm font-medium text-stone-500 hover:text-amber-700 hover:border-amber-300 hover:bg-amber-50/50 transition-all flex items-center justify-center gap-2"
+            class="w-full py-3 rounded-2xl border-2 border-dashed border-stone-200 text-sm font-medium text-stone-500 hover:text-[#73877C] hover:border-[#92A89C]/50 hover:bg-[#92A89C]/10 transition-all flex items-center justify-center gap-2"
         >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

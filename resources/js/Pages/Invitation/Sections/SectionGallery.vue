@@ -4,7 +4,7 @@ import { useReveal } from '@/Composables/useReveal.js';
 
 const props = defineProps({
     galleries:    { type: Array,  default: () => [] },
-    primaryColor: { type: String, default: '#D4A373' },
+    primaryColor: { type: String, default: '#92A89C' },
 });
 
 const heading = ref(null);

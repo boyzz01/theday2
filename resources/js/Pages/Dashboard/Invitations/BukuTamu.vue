@@ -247,7 +247,7 @@ function exportUrl(scope = 'all') {
                     v-model="search"
                     type="text"
                     placeholder="Cari nama atau ucapan…"
-                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                 />
             </div>
 
@@ -264,7 +264,7 @@ function exportUrl(scope = 'all') {
                     @click="filter = f.value"
                     class="px-3 py-2 rounded-xl text-xs font-medium transition-colors text-center"
                     :class="filter === f.value
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        ? 'bg-[#92A89C]/20 text-[#2C2417] border border-[#B8C7BF]'
                         : 'bg-stone-50 text-stone-600 border border-stone-100 hover:bg-stone-100'"
                 >
                     {{ f.label }}
@@ -274,7 +274,7 @@ function exportUrl(scope = 'all') {
             <!-- Sort -->
             <select
                 v-model="sort"
-                class="px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
+                class="px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 bg-white"
             >
                 <option value="newest">Terbaru</option>
                 <option value="oldest">Terlama</option>
@@ -289,8 +289,8 @@ function exportUrl(scope = 'all') {
             leave-to-class="opacity-0 -translate-y-2"
             leave-active-class="transition-all duration-150"
         >
-            <div v-if="selectedIds.length" class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3 flex items-center gap-3 flex-wrap">
-                <span class="text-sm font-medium text-amber-800">{{ selectedIds.length }} dipilih</span>
+            <div v-if="selectedIds.length" class="bg-[#92A89C]/10 border border-[#B8C7BF] rounded-2xl p-3 mb-3 flex items-center gap-3 flex-wrap">
+                <span class="text-sm font-medium text-[#2C2417]">{{ selectedIds.length }} dipilih</span>
                 <div class="flex gap-2 flex-wrap">
                     <button @click="bulkAction('hide')"
                             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
@@ -334,8 +334,8 @@ function exportUrl(scope = 'all') {
         <!-- ── Empty state ──────────────────────────────────────────────── -->
         <div v-else-if="!messages.length"
              class="bg-white rounded-2xl border border-dashed border-stone-200 p-12 text-center">
-            <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-14 h-14 rounded-2xl bg-[#92A89C]/10 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
@@ -358,7 +358,7 @@ function exportUrl(scope = 'all') {
                     type="checkbox"
                     :checked="allSelected"
                     @change="toggleSelectAll"
-                    class="w-4 h-4 rounded border-stone-300 text-amber-500 focus:ring-amber-300"
+                    class="w-4 h-4 rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/50"
                 />
                 <span class="text-xs text-stone-400">Pilih semua ({{ messages.length }})</span>
             </div>
@@ -368,7 +368,7 @@ function exportUrl(scope = 'all') {
                 :key="msg.id"
                 class="bg-white rounded-2xl border transition-all"
                 :class="[
-                    selectedIds.includes(msg.id) ? 'border-amber-200 bg-amber-50/30' : 'border-stone-100',
+                    selectedIds.includes(msg.id) ? 'border-[#B8C7BF] bg-[#92A89C]/8' : 'border-stone-100',
                     msg.is_hidden ? 'opacity-60' : '',
                 ]"
             >
@@ -379,11 +379,11 @@ function exportUrl(scope = 'all') {
                             type="checkbox"
                             :value="msg.id"
                             v-model="selectedIds"
-                            class="mt-1 w-4 h-4 rounded border-stone-300 text-amber-500 focus:ring-amber-300 flex-shrink-0"
+                            class="mt-1 w-4 h-4 rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/50 flex-shrink-0"
                         />
 
                         <!-- Avatar -->
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 bg-amber-400">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 bg-[#92A89C]">
                             {{ msg.display_name.charAt(0).toUpperCase() }}
                         </div>
 
@@ -417,7 +417,7 @@ function exportUrl(scope = 'all') {
                             <button
                                 v-if="msg.message.length > 150"
                                 @click="toggleExpand(msg.id)"
-                                class="text-xs text-amber-600 hover:text-amber-700 mt-1 font-medium"
+                                class="text-xs text-[#73877C] hover:text-[#73877C] mt-1 font-medium"
                             >
                                 {{ expandedIds.has(msg.id) ? 'Sembunyikan' : 'Lihat selengkapnya' }}
                             </button>

@@ -136,22 +136,22 @@ const features = [
             <!-- ── 1. Current Plan Status ──────────────────────────────── -->
             <div class="rounded-2xl border p-6"
                  :style="isPremium
-                    ? 'background: linear-gradient(135deg,#FEF9EF,#FEF3C7); border-color:#FDE68A'
+                    ? 'background: linear-gradient(135deg,#FFF8F0,#FFF3E4); border-color:rgba(200,162,107,0.35)'
                     : 'background:#FAFAF8; border-color:#E8DFD0'">
 
                 <div class="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest mb-1"
-                           :style="isPremium ? 'color:#92400E' : 'color:#9C8B72'">
+                           :style="isPremium ? 'color:#C8A26B' : 'color:#9C8B72'">
                             Paket Aktif
                         </p>
-                        <h2 class="text-2xl font-bold" :style="isPremium ? 'color:#78350F' : 'color:#2C2417'">
+                        <h2 class="text-2xl font-bold" :style="isPremium ? 'color:#2C2417' : 'color:#2C2417'">
                             {{ isPremium ? 'Premium ✨' : 'Gratis' }}
                         </h2>
 
                         <!-- Premium: expiry info -->
                         <template v-if="isPremium && expiresAt">
-                            <p class="text-sm mt-1" :style="expiryWarn ? 'color:#92400E' : 'color:#78716C'">
+                            <p class="text-sm mt-1" :style="expiryWarn ? 'color:#2C2417' : 'color:#78716C'">
                                 Aktif hingga <strong>{{ expiresAt }}</strong>
                             </p>
                             <span v-if="expiryWarn"
@@ -198,7 +198,7 @@ const features = [
             </div>
             <div v-if="checkoutState === 'pending'"
                  class="rounded-xl p-4 text-sm"
-                 style="background:#FEF3C7;color:#92400E">
+                 style="background:#EFF2F0;color:#2C2417">
                 ⏳ Pembayaran sedang diproses. Halaman akan diperbarui otomatis.
             </div>
             <div v-if="checkoutState === 'error'"
@@ -216,7 +216,7 @@ const features = [
                         <h3 class="text-base font-semibold text-stone-800">Gratis</h3>
                         <span v-if="!isPremium"
                               class="text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style="background:#FEF3C7;color:#92400E">
+                              style="background:rgba(146,168,156,0.15);color:#73877C">
                             Paket Kamu
                         </span>
                     </div>
@@ -416,7 +416,7 @@ const features = [
                                     <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
                                           :class="{
                                               'bg-green-100 text-green-700': t.status === 'paid',
-                                              'bg-yellow-100 text-yellow-700': t.status === 'pending',
+                                              'bg-[#C8A26B]/20 text-[#C8A26B]': t.status === 'pending',
                                               'bg-red-100 text-red-700': t.status === 'failed' || t.status === 'refunded',
                                           }">
                                         {{ t.status_label }}

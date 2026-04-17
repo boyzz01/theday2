@@ -162,7 +162,7 @@ const categoryLabel = (val) => {
 
 const priorityConfig = {
     high:   { label: 'Tinggi', dotClass: 'bg-red-500',   textClass: 'text-red-600'   },
-    medium: { label: 'Sedang', dotClass: 'bg-amber-400', textClass: 'text-amber-600' },
+    medium: { label: 'Sedang', dotClass: 'bg-[#92A89C]', textClass: 'text-[#73877C]' },
     low:    { label: 'Rendah', dotClass: 'bg-stone-300', textClass: 'text-stone-400' },
 };
 
@@ -455,14 +455,14 @@ function isOverdue(d) {
 
         <!-- Loading -->
         <div v-if="loading" class="flex items-center justify-center py-24">
-            <div class="w-8 h-8 rounded-full border-2 border-amber-300 border-t-amber-600 animate-spin"/>
+            <div class="w-8 h-8 rounded-full border-2 border-[#92A89C]/50 border-t-[#73877C] animate-spin"/>
         </div>
 
         <!-- Error -->
         <div v-else-if="error" class="flex flex-col items-center py-24 gap-3">
             <p class="text-stone-500 text-sm">{{ error }}</p>
             <button @click="() => { error = null; loading = true; onMounted(); }"
-                    class="text-sm text-amber-700 underline">Coba lagi</button>
+                    class="text-sm text-[#73877C] underline">Coba lagi</button>
         </div>
 
         <template v-else>
@@ -502,7 +502,7 @@ function isOverdue(d) {
                     <p class="text-2xl font-bold text-stone-800">{{ summary.progress }}<span class="text-sm font-normal text-stone-400">%</span></p>
                     <div class="mt-2 h-1.5 rounded-full bg-stone-100 overflow-hidden">
                         <div class="h-full rounded-full transition-all duration-500"
-                             style="background-color: #D4A373"
+                             style="background-color: #92A89C"
                              :style="{ width: summary.progress + '%' }"/>
                     </div>
                 </div>
@@ -513,7 +513,7 @@ function isOverdue(d) {
                 </div>
                 <div class="bg-white rounded-xl border border-stone-100 p-4">
                     <p class="text-xs text-stone-400 mb-1">Perlu dikerjakan</p>
-                    <p class="text-2xl font-bold text-amber-600">{{ summary.todo }}</p>
+                    <p class="text-2xl font-bold text-[#73877C]">{{ summary.todo }}</p>
                 </div>
                 <div class="bg-white rounded-xl border border-stone-100 p-4">
                     <p class="text-xs text-stone-400 mb-1">Diarsipkan</p>
@@ -532,7 +532,7 @@ function isOverdue(d) {
 
             <!-- ── No event date prompt ───────────────────────────── -->
             <div v-if="!summary.has_event_date"
-                 class="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-700">
+                 class="mb-4 px-4 py-3 rounded-xl bg-[#92A89C]/10 border border-[#B8C7BF]/50 text-sm text-[#73877C]">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -542,11 +542,11 @@ function isOverdue(d) {
                 </div>
                 <div class="flex items-center gap-2">
                     <input v-model="eventDate" type="date"
-                           class="flex-1 border rounded-lg px-3 py-1.5 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
-                           :class="eventDateError ? 'border-red-300' : 'border-amber-200'"/>
+                           class="flex-1 border rounded-lg px-3 py-1.5 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50"
+                           :class="eventDateError ? 'border-red-300' : 'border-[#B8C7BF]'"/>
                     <button @click="saveEventDate" :disabled="!eventDate || savingDate"
                             class="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-                            style="background-color: #D4A373">
+                            style="background-color: #92A89C">
                         {{ savingDate ? 'Menyimpan…' : 'Simpan' }}
                     </button>
                 </div>
@@ -558,7 +558,7 @@ function isOverdue(d) {
                 <!-- Dropdowns: 2-col grid mobile, single row desktop -->
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                     <select v-model="filterStatus"
-                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Semua status</option>
                         <option value="todo">Belum selesai</option>
                         <option value="done">Selesai</option>
@@ -566,13 +566,13 @@ function isOverdue(d) {
                     </select>
 
                     <select v-model="filterCat"
-                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Semua kategori</option>
                         <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                     </select>
 
                     <select v-model="filterPriority"
-                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Semua prioritas</option>
                         <option value="high">Tinggi</option>
                         <option value="medium">Sedang</option>
@@ -580,7 +580,7 @@ function isOverdue(d) {
                     </select>
 
                     <select v-model="sortBy"
-                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Urutan default</option>
                         <option value="due_date">Tenggat terdekat</option>
                         <option value="priority">Prioritas tertinggi</option>
@@ -594,7 +594,7 @@ function isOverdue(d) {
                             <div class="relative w-8 h-4 flex-shrink-0"
                                  @click="moveDoneToBottom = !moveDoneToBottom">
                                 <div class="w-full h-full rounded-full transition-colors"
-                                     :class="moveDoneToBottom ? 'bg-amber-400' : 'bg-stone-200'"/>
+                                     :class="moveDoneToBottom ? 'bg-[#92A89C]' : 'bg-stone-200'"/>
                                 <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform"
                                      :class="moveDoneToBottom ? 'translate-x-4' : 'translate-x-0'"/>
                             </div>
@@ -615,7 +615,7 @@ function isOverdue(d) {
 
                     <button @click="openCreate"
                             class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
-                            style="background-color: #D4A373">
+                            style="background-color: #92A89C">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -626,8 +626,8 @@ function isOverdue(d) {
 
             <!-- ── Empty state (no tasks at all) ─────────────────── -->
             <div v-if="tasks.length === 0" class="py-16 text-center">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-amber-50">
-                    <svg class="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-[#92A89C]/10">
+                    <svg class="w-8 h-8 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
@@ -637,7 +637,7 @@ function isOverdue(d) {
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button @click="openCreate"
                             class="px-4 py-2 rounded-xl text-sm font-medium text-white"
-                            style="background-color: #D4A373">
+                            style="background-color: #92A89C">
                         Tambah task
                     </button>
                 </div>
@@ -673,7 +673,7 @@ function isOverdue(d) {
                         <!-- Mini progress bar -->
                         <div class="flex-1 h-1.5 rounded-full bg-stone-100 overflow-hidden max-w-24">
                             <div class="h-full rounded-full transition-all duration-500"
-                                 style="background-color: #D4A373"
+                                 style="background-color: #92A89C"
                                  :style="{ width: group.progress + '%' }"/>
                         </div>
 
@@ -734,7 +734,7 @@ function isOverdue(d) {
                                     :style="{
                                         transform: `translateX(${getSwipe(task.id).offsetX}px)`,
                                         transition: getSwipe(task.id).dragging ? 'none' : 'transform 0.2s ease',
-                                        borderColor: selectedIds.has(task.id) ? '#D4A373' : '',
+                                        borderColor: selectedIds.has(task.id) ? '#92A89C' : '',
                                     }"
                                     @touchstart.passive="onSwipeStart(task, $event); onLongPressStart(task)"
                                     @touchmove.passive="onSwipeMove(task, $event); onLongPressCancel()"
@@ -750,7 +750,7 @@ function isOverdue(d) {
                                         <div v-if="bulkMode"
                                              class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
                                              :class="selectedIds.has(task.id)
-                                                 ? 'border-amber-500 bg-amber-500'
+                                                 ? 'border-[#92A89C] bg-[#92A89C]/100'
                                                  : 'border-stone-300'">
                                             <svg v-if="selectedIds.has(task.id)" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
@@ -769,7 +769,7 @@ function isOverdue(d) {
                                              class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
                                              :class="task.status === 'done'
                                                  ? 'border-green-500 bg-green-500'
-                                                 : 'border-stone-300 hover:border-amber-400'">
+                                                 : 'border-stone-300 hover:border-[#92A89C]'">
                                             <svg v-if="task.status === 'done'" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                             </svg>
@@ -804,7 +804,7 @@ function isOverdue(d) {
                                                   :class="task.status !== 'done' && isOverdue(task.due_date)
                                                       ? 'bg-red-50 text-red-500'
                                                       : task.status !== 'done' && isDueSoon(task.due_date)
-                                                          ? 'bg-amber-50 text-amber-600'
+                                                          ? 'bg-[#92A89C]/10 text-[#73877C]'
                                                           : 'bg-stone-50 text-stone-400'">
                                                 {{ formatDate(task.due_date) }}
                                             </span>
@@ -841,7 +841,7 @@ function isOverdue(d) {
                                         </template>
                                         <template v-else>
                                             <button @click.stop="restoreTask(task)"
-                                                    class="text-xs px-2.5 py-1 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors">
+                                                    class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10 hover:bg-[#92A89C]/20 transition-colors">
                                                 Pulihkan
                                             </button>
                                         </template>
@@ -850,7 +850,7 @@ function isOverdue(d) {
                                     <!-- Mobile: archived restore -->
                                     <div v-if="task.status === 'archived'" class="flex sm:hidden items-center ml-2">
                                         <button @click.stop="restoreTask(task)"
-                                                class="text-xs px-2.5 py-1 rounded-lg text-amber-700 bg-amber-50">
+                                                class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10">
                                             Pulihkan
                                         </button>
                                     </div>
@@ -868,7 +868,7 @@ function isOverdue(d) {
         <!-- ── FAB mobile ─────────────────────────────────────────── -->
         <button @click="openCreate"
                 class="fixed bottom-6 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
-                style="background-color: #D4A373">
+                style="background-color: #92A89C">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -889,7 +889,7 @@ function isOverdue(d) {
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Nama task <span class="text-red-400">*</span></label>
                             <input v-model="form.title" type="text" placeholder="Contoh: Booking fotografer"
-                                   class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                                   class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="formError.title ? 'border-red-300' : 'border-stone-200'"/>
                             <p v-if="formError.title" class="text-xs text-red-500 mt-1">{{ formError.title }}</p>
                         </div>
@@ -900,17 +900,17 @@ function isOverdue(d) {
                                 <label class="text-xs text-stone-500 mb-1 block">Kategori <span class="text-red-400">*</span></label>
                                 <select v-if="!usingCustomCategory"
                                         v-model="form.category"
-                                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                     <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                                 </select>
                                 <input v-else
                                        v-model="customCategory"
                                        type="text"
                                        placeholder="Nama kategori"
-                                       class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                                       class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                        :class="formError.category ? 'border-red-300' : 'border-stone-200'"/>
                                 <button @click="usingCustomCategory = !usingCustomCategory"
-                                        class="mt-1 text-xs text-amber-600 hover:underline">
+                                        class="mt-1 text-xs text-[#73877C] hover:underline">
                                     {{ usingCustomCategory ? '← Pilih dari daftar' : '+ Kategori lain' }}
                                 </button>
                                 <p v-if="formError.category" class="text-xs text-red-500 mt-1">{{ formError.category }}</p>
@@ -919,7 +919,7 @@ function isOverdue(d) {
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Prioritas</label>
                                 <select v-model="form.priority"
-                                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                     <option value="low">Rendah</option>
                                     <option value="medium">Sedang</option>
                                     <option value="high">Tinggi</option>
@@ -931,14 +931,14 @@ function isOverdue(d) {
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Tenggat (opsional)</label>
                             <input v-model="form.due_date" type="date"
-                                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
 
                         <!-- Description -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Catatan (opsional)</label>
                             <textarea v-model="form.description" rows="2" placeholder="Tambahkan catatan…"
-                                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
                     </div>
 
@@ -949,7 +949,7 @@ function isOverdue(d) {
                         </button>
                         <button @click="saveForm" :disabled="saving"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                style="background-color: #D4A373">
+                                style="background-color: #92A89C">
                             {{ saving ? 'Menyimpan…' : (editingTask ? 'Simpan' : 'Tambah') }}
                         </button>
                     </div>

@@ -32,7 +32,7 @@ const premiumTemplate = computed(() =>
 
 // ── Theme ──────────────────────────────────────────────────────────────────
 const cfg          = computed(() => props.invitation.config ?? {});
-const primaryColor = computed(() => cfg.value.primary_color ?? '#D4A373');
+const primaryColor = computed(() => cfg.value.primary_color ?? '#92A89C');
 const fontFamily   = computed(() => cfg.value.font_title    ?? cfg.value.font ?? 'Playfair Display');
 
 // ── Open / reveal state ────────────────────────────────────────────────────

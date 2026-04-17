@@ -48,7 +48,7 @@ const initials = computed(() => {
             <!-- Logo -->
             <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                     style="background:#D4A373">
+                     style="background:#92A89C">
                     <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -94,7 +94,7 @@ const initials = computed(() => {
             <div class="px-3 pb-5 border-t border-white/10 pt-4">
                 <div class="flex items-center gap-3 px-3 py-2 mb-2">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                         style="background:#D4A373">
+                         style="background:#92A89C">
                         {{ initials }}
                     </div>
                     <div class="min-w-0">

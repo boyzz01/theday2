@@ -35,7 +35,7 @@ const form = useForm({
                     class="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-colors focus:ring-2"
                     :class="form.errors.name
                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                 />
                 <p v-if="form.errors.name" class="mt-1.5 text-xs text-red-500">{{ form.errors.name }}</p>
             </div>
@@ -54,14 +54,14 @@ const form = useForm({
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null"
-                 class="flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-700">
+                 class="flex items-start gap-2 px-4 py-3 rounded-xl bg-[#92A89C]/10 border border-[#B8C7BF]/50 text-sm text-[#73877C]">
                 <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>
                     Email belum diverifikasi.
                     <Link :href="route('verification.send')" method="post" as="button"
-                          class="underline font-medium hover:text-amber-800">
+                          class="underline font-medium hover:text-[#2C2417]">
                         Kirim ulang email verifikasi.
                     </Link>
                 </span>

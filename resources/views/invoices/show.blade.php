@@ -16,7 +16,7 @@
 
         .status-badge { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
         .status-paid { background: #D1FAE5; color: #065F46; }
-        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-pending { background: rgba(200,162,107,0.15); color: #C8A26B; }
         .status-failed { background: #FEE2E2; color: #991B1B; }
 
         .section { margin-bottom: 32px; }

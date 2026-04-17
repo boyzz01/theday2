@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const props = defineProps({
     slug:        { type: String, required: true },
-    primaryColor:{ type: String, default: '#D4A373' },
+    primaryColor:{ type: String, default: '#92A89C' },
     fontFamily:  { type: String, default: 'Playfair Display' },
     coverUrl:    { type: String, default: null },
 });

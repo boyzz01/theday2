@@ -27,7 +27,7 @@ const unlocked = ref(! props.needPassword);
     <PasswordGate
         v-if="!unlocked"
         :slug="invitation.slug"
-        :primary-color="invitation.config?.primary_color ?? '#D4A373'"
+        :primary-color="invitation.config?.primary_color ?? '#92A89C'"
         :font-family="invitation.config?.font_title ?? invitation.config?.font ?? 'Playfair Display'"
         :cover-url="invitation.details?.cover_photo_url"
         @unlocked="unlocked = true"
@@ -44,7 +44,7 @@ const unlocked = ref(! props.needPassword);
 </template>
 
 <style>
-:root { --inv-primary: #D4A373; --inv-font: 'Playfair Display', serif; }
+:root { --inv-primary: #92A89C; --inv-font: 'Playfair Display', serif; }
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 .envelope-leave-active { transition: opacity 0.6s ease, transform 0.6s ease; }

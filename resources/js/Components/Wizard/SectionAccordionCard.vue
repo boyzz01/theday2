@@ -17,9 +17,9 @@ const emit = defineEmits(['toggle-enabled', 'toggle-expand']);
 // Status badge config
 const statusConfig = {
     empty:      { label: 'Belum diisi',  cls: 'bg-stone-100 text-stone-500 border-stone-200' },
-    incomplete: { label: 'Belum lengkap', cls: 'bg-orange-50 text-orange-600 border-orange-200' },
+    incomplete: { label: 'Belum lengkap', cls: 'bg-[#92A89C]/10 text-[#73877C] border-[#B8C7BF]' },
     complete:   { label: 'Lengkap',       cls: 'bg-green-50 text-green-700 border-green-200' },
-    warning:    { label: 'Perlu cek',     cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+    warning:    { label: 'Perlu cek',     cls: 'bg-[#C8A26B]/10 text-[#C8A26B] border-[#C8A26B]/30' },
     disabled:   { label: 'Nonaktif',      cls: 'bg-stone-100 text-stone-400 border-stone-200' },
     error:      { label: 'Error',         cls: 'bg-red-50 text-red-600 border-red-200' },
 };
@@ -55,7 +55,7 @@ function resolvedStatus() {
                     <!-- Required / Optional badge -->
                     <span
                         v-if="isRequired"
-                        class="text-xs font-medium px-1.5 py-0.5 rounded-md border bg-amber-50 text-amber-700 border-amber-200"
+                        class="text-xs font-medium px-1.5 py-0.5 rounded-md border bg-[#92A89C]/10 text-[#73877C] border-[#B8C7BF]"
                     >Wajib</span>
                     <span
                         v-else
@@ -77,7 +77,7 @@ function resolvedStatus() {
                 @click.stop="emit('toggle-enabled')"
                 :class="[
                     'relative w-9 h-5 rounded-full transition-all duration-200 flex-shrink-0',
-                    isEnabled ? 'bg-amber-400' : 'bg-stone-200',
+                    isEnabled ? 'bg-[#92A89C]' : 'bg-stone-200',
                 ]"
                 :title="isEnabled ? 'Nonaktifkan bagian ini' : 'Aktifkan bagian ini'"
             >

@@ -55,7 +55,7 @@ const updatePassword = () => {
                         class="w-full px-4 py-2.5 pr-11 rounded-xl border text-sm outline-none transition-colors focus:ring-2"
                         :class="form.errors.current_password
                             ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                     />
                     <button type="button" @click="showCurrent = !showCurrent" tabindex="-1"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
@@ -85,7 +85,7 @@ const updatePassword = () => {
                         class="w-full px-4 py-2.5 pr-11 rounded-xl border text-sm outline-none transition-colors focus:ring-2"
                         :class="form.errors.password
                             ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                     />
                     <button type="button" @click="showNew = !showNew" tabindex="-1"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
@@ -114,7 +114,7 @@ const updatePassword = () => {
                         class="w-full px-4 py-2.5 pr-11 rounded-xl border text-sm outline-none transition-colors focus:ring-2"
                         :class="form.errors.password_confirmation
                             ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                     />
                     <button type="button" @click="showConfirm = !showConfirm" tabindex="-1"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">

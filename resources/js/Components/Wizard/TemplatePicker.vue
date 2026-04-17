@@ -92,7 +92,7 @@ async function confirmChange() {
                     v-model="search"
                     type="text"
                     placeholder="Cari template..."
-                    class="w-full pl-9 pr-4 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400"
+                    class="w-full pl-9 pr-4 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30 focus:border-[#92A89C]"
                 />
             </div>
             <!-- Tier filter -->
@@ -103,7 +103,7 @@ async function confirmChange() {
                     :class="[
                         'px-3 py-2 text-xs font-medium rounded-lg transition-colors',
                         tierFilter === opt.val
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-[#92A89C]/100 text-white'
                             : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                     ]">
                     {{ opt.label }}
@@ -128,8 +128,8 @@ async function confirmChange() {
                     :class="[
                         'relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer group',
                         t.id === currentTemplateId
-                            ? 'border-amber-500 shadow-lg shadow-amber-100'
-                            : 'border-stone-200 hover:border-amber-300 hover:shadow-md'
+                            ? 'border-[#92A89C] shadow-lg shadow-[#92A89C]/20'
+                            : 'border-stone-200 hover:border-[#92A89C]/50 hover:shadow-md'
                     ]">
 
                     <!-- Thumbnail -->
@@ -148,13 +148,13 @@ async function confirmChange() {
 
                         <!-- Active badge -->
                         <div v-if="t.id === currentTemplateId"
-                            class="absolute top-2 left-2 px-2 py-0.5 bg-amber-500 text-white text-xs font-semibold rounded-full">
+                            class="absolute top-2 left-2 px-2 py-0.5 bg-[#92A89C]/100 text-white text-xs font-semibold rounded-full">
                             Aktif
                         </div>
 
                         <!-- Premium badge -->
                         <div v-if="t.tier === 'premium'"
-                            class="absolute top-2 right-2 px-2 py-0.5 bg-stone-800 text-amber-300 text-xs font-semibold rounded-full">
+                            class="absolute top-2 right-2 px-2 py-0.5 bg-stone-800 text-[#B8C7BF] text-xs font-semibold rounded-full">
                             Premium
                         </div>
 
@@ -181,12 +181,12 @@ async function confirmChange() {
             <div v-if="pending" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
                     <h3 class="text-base font-semibold text-stone-800 mb-2">
-                        Ganti ke template <span class="text-amber-600">{{ pending.name }}</span>?
+                        Ganti ke template <span class="text-[#73877C]">{{ pending.name }}</span>?
                     </h3>
                     <p class="text-sm text-stone-500 mb-3">
                         Data undanganmu seperti nama, tanggal, dan foto akan tetap tersimpan. Tampilan akan berubah menggunakan template baru.
                     </p>
-                    <p v-if="isPublished" class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                    <p v-if="isPublished" class="text-sm text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF] rounded-lg px-3 py-2 mb-4">
                         Undanganmu sudah dipublikasi. Mengganti template akan mengubah tampilan yang dilihat tamu segera setelah disimpan.
                     </p>
                     <p v-if="error" class="text-sm text-red-600 mb-3">{{ error }}</p>
@@ -200,7 +200,7 @@ async function confirmChange() {
                         <button
                             @click="confirmChange"
                             :disabled="loading"
-                            class="flex-1 px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                            class="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#92A89C]/100 rounded-xl hover:bg-[#73877C] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                             <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -214,8 +214,8 @@ async function confirmChange() {
             <!-- Upgrade prompt -->
             <div v-if="showUpgrade" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
-                    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="w-12 h-12 rounded-full bg-[#92A89C]/20 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-[#73877C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </div>
@@ -223,7 +223,7 @@ async function confirmChange() {
                     <p class="text-sm text-stone-500 mb-5">Template ini tersedia untuk paket Premium.</p>
                     <div class="flex flex-col gap-2">
                         <a href="/dashboard/upgrade"
-                            class="w-full px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-xl hover:bg-amber-600 transition-colors">
+                            class="w-full px-4 py-2 text-sm font-medium text-white bg-[#92A89C]/100 rounded-xl hover:bg-[#73877C] transition-colors">
                             Upgrade Sekarang
                         </a>
                         <button

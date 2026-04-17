@@ -30,18 +30,18 @@ const submit = () => {
 
         <!-- ── Left panel — decorative (hidden on mobile) ──────────── -->
         <div class="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col relative overflow-hidden"
-             style="background: linear-gradient(160deg, #2C1A0E 0%, #4A2C18 60%, #6B3E26 100%)">
+             style="background: linear-gradient(160deg, #1A2720 0%, #243830 60%, #2E4A3C 100%)">
 
             <!-- Dot pattern overlay -->
             <div class="absolute inset-0 opacity-10"
-                 style="background-image: radial-gradient(circle, #D4A373 1px, transparent 1px); background-size: 28px 28px"/>
+                 style="background-image: radial-gradient(circle, #92A89C 1px, transparent 1px); background-size: 28px 28px"/>
 
             <!-- Content -->
             <div class="relative z-10 flex flex-col h-full px-12 py-10">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-2.5 w-fit">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -53,22 +53,22 @@ const submit = () => {
 
                 <!-- Center quote -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.start_journey }}</p>
+                    <p class="text-[#B8C7BF]/70 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.start_journey }}</p>
                     <h1 class="text-white text-4xl font-bold leading-tight mb-6 whitespace-pre-line"
                         style="font-family: 'Playfair Display', serif">{{ tr.register_headline }}</h1>
-                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">{{ tr.register_sub }}</p>
+                    <p class="text-[#B8C7BF]/70 text-sm leading-relaxed max-w-xs">{{ tr.register_sub }}</p>
 
                     <!-- Feature list -->
                     <div class="mt-8 space-y-3">
                         <div v-for="item in [tr.feature_free, tr.feature_rsvp, tr.feature_wa]"
                              :key="item" class="flex items-center gap-3">
                             <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                                 style="background-color: rgba(212,163,115,0.25)">
-                                <svg class="w-3 h-3 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 style="background-color: rgba(146,168,156,0.25)">
+                                <svg class="w-3 h-3 text-[#B8C7BF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <span class="text-amber-100/70 text-sm">{{ item }}</span>
+                            <span class="text-white/80 text-sm">{{ item }}</span>
                         </div>
                     </div>
                 </div>
@@ -77,8 +77,8 @@ const submit = () => {
                 <div class="mb-10">
                     <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-5 py-4">
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="w-8 h-8 rounded-full bg-amber-400/30 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="w-8 h-8 rounded-full bg-[#92A89C]/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-[#B8C7BF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
@@ -91,7 +91,7 @@ const submit = () => {
                         <div class="h-px bg-white/10 mb-3"/>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-white/50">Dibuat dalam</span>
-                            <span class="text-amber-300 font-semibold">5 menit</span>
+                            <span class="text-[#B8C7BF] font-semibold">5 menit</span>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@ const submit = () => {
             <div class="lg:hidden flex items-center gap-2.5 px-6 pt-6">
                 <a href="/" class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -141,7 +141,7 @@ const submit = () => {
                             {{ tr.have_account }}
                             <Link :href="route('login')"
                                   class="font-semibold hover:underline"
-                                  style="color: #C8A26B">
+                                  style="color: #73877C">
                                 {{ tr.login_here }}
                             </Link>
                         </p>
@@ -166,7 +166,7 @@ const submit = () => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="form.errors.name
                                     ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                             />
                             <p v-if="form.errors.name" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +191,7 @@ const submit = () => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="form.errors.email
                                     ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                             />
                             <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,7 +217,7 @@ const submit = () => {
                                     class="w-full px-4 py-3 pr-11 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.password
                                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                 />
                                 <button type="button" @click="showPass = !showPass" tabindex="-1"
                                         class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors">
@@ -257,7 +257,7 @@ const submit = () => {
                                     class="w-full px-4 py-3 pr-11 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.password_confirmation
                                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                 />
                                 <button type="button" @click="showConfirm = !showConfirm" tabindex="-1"
                                         class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors">
@@ -286,7 +286,7 @@ const submit = () => {
                             type="submit"
                             :disabled="form.processing"
                             class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99] mt-2"
-                            style="background-color: #C8A26B"
+                            style="background-color: #92A89C"
                         >
                             <span v-if="form.processing" class="flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

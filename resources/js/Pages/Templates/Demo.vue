@@ -10,7 +10,7 @@ const props = defineProps({
     isGuest:    { type: Boolean, default: true },
 });
 
-const primary = computed(() => props.invitation.config?.primary_color ?? '#D4A373');
+const primary = computed(() => props.invitation.config?.primary_color ?? '#92A89C');
 
 function useTemplate() {
     router.visit(`/use-template/${props.template.id}`);
@@ -27,8 +27,8 @@ function useTemplate() {
     >
         <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-3 flex-wrap sm:flex-nowrap">
             <!-- Icon + text -->
-            <div class="flex items-center gap-2 text-amber-200 text-xs font-medium flex-1 min-w-0">
-                <svg class="w-4 h-4 flex-shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex items-center gap-2 text-[#B8C7BF]/70 text-xs font-medium flex-1 min-w-0">
+                <svg class="w-4 h-4 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -36,7 +36,7 @@ function useTemplate() {
                 </svg>
                 <span class="truncate">
                     Preview demo template
-                    <span class="font-bold text-amber-300">"{{ template.name }}"</span>
+                    <span class="font-bold text-[#B8C7BF]">"{{ template.name }}"</span>
                     — data yang ditampilkan adalah contoh.
                 </span>
             </div>
@@ -45,7 +45,7 @@ function useTemplate() {
             <div class="flex items-center gap-2 flex-shrink-0">
                 <a
                     href="/templates"
-                    class="px-3 py-1.5 rounded-lg text-xs font-medium text-amber-200/70 hover:text-amber-100 transition-colors"
+                    class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#B8C7BF]/70/70 hover:text-[#B8C7BF]/50 transition-colors"
                 >
                     ← Galeri
                 </a>
@@ -92,7 +92,7 @@ function useTemplate() {
 
 <style>
 /* Reuse the same global styles from invitation */
-:root { --inv-primary: #D4A373; --inv-font: 'Playfair Display', serif; }
+:root { --inv-primary: #92A89C; --inv-font: 'Playfair Display', serif; }
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 @keyframes spin-slow { to { transform: rotate(360deg); } }

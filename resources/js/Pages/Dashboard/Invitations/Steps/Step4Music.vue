@@ -116,7 +116,7 @@ async function handleAudioUpload(e) {
                     :class="[
                         'flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-pointer',
                         isSelected(music)
-                            ? 'border-amber-300 bg-amber-50'
+                            ? 'border-[#92A89C]/50 bg-[#92A89C]/10'
                             : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
                     ]"
                     @click="selectDefault(music)"
@@ -130,7 +130,7 @@ async function handleAudioUpload(e) {
                                 ? 'text-white'
                                 : 'text-stone-400 bg-stone-100 hover:bg-stone-200',
                         ]"
-                        :style="playingId === music.id ? 'background-color: #D4A373' : ''"
+                        :style="playingId === music.id ? 'background-color: #92A89C' : ''"
                     >
                         <!-- Playing animation -->
                         <svg v-if="playingId === music.id" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ async function handleAudioUpload(e) {
                     </button>
 
                     <div class="flex-1 min-w-0">
-                        <p :class="['text-sm font-medium truncate', isSelected(music) ? 'text-amber-800' : 'text-stone-700']">
+                        <p :class="['text-sm font-medium truncate', isSelected(music) ? 'text-[#2C2417]' : 'text-stone-700']">
                             {{ music.title }}
                         </p>
                     </div>
@@ -151,7 +151,7 @@ async function handleAudioUpload(e) {
                     <!-- Selected checkmark -->
                     <div v-if="isSelected(music)"
                          class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -166,14 +166,14 @@ async function handleAudioUpload(e) {
             <label :class="[
                 'flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-all',
                 isUploading
-                    ? 'border-amber-200 bg-amber-50'
+                    ? 'border-[#B8C7BF] bg-[#92A89C]/10'
                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
             ]">
                 <div :class="[
                     'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-                    isUploading ? 'bg-amber-100' : 'bg-stone-100',
+                    isUploading ? 'bg-[#92A89C]/20' : 'bg-stone-100',
                 ]">
-                    <svg v-if="isUploading" class="w-4 h-4 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <svg v-if="isUploading" class="w-4 h-4 text-[#92A89C] animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
@@ -194,7 +194,7 @@ async function handleAudioUpload(e) {
             </label>
 
             <p v-if="uploadError" class="mt-2 text-xs text-red-600">{{ uploadError }}</p>
-            <p v-if="!invitationId" class="mt-2 text-xs text-amber-600">
+            <p v-if="!invitationId" class="mt-2 text-xs text-[#73877C]">
                 Simpan informasi dasar terlebih dahulu untuk upload musik.
             </p>
         </div>

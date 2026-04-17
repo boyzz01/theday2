@@ -7,8 +7,8 @@
 ---
 
 **Project:** TheDay
-**Generated:** 2026-04-01 17:36:32
-**Category:** E-commerce Luxury
+**Updated:** 2026-04-17
+**Category:** Premium Wedding SaaS — Sage Green Theme
 
 ---
 
@@ -16,27 +16,73 @@
 
 ### Color Palette
 
-| Role | Hex | CSS Variable |
-|------|-----|--------------|
-| Primary | `#2563EB` | `--color-primary` |
-| Secondary | `#3B82F6` | `--color-secondary` |
-| CTA/Accent | `#F97316` | `--color-cta` |
-| Background | `#F8FAFC` | `--color-background` |
-| Text | `#1E293B` | `--color-text` |
+| Role | Hex | Tailwind Token | CSS Variable |
+|------|-----|---------------|--------------|
+| Primary (Sage) | `#92A89C` | `brand-primary` | `--brand-primary` |
+| Primary Hover | `#73877C` | `brand-primary-hover` | `--brand-primary-hover` |
+| Primary Soft | `#B8C7BF` | `brand-primary-soft` | `--brand-primary-soft` |
+| Premium Accent (Gold) | `#C8A26B` | `brand-premium` | `--brand-premium` |
+| Premium Hover | `#B8905A` | `brand-premium-hover` | `--brand-premium-hover` |
+| Text (Warm Brown) | `#2C2417` | `brand-text` | `--brand-text` |
+| Background (Cream) | `#FFFCF7` | `brand-bg` | `--brand-bg` |
 
-**Color Notes:** Romantic pink + elegant gold [Accent adjusted from #CA8A04 for WCAG 3:1]
+**Color Notes:**
+- Sage is the **primary** brand color — used for buttons, active states, form focus, nav.
+- Gold (`#C8A26B`) is the **premium accent** — used ONLY for premium badges, pricing, upsell CTAs. Do NOT use gold as default action color.
+- Warm brown (`#2C2417`) is the base text color — used for headings and body.
+- Cream (`#FFFCF7`) is the page background — keeps a warm, bridal feel.
+
+### Theme Role Mapping
+
+#### Primary `#92A89C`
+- Primary buttons
+- Active navigation / sidebar state
+- Active tabs, selected cards, radio cards
+- Toggle on state
+- Form focus ring + border
+- Key highlights (non-premium)
+
+#### Primary Hover `#73877C`
+- Button hover
+- Active pressed state
+- Strong borders / selected outlines
+- Icon emphasis on hover
+
+#### Primary Soft `#B8C7BF`
+- Subtle highlighted surfaces
+- Selected rows/cards background
+- Empty state accents
+- Gentle badges / pills
+- Info panels with calm emphasis
+
+#### Premium Gold `#C8A26B`
+- Premium badges only
+- Pricing highlights
+- Upsell CTAs / plan cards
+- Locked feature indicators
+- Subscription renewal CTAs
+
+#### Text `#2C2417`
+- Main body text
+- Headings
+- Icon default (dark context)
+- Table text
+
+#### Background `#FFFCF7`
+- App background
+- Public page cards
+- Large page surfaces
+
+---
 
 ### Typography
 
-- **Heading Font:** Great Vibes
-- **Body Font:** Cormorant Infant
-- **Mood:** wedding, romance, elegant, script, invitation, feminine
-- **Google Fonts:** [Great Vibes + Cormorant Infant](https://fonts.google.com/share?selection.family=Cormorant+Infant:wght@300;400;500;600;700|Great+Vibes)
+- **Heading Font:** Playfair Display / Great Vibes (script accents)
+- **Body Font:** Figtree (UI), Cormorant Infant (editorial)
+- **Mood:** wedding, romance, elegant, editorial, premium
+- **Google Fonts:** Playfair Display + Figtree
 
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Infant:wght@300;400;500;600;700&family=Great+Vibes&display=swap');
-```
+---
 
 ### Spacing Variables
 
@@ -66,32 +112,48 @@
 ### Buttons
 
 ```css
-/* Primary Button */
+/* Primary Button — Sage */
 .btn-primary {
-  background: #F97316;
+  background: #92A89C;
   color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
 }
-
 .btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: #73877C;
 }
 
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #2563EB;
-  border: 2px solid #2563EB;
-  padding: 12px 24px;
-  border-radius: 8px;
+  color: #2C2417;
+  border: 1.5px solid #B8C7BF;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
+}
+.btn-secondary:hover {
+  background: rgba(146,168,156,0.08);
+  border-color: #92A89C;
+}
+
+/* Premium / Upsell Button — Gold */
+.btn-premium {
+  background: #C8A26B;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+.btn-premium:hover {
+  background: #B8905A;
 }
 ```
 
@@ -99,17 +161,22 @@
 
 ```css
 .card {
-  background: #F8FAFC;
+  background: #FFFCF7;
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
   transition: all 200ms ease;
   cursor: pointer;
+  border: 1px solid rgba(184, 199, 191, 0.4);
 }
-
 .card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
+}
+/* Selected card */
+.card.selected {
+  border-color: #92A89C;
+  background: rgba(146,168,156,0.08);
 }
 ```
 
@@ -118,16 +185,15 @@
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #D1D5DB;
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 200ms ease;
 }
-
 .input:focus {
-  border-color: #2563EB;
+  border-color: #92A89C;
   outline: none;
-  box-shadow: 0 0 0 3px #2563EB20;
+  box-shadow: 0 0 0 3px rgba(146,168,156,0.3);
 }
 ```
 
@@ -138,9 +204,8 @@
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
 }
-
 .modal {
-  background: white;
+  background: #FFFCF7;
   border-radius: 16px;
   padding: 32px;
   box-shadow: var(--shadow-xl);
@@ -149,41 +214,77 @@
 }
 ```
 
+### Badges
+
+```css
+/* General sage badge */
+.badge-sage {
+  background: rgba(146,168,156,0.15);
+  color: #73877C;
+  border: 1px solid rgba(146,168,156,0.3);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+/* Premium gold badge — use ONLY for premium contexts */
+.badge-premium {
+  background: rgba(200,162,107,0.15);
+  color: #C8A26B;
+  border: 1px solid rgba(200,162,107,0.3);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+```
+
+### Navigation / Sidebar
+
+```css
+/* Active nav item */
+.nav-item-active {
+  background: rgba(146,168,156,0.12);
+  color: #2C2417;
+}
+.nav-item-active .nav-icon {
+  color: #73877C;
+}
+/* Hover nav item */
+.nav-item:hover {
+  background: rgba(146,168,156,0.06);
+}
+```
+
 ---
 
 ## Style Guidelines
 
-**Style:** Liquid Glass
+**Style:** Editorial Luxury — Calm, Romantic, Premium
 
-**Keywords:** Flowing glass, morphing, smooth transitions, fluid effects, translucent, animated blur, iridescent, chromatic aberration
+**Keywords:** sage green, warm cream, earthy luxury, editorial wedding, intimate, refined, modern without generic SaaS
 
-**Best For:** Premium SaaS, high-end e-commerce, creative platforms, branding experiences, luxury portfolios
-
-**Key Effects:** Morphing elements (SVG/CSS), fluid animations (400-600ms curves), dynamic blur (backdrop-filter), color transitions
+**Avoid:** neon tones, overly gray enterprise, pastel childish, fully monochrome green screens
 
 ### Page Pattern
 
-**Pattern Name:** App Store Style Landing
-
-- **Conversion Strategy:** Show real screenshots. Include ratings (4.5+ stars). QR code for mobile. Platform-specific CTAs.
-- **CTA Placement:** Download buttons prominent (App Store + Play Store) throughout
-- **Section Order:** 1. Hero with device mockup, 2. Screenshots carousel, 3. Features with icons, 4. Reviews/ratings, 5. Download CTAs
+**Dashboard:** calm scan-friendly, soft backgrounds, sage active states, premium in gold
+**Landing:** editorial wedding brand, whitespace, cream background, sage accents, dark brown typography, gold only in pricing
 
 ---
 
 ## Anti-Patterns (Do NOT Use)
 
-- ❌ Vibrant & Block-based
-- ❌ Playful colors
-
-### Additional Forbidden Patterns
-
-- ❌ **Emojis as icons** — Use SVG icons (Heroicons, Lucide, Simple Icons)
-- ❌ **Missing cursor:pointer** — All clickable elements must have cursor:pointer
-- ❌ **Layout-shifting hovers** — Avoid scale transforms that shift layout
-- ❌ **Low contrast text** — Maintain 4.5:1 minimum contrast ratio
-- ❌ **Instant state changes** — Always use transitions (150-300ms)
-- ❌ **Invisible focus states** — Focus states must be visible for a11y
+- ❌ Using gold/amber as primary action color (gold = premium only)
+- ❌ Vibrant & Block-based colors
+- ❌ Blue as brand primary (old system — replaced by sage)
+- ❌ Hardcoded `amber-*`, `yellow-*` Tailwind classes for UI states (use brand tokens)
+- ❌ Emojis as icons — Use SVG icons (Heroicons, Lucide, Simple Icons)
+- ❌ Missing `cursor:pointer` — All clickable elements must have it
+- ❌ Layout-shifting hovers — Avoid scale transforms that shift layout
+- ❌ Low contrast text — Maintain 4.5:1 minimum contrast ratio
+- ❌ Instant state changes — Always use transitions (150-300ms)
+- ❌ Invisible focus states — Focus states must be visible for a11y
 
 ---
 
@@ -191,6 +292,12 @@
 
 Before delivering any UI code, verify:
 
+- [ ] Uses brand color tokens (`brand-primary`, `brand-premium`, etc.) or CSS variables
+- [ ] No `amber-*`, `yellow-*`, `orange-*`, `blue-*` classes for brand UI states
+- [ ] Gold (`brand-premium` / `#C8A26B`) used ONLY for premium/upsell contexts
+- [ ] Sage (`brand-primary` / `#92A89C`) used for all primary actions
+- [ ] Background is `brand-bg` / `#FFFCF7` (warm cream)
+- [ ] Text is `brand-text` / `#2C2417` (warm brown) for headings and body
 - [ ] No emojis used as icons (use SVG instead)
 - [ ] All icons from consistent icon set (Heroicons/Lucide)
 - [ ] `cursor-pointer` on all clickable elements

@@ -31,7 +31,7 @@ const avatarInitials = computed(() => {
             <!-- Avatar card -->
             <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 flex items-center gap-5">
                 <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
-                     style="background-color: #D4A373">
+                     style="background-color: #92A89C">
                     {{ avatarInitials }}
                 </div>
                 <div>

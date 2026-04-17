@@ -42,7 +42,7 @@
         }
         .logo-icon {
             width: 2rem; height: 2rem;
-            background: #D4A373;
+            background: #92A89C;
             border-radius: .5rem;
             display: flex; align-items: center; justify-content: center;
         }
@@ -58,12 +58,12 @@
         /* Illustration area */
         .illustration {
             width: 5rem; height: 5rem;
-            background: #FEF3C7;
+            background: #EFF2F0;
             border-radius: 1.25rem;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.5rem;
         }
-        .illustration svg { width: 2.5rem; height: 2.5rem; color: #D97706; }
+        .illustration svg { width: 2.5rem; height: 2.5rem; color: #73877C; }
 
         /* Number */
         .number {
@@ -71,7 +71,7 @@
             font-size: 5rem;
             font-weight: 600;
             line-height: 1;
-            color: #D4A373;
+            color: #92A89C;
             margin-bottom: .75rem;
             letter-spacing: -.03em;
         }
@@ -79,7 +79,7 @@
         /* Decorative line */
         .divider {
             width: 3rem; height: 1px;
-            background: #D4A373;
+            background: #92A89C;
             margin: 0 auto 1.25rem;
         }
 
@@ -102,7 +102,7 @@
         .btn-primary {
             display: inline-block;
             padding: .75rem 1.75rem;
-            background: #D4A373;
+            background: #92A89C;
             color: #fff;
             border-radius: .75rem;
             font-size: .875rem;

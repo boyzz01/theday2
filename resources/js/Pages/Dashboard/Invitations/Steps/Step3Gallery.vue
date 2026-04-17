@@ -69,7 +69,7 @@ function onCardDrop(i) {
             :class="[
                 'relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all',
                 isDragOver
-                    ? 'border-amber-400 bg-amber-50'
+                    ? 'border-[#92A89C] bg-[#92A89C]/10'
                     : 'border-stone-200 bg-stone-50/50 hover:border-stone-300 hover:bg-stone-50',
             ]"
             @dragover.prevent="isDragOver = true"
@@ -77,11 +77,11 @@ function onCardDrop(i) {
             @drop.prevent="onDropZone"
         >
             <div v-if="isUploading" class="flex flex-col items-center gap-2">
-                <svg class="w-8 h-8 animate-spin text-amber-400" fill="none" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 animate-spin text-[#92A89C]" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                <span class="text-sm text-amber-600 font-medium">Mengunggah foto…</span>
+                <span class="text-sm text-[#73877C] font-medium">Mengunggah foto…</span>
             </div>
             <template v-else>
                 <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center">
@@ -94,7 +94,7 @@ function onCardDrop(i) {
                     <p class="text-sm font-medium text-stone-700">Drag & drop foto di sini</p>
                     <p class="text-xs text-stone-400 mt-0.5">atau klik untuk memilih file (JPG, PNG, WebP · maks 5 MB per foto)</p>
                 </div>
-                <span class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white" style="background-color: #D4A373">
+                <span class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white" style="background-color: #92A89C">
                     Pilih Foto
                 </span>
             </template>
@@ -107,7 +107,7 @@ function onCardDrop(i) {
         <p v-if="uploadError" class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
             {{ uploadError }}
         </p>
-        <p v-else-if="!invitationId" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
+        <p v-else-if="!invitationId" class="text-xs text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 rounded-xl px-4 py-2.5">
             Simpan informasi dasar (Step 1) terlebih dahulu untuk dapat upload foto.
         </p>
 

@@ -161,7 +161,7 @@ const handleClickOutsideAvatar = (e) => {
 </script>
 
 <template>
-    <div class="min-h-screen flex" style="background-color: #FFFDF7">
+    <div class="min-h-screen flex" style="background-color: #FFFCF7">
 
         <!-- ── Sidebar Overlay (mobile) ─────────────────────────── -->
         <Transition name="fade">
@@ -185,14 +185,14 @@ const handleClickOutsideAvatar = (e) => {
             <!-- Logo — expanded -->
             <div v-if="!sidebarCollapsed" class="flex items-center gap-3 px-5 py-5 border-b border-stone-100">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                     style="background-color: #D4A373">
+                     style="background-color: #92A89C">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </div>
-                <span class="font-semibold text-lg text-stone-800 tracking-tight"
-                      style="font-family: 'Playfair Display', serif">
+                <span class="font-semibold text-lg tracking-tight"
+                      style="font-family: 'Playfair Display', serif; color: #2C2417">
                     TheDay
                 </span>
                 <!-- Collapse button -->
@@ -230,15 +230,15 @@ const handleClickOutsideAvatar = (e) => {
                         <button
                             @click="toggleGroup(item.label)"
                             :class="[
-                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
                                 isGroupActive(item)
-                                    ? 'text-amber-800 bg-amber-50'
-                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                                    ? 'bg-[#92A89C]/12 text-[#2C2417]'
+                                    : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
                                 sidebarCollapsed ? 'justify-center' : '',
                             ]"
                         >
                             <svg class="w-5 h-5 flex-shrink-0"
-                                 :class="isGroupActive(item) ? 'text-amber-600' : 'text-stone-400'"
+                                 :class="isGroupActive(item) ? 'text-[#73877C]' : 'text-stone-400'"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                             <span v-if="!sidebarCollapsed" class="flex-1 text-left">{{ item.label }}</span>
                             <svg v-if="!sidebarCollapsed"
@@ -266,8 +266,8 @@ const handleClickOutsideAvatar = (e) => {
                                           :class="[
                                               'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
                                               isActive(child)
-                                                  ? 'text-amber-800 bg-amber-50'
-                                                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                                                  ? 'bg-[#92A89C]/12 text-[#2C2417]'
+                                                  : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
                                           ]"
                                     >
                                         {{ child.label }}
@@ -284,18 +284,18 @@ const handleClickOutsideAvatar = (e) => {
                         :class="[
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                             isActive(item)
-                                ? 'text-amber-800 bg-amber-50'
-                                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50',
+                                ? 'bg-[#92A89C]/12 text-[#2C2417]'
+                                : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
                             sidebarCollapsed ? 'justify-center' : '',
                         ]"
                     >
-                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-amber-600' : 'text-stone-400'"
+                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-[#73877C]' : 'text-stone-400'"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                         <span v-if="!sidebarCollapsed" class="flex-1">{{ item.label }}</span>
                         <span
                             v-if="!sidebarCollapsed && item.route === 'dashboard.checklist.index' && checklistTodo > 0"
                             class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold flex items-center justify-center text-white"
-                            style="background-color: #D4A373"
+                            style="background-color: #92A89C"
                         >{{ checklistTodo }}</span>
                     </Link>
 
@@ -306,19 +306,19 @@ const handleClickOutsideAvatar = (e) => {
             <div v-if="!sidebarCollapsed"
                  class="mx-3 mb-3 px-3 py-2.5 rounded-xl border"
                  :class="plan?.plan_slug === 'premium'
-                    ? 'bg-amber-50 border-amber-200'
+                    ? 'bg-[#C8A26B]/10 border-[#C8A26B]/30'
                     : 'bg-stone-50 border-stone-200'">
                 <p class="text-xs font-medium"
-                   :class="plan?.plan_slug === 'premium' ? 'text-amber-600' : 'text-stone-400'">
+                   :class="plan?.plan_slug === 'premium' ? 'text-[#C8A26B]' : 'text-stone-400'">
                     Paket Aktif
                 </p>
                 <p class="text-sm font-semibold mt-0.5"
-                   :class="plan?.plan_slug === 'premium' ? 'text-amber-800' : 'text-stone-600'">
+                   :class="plan?.plan_slug === 'premium' ? 'text-[#2C2417]' : 'text-stone-600'">
                     {{ plan?.plan_name ?? 'Gratis' }}
                 </p>
                 <Link :href="route('dashboard.paket')"
-                      class="text-xs mt-1 inline-block font-medium"
-                      style="color: #D4A373">
+                      class="text-xs mt-1 inline-block font-medium transition-colors hover:opacity-80"
+                      style="color: #C8A26B">
                     {{ plan?.plan_slug === 'premium' ? 'Kelola →' : 'Upgrade →' }}
                 </Link>
             </div>
@@ -327,7 +327,7 @@ const handleClickOutsideAvatar = (e) => {
             <div class="border-t border-stone-100 p-3">
                 <div :class="['flex items-center gap-3', sidebarCollapsed ? 'justify-center' : '']">
                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         {{ avatarInitials }}
                     </div>
                     <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
@@ -337,7 +337,7 @@ const handleClickOutsideAvatar = (e) => {
                     <button
                         v-if="!sidebarCollapsed"
                         @click="logout"
-                        class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                        class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 cursor-pointer"
                         title="Keluar"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -356,7 +356,7 @@ const handleClickOutsideAvatar = (e) => {
             <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-100 px-4 lg:px-6 h-14 flex items-center gap-4">
                 <!-- Mobile hamburger -->
                 <button
-                    class="lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors"
+                    class="lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors cursor-pointer"
                     @click="sidebarOpen = !sidebarOpen"
                 >
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -386,8 +386,8 @@ const handleClickOutsideAvatar = (e) => {
                     <div class="relative" ref="avatarDropdownRef">
                         <button
                             @click.stop="avatarDropdownOpen = !avatarDropdownOpen"
-                            class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold focus:outline-none ring-2 ring-transparent focus:ring-amber-300 transition-all"
-                            style="background-color: #D4A373"
+                            class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold focus:outline-none ring-2 ring-transparent focus:ring-[#92A89C]/50 transition-all cursor-pointer"
+                            style="background-color: #92A89C"
                         >
                             {{ avatarInitials }}
                         </button>
@@ -415,7 +415,7 @@ const handleClickOutsideAvatar = (e) => {
                                 <!-- Logout -->
                                 <button
                                     @click="logout"
-                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                                 >
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -433,20 +433,21 @@ const handleClickOutsideAvatar = (e) => {
             <Transition name="slide-down">
                 <div v-if="showExpiryBanner && !dismissedExpiry"
                      class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
-                     style="background-color:#FEF3C7;border-bottom:1px solid #FDE68A">
-                    <span class="text-amber-800">
-                        ⏰ Paket Premiummu berakhir dalam
+                     style="background-color:#F0EDE6;border-bottom:1px solid #D9CFC4">
+                    <span style="color: #2C2417">
+                        Paket Premiummu berakhir dalam
                         <strong>{{ plan.days_remaining }} hari</strong>.
                         Perpanjang sekarang agar tidak terputus.
                     </span>
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <Link :href="route('dashboard.paket')"
-                              class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white"
-                              style="background-color:#D97706">
+                              class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 cursor-pointer"
+                              style="background-color:#C8A26B">
                             Perpanjang →
                         </Link>
                         <button @click="dismissedExpiry = true"
-                                class="text-amber-600 hover:text-amber-800 transition-colors">
+                                class="transition-colors cursor-pointer"
+                                style="color: #73877C">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -467,10 +468,10 @@ const handleClickOutsideAvatar = (e) => {
             <div v-if="showLimitModal"
                  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
                  @click.self="showLimitModal = false">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" style="background-color: #FFFCF7">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                         style="background-color: #FEF3C7">
-                        <svg class="w-7 h-7" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         style="background-color: rgba(200,162,107,0.15)">
+                        <svg class="w-7 h-7" style="color: #C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
@@ -485,14 +486,14 @@ const handleClickOutsideAvatar = (e) => {
                     <div class="flex gap-3">
                         <button
                             @click="showLimitModal = false"
-                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors cursor-pointer"
                         >
                             Tutup
                         </button>
                         <Link
                             :href="route('dashboard.paket')"
-                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white text-center transition-all hover:opacity-90"
-                            style="background-color: #D4A373"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white text-center transition-all hover:opacity-90 cursor-pointer"
+                            style="background-color: #C8A26B"
                             @click="showLimitModal = false"
                         >
                             Upgrade Paket

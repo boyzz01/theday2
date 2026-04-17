@@ -551,14 +551,14 @@ function showToast(msg) {
 function sendStatusBadge(status) {
     return {
         not_sent: { label: 'Belum Kirim',  cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
-        sent:     { label: 'Sudah Kirim',  cls: 'bg-blue-50 text-blue-600 ring-1 ring-blue-100' },
+        sent:     { label: 'Sudah Kirim',  cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
         opened:   { label: 'Sudah Dibuka', cls: 'bg-green-50 text-green-700 ring-1 ring-green-100' },
     }[status] ?? { label: status, cls: 'bg-stone-100 text-stone-400' };
 }
 
 function rsvpBadge(status) {
     return {
-        pending:       { label: 'Belum Respon', cls: 'bg-amber-50 text-amber-600 ring-1 ring-amber-100' },
+        pending:       { label: 'Belum Respon', cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
         attending:     { label: 'Hadir',        cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
         not_attending: { label: 'Tidak Hadir',  cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
         maybe:         { label: 'Mungkin',      cls: 'bg-violet-50 text-violet-600 ring-1 ring-violet-100' },
@@ -617,21 +617,21 @@ function sendLabel(guest) {
 
         <!-- ── Loading ───────────────────────────────────────────── -->
         <div v-if="loading" class="flex items-center justify-center py-24">
-            <div class="w-8 h-8 rounded-full border-2 border-amber-300 border-t-amber-600 animate-spin"/>
+            <div class="w-8 h-8 rounded-full border-2 border-[#92A89C]/50 border-t-[#73877C] animate-spin"/>
         </div>
 
         <template v-else>
 
             <!-- ── Template prompt banner ────────────────────────── -->
             <div v-if="!hasTemplate && guests.length > 0"
-                 class="mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-700">
+                 class="mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-[#92A89C]/10 border border-[#B8C7BF]/50 text-sm text-[#73877C]">
                 <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <p class="flex-1">Buat template WhatsApp agar pengiriman undangan lebih cepat.</p>
                 <button @click="openTemplateEditor"
-                        class="text-xs font-semibold text-amber-800 underline whitespace-nowrap">Atur Template</button>
+                        class="text-xs font-semibold text-[#2C2417] underline whitespace-nowrap">Atur Template</button>
             </div>
 
             <!-- ── Summary Cards (clickable quick filters) ───────── -->
@@ -639,7 +639,7 @@ function sendLabel(guest) {
                 <!-- Total -->
                 <button @click="applyStatFilter('reset','')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
-                        :class="isStatActive('total','') ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                        :class="isStatActive('total','') ? 'bg-[#92A89C]/10 border-[#92A89C]/50 ring-2 ring-[#92A89C]/30' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
                     <p class="text-xs text-stone-400 mb-1">Total Tamu</p>
                     <p class="text-xl sm:text-2xl font-bold text-stone-800">{{ summary.total }}</p>
                 </button>
@@ -653,9 +653,9 @@ function sendLabel(guest) {
                 <!-- Sudah Kirim -->
                 <button @click="applyStatFilter('send_status','sent')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
-                        :class="isStatActive('send_status','sent') ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                        :class="isStatActive('send_status','sent') ? 'bg-[#92A89C]/10 border-blue-300 ring-2 ring-[#92A89C]/20' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
                     <p class="text-xs text-stone-400 mb-1">Sudah Kirim</p>
-                    <p class="text-xl sm:text-2xl font-bold text-blue-600">{{ summary.sent + summary.opened }}</p>
+                    <p class="text-xl sm:text-2xl font-bold text-[#73877C]">{{ summary.sent + summary.opened }}</p>
                 </button>
                 <!-- Sudah Dibuka -->
                 <button @click="applyStatFilter('send_status','opened')"
@@ -674,9 +674,9 @@ function sendLabel(guest) {
                 <!-- Belum Respon -->
                 <button @click="applyStatFilter('rsvp_status','pending')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
-                        :class="isStatActive('rsvp_status','pending') ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
+                        :class="isStatActive('rsvp_status','pending') ? 'bg-[#92A89C]/10 border-[#92A89C]/50 ring-2 ring-[#92A89C]/20' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
                     <p class="text-xs text-stone-400 mb-1">Belum Respon</p>
-                    <p class="text-xl sm:text-2xl font-bold text-amber-600">{{ summary.pending_rsvp }}</p>
+                    <p class="text-xl sm:text-2xl font-bold text-[#73877C]">{{ summary.pending_rsvp }}</p>
                 </button>
             </div>
 
@@ -693,20 +693,20 @@ function sendLabel(guest) {
                                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <input v-model="search" type="text" placeholder="Cari nama atau nomor…"
-                               class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                               class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                     </div>
 
                     <!-- Mobile: tombol Filter -->
                     <button @click="showFilterSheet = true"
                             class="md:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm transition-colors whitespace-nowrap"
-                            :class="activeFilterCount > 0 ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                            :class="activeFilterCount > 0 ? 'border-[#92A89C]/50 bg-[#92A89C]/10 text-[#73877C]' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
                         </svg>
                         Filter
                         <span v-if="activeFilterCount > 0"
-                              class="w-4 h-4 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center font-bold">
+                              class="w-4 h-4 rounded-full bg-[#73877C] text-white text-xs flex items-center justify-center font-bold">
                             {{ activeFilterCount }}
                         </span>
                     </button>
@@ -714,7 +714,7 @@ function sendLabel(guest) {
                     <!-- Desktop: dropdown filters inline -->
                     <div class="hidden md:flex items-center gap-2">
                         <select v-model="filters.send_status"
-                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                             <option value="">Semua status</option>
                             <option value="not_sent">Belum Kirim</option>
                             <option value="sent">Sudah Kirim</option>
@@ -722,7 +722,7 @@ function sendLabel(guest) {
                         </select>
 
                         <select v-model="filters.rsvp_status"
-                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                             <option value="">Semua RSVP</option>
                             <option value="pending">Belum Respon</option>
                             <option value="attending">Hadir</option>
@@ -731,13 +731,13 @@ function sendLabel(guest) {
                         </select>
 
                         <select v-if="categories.length > 0" v-model="filters.category"
-                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                             <option value="">Semua kategori</option>
                             <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                         </select>
 
                         <select v-model="sort"
-                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                             <option value="newest">Terbaru</option>
                             <option value="name_asc">Nama A–Z</option>
                             <option value="not_sent">Belum Kirim Dulu</option>
@@ -769,7 +769,7 @@ function sendLabel(guest) {
                     </button>
                     <button @click="openCreate"
                             class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
-                            style="background-color:#D4A373">
+                            style="background-color:#92A89C">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -782,10 +782,10 @@ function sendLabel(guest) {
             <!-- ── Active filter chips ────────────────────────────── -->
             <div v-if="activeFilterChips.length > 0" class="flex flex-wrap gap-1.5 mb-3">
                 <div v-for="chip in activeFilterChips" :key="chip.key"
-                     class="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-50 border border-amber-100 text-xs text-amber-700">
+                     class="flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[#92A89C]/10 border border-[#B8C7BF]/50 text-xs text-[#73877C]">
                     {{ chip.label }}
                     <button @click="removeFilterChip(chip.key)"
-                            class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-amber-100 transition-colors">
+                            class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[#92A89C]/20 transition-colors">
                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -799,8 +799,8 @@ function sendLabel(guest) {
             <!-- ── Bulk action bar ────────────────────────────────── -->
             <Transition name="slide-down">
                 <div v-if="selected.length > 0"
-                     class="mb-3 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
-                    <p class="text-sm text-amber-800 font-medium mr-1">{{ selected.length }} tamu dipilih</p>
+                     class="mb-3 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-[#92A89C]/10 border border-[#B8C7BF]/50">
+                    <p class="text-sm text-[#2C2417] font-medium mr-1">{{ selected.length }} tamu dipilih</p>
 
                     <!-- Kirim WA -->
                     <button @click="openSendModal(guests.find(g => g.id === selected[0]))"
@@ -813,13 +813,13 @@ function sendLabel(guest) {
 
                     <!-- Ubah Kategori -->
                     <button @click="openBulkCategoryModal"
-                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-700 font-medium hover:bg-amber-50 transition-colors">
+                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-[#B8C7BF] text-[#73877C] font-medium hover:bg-[#92A89C]/10 transition-colors">
                         Ubah Kategori
                     </button>
 
                     <!-- Export -->
                     <button @click="bulkExport"
-                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-700 font-medium hover:bg-amber-50 transition-colors">
+                            class="text-xs px-3 py-1.5 rounded-lg bg-white border border-[#B8C7BF] text-[#73877C] font-medium hover:bg-[#92A89C]/10 transition-colors">
                         Export
                     </button>
 
@@ -830,19 +830,19 @@ function sendLabel(guest) {
                     </button>
 
                     <button @click="selected = []"
-                            class="ml-auto text-xs text-amber-600 hover:underline">Batal</button>
+                            class="ml-auto text-xs text-[#73877C] hover:underline">Batal</button>
                 </div>
             </Transition>
 
             <!-- ── Guest loading ──────────────────────────────────── -->
             <div v-if="loadingGuests" class="flex justify-center py-12">
-                <div class="w-6 h-6 rounded-full border-2 border-amber-300 border-t-amber-600 animate-spin"/>
+                <div class="w-6 h-6 rounded-full border-2 border-[#92A89C]/50 border-t-[#73877C] animate-spin"/>
             </div>
 
             <!-- ── Empty state ────────────────────────────────────── -->
             <div v-else-if="guests.length === 0" class="flex flex-col items-center py-20 gap-4">
-                <div class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="w-16 h-16 rounded-full bg-[#92A89C]/10 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
@@ -864,7 +864,7 @@ function sendLabel(guest) {
                 <div v-else class="flex gap-2">
                     <button @click="openCreate"
                             class="px-4 py-2 rounded-xl text-sm font-medium text-white"
-                            style="background-color:#D4A373">Tambah Tamu</button>
+                            style="background-color:#92A89C">Tambah Tamu</button>
                     <button @click="openImport"
                             class="px-4 py-2 rounded-xl text-sm border border-stone-200 text-stone-600 hover:bg-stone-50">Import CSV</button>
                 </div>
@@ -878,7 +878,7 @@ function sendLabel(guest) {
                             <tr>
                                 <th class="w-10 px-4 py-3">
                                     <input type="checkbox" :checked="allSelected" @change="toggleSelectAll"
-                                           class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
+                                           class="rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/30"/>
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Tamu</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Kategori</th>
@@ -894,7 +894,7 @@ function sendLabel(guest) {
                                 <td class="px-4 py-3.5">
                                     <input type="checkbox" :checked="selected.includes(guest.id)"
                                            @change="toggleSelect(guest.id)"
-                                           class="rounded border-stone-300 text-amber-500 focus:ring-amber-200"/>
+                                           class="rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/30"/>
                                 </td>
                                 <!-- Name + phone -->
                                 <td class="px-4 py-3.5">
@@ -1040,7 +1040,7 @@ function sendLabel(guest) {
                             :class="p === guestsMeta.current_page
                                 ? 'text-white'
                                 : 'border border-stone-200 text-stone-600 hover:bg-stone-50'"
-                            :style="p === guestsMeta.current_page ? 'background-color:#D4A373' : ''">
+                            :style="p === guestsMeta.current_page ? 'background-color:#92A89C' : ''">
                         {{ p }}
                     </button>
                 </div>
@@ -1075,7 +1075,7 @@ function sendLabel(guest) {
                                         @click="filters.send_status = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
                                         :class="filters.send_status === opt.v
-                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium'
                                             : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                                     {{ opt.l }}
                                 </button>
@@ -1091,7 +1091,7 @@ function sendLabel(guest) {
                                         @click="filters.rsvp_status = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
                                         :class="filters.rsvp_status === opt.v
-                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium'
                                             : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                                     {{ opt.l }}
                                 </button>
@@ -1104,13 +1104,13 @@ function sendLabel(guest) {
                             <div class="flex flex-wrap gap-2">
                                 <button @click="filters.category = ''"
                                         class="py-1.5 px-3 rounded-xl text-sm border transition-colors"
-                                        :class="filters.category === '' ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                        :class="filters.category === '' ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                                     Semua
                                 </button>
                                 <button v-for="cat in categories" :key="cat"
                                         @click="filters.category = cat"
                                         class="py-1.5 px-3 rounded-xl text-sm border transition-colors"
-                                        :class="filters.category === cat ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                                        :class="filters.category === cat ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                                     {{ cat }}
                                 </button>
                             </div>
@@ -1125,7 +1125,7 @@ function sendLabel(guest) {
                                         @click="sort = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
                                         :class="sort === opt.v
-                                            ? 'border-amber-400 bg-amber-50 text-amber-700 font-medium'
+                                            ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium'
                                             : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
                                     {{ opt.l }}
                                 </button>
@@ -1140,7 +1140,7 @@ function sendLabel(guest) {
                         </button>
                         <button @click="showFilterSheet = false"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white"
-                                style="background-color:#D4A373">
+                                style="background-color:#92A89C">
                             Terapkan
                         </button>
                     </div>
@@ -1164,7 +1164,7 @@ function sendLabel(guest) {
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Nama tamu <span class="text-red-400">*</span></label>
                             <input v-model="guestForm.name" type="text" placeholder="Bapak Andi"
-                                   class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                                   class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="guestErrors.name ? 'border-red-300' : 'border-stone-200'"/>
                             <p v-if="guestErrors.name" class="text-xs text-red-500 mt-1">{{ guestErrors.name[0] }}</p>
                         </div>
@@ -1172,7 +1172,7 @@ function sendLabel(guest) {
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Nomor WhatsApp <span class="text-red-400">*</span></label>
                             <input v-model="guestForm.phone_number" type="tel" placeholder="08123456789"
-                                   class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                                   class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="guestErrors.phone_number ? 'border-red-300' : 'border-stone-200'"/>
                             <p v-if="guestErrors.phone_number" class="text-xs text-red-500 mt-1">{{ guestErrors.phone_number[0] }}</p>
                         </div>
@@ -1182,7 +1182,7 @@ function sendLabel(guest) {
                                 <label class="text-xs text-stone-500 mb-1 block">Kategori</label>
                                 <input v-model="guestForm.category" type="text" placeholder="Keluarga"
                                        list="category-list"
-                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                                 <datalist id="category-list">
                                     <option v-for="cat in suggestedCategories" :key="cat" :value="cat"/>
                                 </datalist>
@@ -1190,14 +1190,14 @@ function sendLabel(guest) {
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Sapaan</label>
                                 <input v-model="guestForm.greeting" type="text" placeholder="Bapak / Ibu / Kak"
-                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                             </div>
                         </div>
 
                         <div v-if="invitations.length > 0">
                             <label class="text-xs text-stone-500 mb-1 block">Undangan terkait</label>
                             <select v-model="guestForm.invitation_id"
-                                    class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                    class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                 <option value="">Tidak ditautkan</option>
                                 <option v-for="inv in invitations" :key="inv.id" :value="inv.id">{{ inv.title }}</option>
                             </select>
@@ -1206,7 +1206,7 @@ function sendLabel(guest) {
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Catatan</label>
                             <textarea v-model="guestForm.note" rows="2" placeholder="Tambahkan catatan…"
-                                      class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                      class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
                     </div>
 
@@ -1217,7 +1217,7 @@ function sendLabel(guest) {
                         </button>
                         <button @click="saveGuest" :disabled="savingGuest"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                style="background-color:#D4A373">
+                                style="background-color:#92A89C">
                             {{ savingGuest ? 'Menyimpan…' : (editingGuest ? 'Simpan' : 'Tambah') }}
                         </button>
                     </div>
@@ -1285,7 +1285,7 @@ function sendLabel(guest) {
 
                     <input v-model="bulkCategoryValue" type="text" placeholder="Keluarga"
                            list="bulk-category-list"
-                           class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200 mb-4"/>
+                           class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30 mb-4"/>
                     <datalist id="bulk-category-list">
                         <option v-for="cat in suggestedCategories" :key="cat" :value="cat"/>
                     </datalist>
@@ -1295,7 +1295,7 @@ function sendLabel(guest) {
                                 class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
                         <button @click="bulkUpdateCategory" :disabled="!bulkCategoryValue || bulkCategoryLoading"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-opacity hover:opacity-90"
-                                style="background-color:#D4A373">
+                                style="background-color:#92A89C">
                             {{ bulkCategoryLoading ? 'Menyimpan…' : 'Simpan' }}
                         </button>
                     </div>
@@ -1325,12 +1325,12 @@ function sendLabel(guest) {
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Nama template</label>
                                 <input v-model="templateForm.name" type="text"
-                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                             </div>
                             <div>
                                 <label class="text-xs text-stone-500 mb-1 block">Isi pesan</label>
                                 <textarea v-model="templateForm.content" rows="10"
-                                          class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-amber-200"
+                                          class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                           :class="templateErrors.content ? 'border-red-300' : ''"/>
                                 <p v-if="templateErrors.content" class="text-xs text-red-500 mt-1">{{ templateErrors.content[0] }}</p>
                             </div>
@@ -1340,7 +1340,7 @@ function sendLabel(guest) {
                                     <button v-for="ph in ['guest_name','invitation_url','greeting','bride_name','groom_name','event_date','event_time','event_location']"
                                             :key="ph"
                                             @click="insertPlaceholder(ph)"
-                                            class="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100 transition-colors font-mono">
+                                            class="text-xs px-2.5 py-1 rounded-full bg-[#92A89C]/10 text-[#73877C] border border-[#B8C7BF]/50 hover:bg-[#92A89C]/20 transition-colors font-mono">
                                         {{ phLabel(ph) }}
                                     </button>
                                 </div>
@@ -1351,13 +1351,13 @@ function sendLabel(guest) {
                             <div class="flex items-center justify-between">
                                 <p class="text-xs text-stone-500">Preview pesan</p>
                                 <button @click="previewTemplate" :disabled="previewLoading"
-                                        class="text-xs text-amber-700 underline disabled:opacity-50">
+                                        class="text-xs text-[#73877C] underline disabled:opacity-50">
                                     {{ previewLoading ? 'Memuat…' : 'Refresh preview' }}
                                 </button>
                             </div>
                             <div v-if="templateWarnings.length > 0" class="space-y-1">
                                 <p v-for="w in templateWarnings" :key="w"
-                                   class="text-xs text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg">{{ w }}</p>
+                                   class="text-xs text-[#73877C] bg-[#92A89C]/10 px-2.5 py-1.5 rounded-lg">{{ w }}</p>
                             </div>
                             <div class="bg-stone-50 rounded-xl p-4 min-h-40 text-sm text-stone-700 whitespace-pre-wrap font-sans border border-stone-100">
                                 <span v-if="!templatePreview" class="text-stone-300 text-xs">Klik "Refresh preview" untuk melihat hasil pesan.</span>
@@ -1374,7 +1374,7 @@ function sendLabel(guest) {
                                     class="px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
                             <button @click="saveTemplate" :disabled="savingTemplate"
                                     class="px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                    style="background-color:#D4A373">
+                                    style="background-color:#92A89C">
                                 {{ savingTemplate ? 'Menyimpan…' : 'Simpan Template' }}
                             </button>
                         </div>
@@ -1407,7 +1407,7 @@ function sendLabel(guest) {
                     </div>
 
                     <div v-if="generating" class="flex justify-center py-8">
-                        <div class="w-6 h-6 rounded-full border-2 border-amber-300 border-t-amber-600 animate-spin"/>
+                        <div class="w-6 h-6 rounded-full border-2 border-[#92A89C]/50 border-t-[#73877C] animate-spin"/>
                     </div>
 
                     <template v-else>
@@ -1462,18 +1462,18 @@ function sendLabel(guest) {
                         <div class="flex rounded-xl border border-stone-200 overflow-hidden mb-4">
                             <button @click="importMode = 'paste'"
                                     :class="importMode === 'paste' ? 'text-white' : 'text-stone-600 hover:bg-stone-50'"
-                                    :style="importMode === 'paste' ? 'background-color:#D4A373' : ''"
+                                    :style="importMode === 'paste' ? 'background-color:#92A89C' : ''"
                                     class="flex-1 py-2 text-sm font-medium transition-colors">Paste List</button>
                             <button @click="importMode = 'csv'"
                                     :class="importMode === 'csv' ? 'text-white' : 'text-stone-600 hover:bg-stone-50'"
-                                    :style="importMode === 'csv' ? 'background-color:#D4A373' : ''"
+                                    :style="importMode === 'csv' ? 'background-color:#92A89C' : ''"
                                     class="flex-1 py-2 text-sm font-medium transition-colors">Upload CSV</button>
                         </div>
 
                         <div v-if="invitations.length > 0" class="mb-4">
                             <label class="text-xs text-stone-500 mb-1 block">Undangan terkait (opsional)</label>
                             <select v-model="importInvId"
-                                    class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-200">
+                                    class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                 <option value="">Tidak ditautkan</option>
                                 <option v-for="inv in invitations" :key="inv.id" :value="inv.id">{{ inv.title }}</option>
                             </select>
@@ -1484,7 +1484,7 @@ function sendLabel(guest) {
                             <p class="text-xs text-stone-300 mb-2">Format: Nama, Nomor WA, Kategori (opsional)</p>
                             <textarea v-model="importText" rows="8"
                                       placeholder="Bapak Andi,08123456789,Keluarga&#10;Ibu Rina,08234567890,Teman"
-                                      class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-amber-200"/>
+                                      class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </template>
 
                         <template v-else>
@@ -1492,7 +1492,7 @@ function sendLabel(guest) {
                             <p class="text-xs text-stone-300 mb-2">Header: name, phone, category, greeting, note</p>
                             <input type="file" accept=".csv,.txt" @change="onFileChange"
                                    class="w-full text-sm text-stone-700 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:text-white file:cursor-pointer hover:file:opacity-90"
-                                   style="--file-bg:#D4A373"/>
+                                   style="--file-bg:#92A89C"/>
                         </template>
 
                         <div class="flex gap-3 mt-5">
@@ -1500,7 +1500,7 @@ function sendLabel(guest) {
                                     class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
                             <button @click="previewImport" :disabled="importPreviewing || (!importText && !importFile)"
                                     class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                    style="background-color:#D4A373">
+                                    style="background-color:#92A89C">
                                 {{ importPreviewing ? 'Memproses…' : 'Preview Data' }}
                             </button>
                         </div>
@@ -1550,7 +1550,7 @@ function sendLabel(guest) {
                             <button @click="commitImport"
                                     :disabled="importCommitting || importPreview.filter(r => r.valid).length === 0"
                                     class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                    style="background-color:#D4A373">
+                                    style="background-color:#92A89C">
                                 {{ importCommitting ? 'Menyimpan…' : `Import ${importPreview.filter(r => r.valid).length} Tamu` }}
                             </button>
                         </div>
@@ -1568,7 +1568,7 @@ function sendLabel(guest) {
                         </div>
                         <button @click="showImportModal = false"
                                 class="w-full py-2.5 rounded-xl text-sm font-medium text-white"
-                                style="background-color:#D4A373">Selesai</button>
+                                style="background-color:#92A89C">Selesai</button>
                     </template>
                 </div>
             </div>
@@ -1596,7 +1596,7 @@ function sendLabel(guest) {
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 
 input[type="file"]::file-selector-button {
-    background-color: #D4A373;
+    background-color: #92A89C;
     color: white;
     border-radius: 12px;
     font-size: 0.875rem;

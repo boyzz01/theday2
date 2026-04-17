@@ -33,18 +33,18 @@ function submit() {
 
         <!-- ── Left panel — decorative (hidden on mobile) ──────────── -->
         <div class="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col relative overflow-hidden"
-             style="background: linear-gradient(160deg, #2C1A0E 0%, #4A2C18 60%, #6B3E26 100%)">
+             style="background: linear-gradient(160deg, #1A2720 0%, #243830 60%, #2E4A3C 100%)">
 
             <!-- Dot pattern overlay -->
             <div class="absolute inset-0 opacity-10"
-                 style="background-image: radial-gradient(circle, #D4A373 1px, transparent 1px); background-size: 28px 28px"/>
+                 style="background-image: radial-gradient(circle, #92A89C 1px, transparent 1px); background-size: 28px 28px"/>
 
             <!-- Content -->
             <div class="relative z-10 flex flex-col h-full px-12 py-10">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-2.5 w-fit">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -56,18 +56,18 @@ function submit() {
 
                 <!-- Center quote -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <p class="text-amber-200 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.welcome_back }}</p>
+                    <p class="text-[#B8C7BF]/70 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.welcome_back }}</p>
                     <h1 class="text-white text-4xl font-bold leading-tight mb-6 whitespace-pre-line"
                         style="font-family: 'Playfair Display', serif">{{ tr.login_headline }}</h1>
-                    <p class="text-amber-100/60 text-sm leading-relaxed max-w-xs">{{ tr.login_sub }}</p>
+                    <p class="text-[#B8C7BF]/70 text-sm leading-relaxed max-w-xs">{{ tr.login_sub }}</p>
                 </div>
 
                 <!-- Decorative card preview -->
                 <div class="mb-10">
                     <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-5 py-4">
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="w-8 h-8 rounded-full bg-amber-400/30 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="w-8 h-8 rounded-full bg-[#92A89C]/30 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-[#B8C7BF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
@@ -80,7 +80,7 @@ function submit() {
                         <div class="h-px bg-white/10 mb-3"/>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-white/50">{{ tr.card_confirmed }}</span>
-                            <span class="text-amber-300 font-semibold">{{ tr.card_count }}</span>
+                            <span class="text-[#B8C7BF] font-semibold">{{ tr.card_count }}</span>
                         </div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@ function submit() {
             <div class="lg:hidden flex items-center gap-2.5 px-6 pt-6">
                 <a href="/" class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center"
-                         style="background-color: #D4A373">
+                         style="background-color: #92A89C">
                         <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -130,7 +130,7 @@ function submit() {
                             {{ tr.no_account }}
                             <Link :href="route('register')"
                                   class="font-semibold hover:underline"
-                                  style="color: #C8A26B">
+                                  style="color: #73877C">
                                 {{ tr.register_free }}
                             </Link>
                         </p>
@@ -164,7 +164,7 @@ function submit() {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="form.errors.email
                                     ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                             />
                             <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,7 +195,7 @@ function submit() {
                                     class="w-full px-4 py-3 pr-11 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.password
                                         ? 'border-red-300 focus:ring-red-100 bg-red-50/50'
-                                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                 />
                                 <button
                                     type="button"
@@ -231,7 +231,7 @@ function submit() {
                                     type="checkbox"
                                     class="sr-only peer"
                                 />
-                                <div class="w-4 h-4 rounded border-2 border-stone-300 peer-checked:border-amber-400 peer-checked:bg-amber-400 transition-colors flex items-center justify-center">
+                                <div class="w-4 h-4 rounded border-2 border-stone-300 peer-checked:border-[#92A89C] peer-checked:bg-[#92A89C] transition-colors flex items-center justify-center">
                                     <svg v-if="form.remember" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                     </svg>
@@ -245,7 +245,7 @@ function submit() {
                             type="submit"
                             :disabled="form.processing"
                             class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
-                            style="background-color: #C8A26B"
+                            style="background-color: #92A89C"
                         >
                             <span v-if="form.processing" class="flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

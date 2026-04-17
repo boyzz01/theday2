@@ -91,8 +91,8 @@ async function handleGalleryUpload(event) {
                 <label :class="[
                     'w-full py-4 rounded-xl border-2 border-dashed text-sm font-medium flex items-center justify-center gap-2 cursor-pointer transition-all',
                     uploadingGallery
-                        ? 'border-amber-200 text-amber-600 bg-amber-50/50'
-                        : 'border-stone-200 text-stone-500 hover:border-amber-300 hover:text-amber-700 hover:bg-amber-50/50',
+                        ? 'border-[#B8C7BF] text-[#73877C] bg-[#92A89C]/10'
+                        : 'border-stone-200 text-stone-500 hover:border-[#92A89C]/50 hover:text-[#73877C] hover:bg-[#92A89C]/10',
                 ]">
                     <svg v-if="uploadingGallery" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -106,7 +106,7 @@ async function handleGalleryUpload(event) {
                            :disabled="uploadingGallery || !invitationId"
                            @change="handleGalleryUpload"/>
                 </label>
-                <p v-if="!invitationId" class="text-xs text-orange-500">Simpan Step 1 terlebih dahulu untuk upload foto.</p>
+                <p v-if="!invitationId" class="text-xs text-[#92A89C]">Simpan Step 1 terlebih dahulu untuk upload foto.</p>
             </div>
         </SectionAccordionCard>
 
@@ -128,7 +128,7 @@ async function handleGalleryUpload(event) {
                         v-model="sections.video.data_json.url"
                         type="url"
                         placeholder="https://youtube.com/watch?v=..."
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                 </div>
                 <div class="space-y-1.5">
@@ -137,7 +137,7 @@ async function handleGalleryUpload(event) {
                         v-model="sections.video.data_json.caption"
                         type="text"
                         placeholder="Our Story..."
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                 </div>
             </div>
@@ -161,7 +161,7 @@ async function handleGalleryUpload(event) {
                     class="rounded-xl border border-stone-200 p-4 space-y-3 bg-stone-50/50"
                 >
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg">Momen {{ index + 1 }}</span>
+                        <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">Momen {{ index + 1 }}</span>
                         <button
                             @click="sections.love_story.data_json.stories.splice(index, 1)"
                             class="p-1 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
@@ -173,11 +173,11 @@ async function handleGalleryUpload(event) {
                     </div>
                     <div class="space-y-2">
                         <input v-model="story.year" type="text" placeholder="Tahun (e.g. 2020)"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         <input v-model="story.title" type="text" placeholder="Judul momen"
-                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white"/>
+                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         <textarea v-model="story.description" rows="2" placeholder="Ceritakan momen ini..."
-                                  class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none bg-white"/>
+                                  class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none bg-white"/>
                     </div>
                 </div>
 
@@ -186,7 +186,7 @@ async function handleGalleryUpload(event) {
                         if (!sections.love_story.data_json.stories) sections.love_story.data_json.stories = [];
                         sections.love_story.data_json.stories.push({ year: '', title: '', description: '' });
                     }"
-                    class="w-full py-3 rounded-xl border-2 border-dashed border-stone-200 text-sm font-medium text-stone-500 hover:text-amber-700 hover:border-amber-300 hover:bg-amber-50/50 transition-all flex items-center justify-center gap-2"
+                    class="w-full py-3 rounded-xl border-2 border-dashed border-stone-200 text-sm font-medium text-stone-500 hover:text-[#73877C] hover:border-[#92A89C]/50 hover:bg-[#92A89C]/10 transition-all flex items-center justify-center gap-2"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

@@ -300,7 +300,7 @@ function toggleFaq(i) {
                                         class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                         :class="errors.name
                                             ? 'border-red-300 focus:ring-red-100 bg-red-50/40'
-                                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                     />
                                     <p v-if="errors.name" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                                         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -322,7 +322,7 @@ function toggleFaq(i) {
                                         class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                         :class="errors.email
                                             ? 'border-red-300 focus:ring-red-100 bg-red-50/40'
-                                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                     />
                                     <p v-if="errors.email" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
                                         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -341,7 +341,7 @@ function toggleFaq(i) {
                                         class="select-chevron w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2 appearance-none bg-white"
                                         :class="errors.subject
                                             ? 'border-red-300 focus:ring-red-100'
-                                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                                     >
                                         <option value="" disabled>Pilih topik...</option>
                                         <option v-for="s in subjects" :key="s" :value="s">{{ s }}</option>
@@ -365,7 +365,7 @@ function toggleFaq(i) {
                                         class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2 resize-none"
                                         :class="errors.message
                                             ? 'border-red-300 focus:ring-red-100 bg-red-50/40'
-                                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300 bg-white'"
+                                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 bg-white'"
                                         maxlength="2000"
                                     ></textarea>
                                     <div class="flex items-center justify-between mt-1">
@@ -375,7 +375,7 @@ function toggleFaq(i) {
                                         </p>
                                         <span v-else class="text-xs text-stone-300"></span>
                                         <span class="text-xs ml-auto"
-                                              :class="msgLength > 1800 ? 'text-amber-500' : 'text-stone-300'">
+                                              :class="msgLength > 1800 ? 'text-[#92A89C]' : 'text-stone-300'">
                                             {{ msgLength }}/2000
                                         </span>
                                     </div>
@@ -418,13 +418,13 @@ function toggleFaq(i) {
                         v-for="(faq, i) in faqs"
                         :key="i"
                         class="rounded-xl border bg-white overflow-hidden transition-all"
-                        :class="openFaq === i ? 'border-amber-200 shadow-sm' : 'border-stone-100'"
+                        :class="openFaq === i ? 'border-[#B8C7BF] shadow-sm' : 'border-stone-100'"
                     >
                         <button
                             type="button"
                             @click="toggleFaq(i)"
                             class="w-full flex items-center justify-between px-5 py-4 text-left transition-colors"
-                            :class="openFaq === i ? 'bg-amber-50/60' : 'hover:bg-stone-50'"
+                            :class="openFaq === i ? 'bg-[#92A89C]/10/60' : 'hover:bg-stone-50'"
                         >
                             <span class="text-sm font-semibold text-stone-800 pr-4">{{ faq.q }}</span>
                             <svg

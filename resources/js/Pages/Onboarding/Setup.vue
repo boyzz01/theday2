@@ -225,7 +225,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
         <!-- ── Top bar ──────────────────────────────────────────────── -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
             <a href="/" class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #D4A373">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #92A89C">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -244,14 +244,14 @@ watch([timeHour, timeMinute], ([h, m]) => {
                             : i === step
                                 ? 'text-white'
                                 : 'bg-stone-100 text-stone-400'"
-                        :style="i <= step ? 'background-color: #D4A373' : ''"
+                        :style="i <= step ? 'background-color: #92A89C' : ''"
                     >
                         <svg v-if="i < step" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
                         <span v-else>{{ i }}</span>
                     </div>
-                    <div v-if="i < STEPS" class="w-6 h-px" :class="i < step ? 'bg-amber-400' : 'bg-stone-200'"/>
+                    <div v-if="i < STEPS" class="w-6 h-px" :class="i < step ? 'bg-[#92A89C]' : 'bg-stone-200'"/>
                 </div>
             </div>
         </div>
@@ -262,7 +262,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
 
                 <!-- Step header -->
                 <div class="mb-8 text-center">
-                    <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #D4A373">
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #92A89C">
                         Langkah {{ step }} dari {{ STEPS }}
                     </p>
                     <h1 class="text-2xl font-bold text-stone-900 mb-1" style="font-family: 'Playfair Display', serif">
@@ -278,7 +278,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                     <!-- Mempelai Pria -->
                     <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-4">
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: #D4A373">P</div>
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: #92A89C">P</div>
                             <span class="text-sm font-semibold text-stone-700">Mempelai Pria</span>
                         </div>
 
@@ -294,7 +294,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="(form.errors.groom_name || step1Errors.groom_name) && form.groom_name === ''
                                     ? 'border-red-300 focus:ring-red-100'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                             />
                             <p v-if="form.errors.groom_name" class="text-xs text-red-500">{{ form.errors.groom_name }}</p>
                         </div>
@@ -312,7 +312,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="step1Errors.groom_nickname
                                     ? 'border-red-300 focus:ring-red-100'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                             />
                             <div class="flex justify-between items-center">
                                 <p v-if="step1Errors.groom_nickname" class="text-xs text-red-500">{{ step1Errors.groom_nickname }}</p>
@@ -339,7 +339,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="(form.errors.bride_name || step1Errors.bride_name) && form.bride_name === ''
                                     ? 'border-red-300 focus:ring-red-100'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                             />
                             <p v-if="form.errors.bride_name" class="text-xs text-red-500">{{ form.errors.bride_name }}</p>
                         </div>
@@ -357,7 +357,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                                 :class="step1Errors.bride_nickname
                                     ? 'border-red-300 focus:ring-red-100'
-                                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                             />
                             <div class="flex justify-between items-center">
                                 <p v-if="step1Errors.bride_nickname" class="text-xs text-red-500">{{ step1Errors.bride_nickname }}</p>
@@ -378,7 +378,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 v-model="form.phone"
                                 type="tel"
                                 placeholder="812 3456 7890"
-                                class="flex-1 px-4 py-3 rounded-r-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
+                                class="flex-1 px-4 py-3 rounded-r-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50"
                             />
                         </div>
                         <p v-if="form.errors.phone" class="text-xs text-red-500">{{ form.errors.phone }}</p>
@@ -389,7 +389,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                         @click="tryNext"
                         :disabled="!form.groom_name.trim() || !form.bride_name.trim() || Object.keys(step1Errors).length > 0"
                         class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
-                        style="background-color: #D4A373"
+                        style="background-color: #92A89C"
                     >
                         Lanjut →
                     </button>
@@ -410,9 +410,9 @@ watch([timeHour, timeMinute], ([h, m]) => {
 
                     <!-- No date checkbox -->
                     <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors"
-                           :class="form.no_date ? 'border-amber-300 bg-amber-50/50' : 'border-stone-200 bg-white'">
+                           :class="form.no_date ? 'border-[#92A89C]/50 bg-[#92A89C]/10' : 'border-stone-200 bg-white'">
                         <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                             :style="form.no_date ? 'background-color:#D4A373; border-color:#D4A373' : 'border-color:#D1D5DB'">
+                             :style="form.no_date ? 'background-color:#92A89C; border-color:#92A89C' : 'border-color:#D1D5DB'">
                             <svg v-if="form.no_date" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -433,7 +433,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                             type="button"
                             @click="openDateModal"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-xl border bg-white text-sm transition-colors"
-                            :class="step2Errors.wedding_date ? 'border-red-300' : 'border-stone-200 hover:border-amber-300'"
+                            :class="step2Errors.wedding_date ? 'border-red-300' : 'border-stone-200 hover:border-[#92A89C]/50'"
                         >
                             <span v-if="displayDate" class="text-stone-800 font-medium">
                                 {{ displayDate }}{{ form.start_time ? ' · ' + form.start_time + ' WIB' : '' }}
@@ -470,7 +470,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                     <p class="text-sm font-bold text-stone-800" style="font-family:'Playfair Display',serif">
                                         Pilih Tanggal
                                     </p>
-                                    <p v-if="displayDate" class="text-xs text-amber-600 mt-0.5">{{ displayDate }}</p>
+                                    <p v-if="displayDate" class="text-xs text-[#73877C] mt-0.5">{{ displayDate }}</p>
                                 </div>
                                 <button type="button" @click="closeDateModal"
                                         class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
@@ -523,9 +523,9 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                                 ? 'text-white font-bold shadow-sm'
                                                 : isPastDay(day)
                                                     ? 'text-stone-200 cursor-not-allowed'
-                                                    : 'text-stone-700 hover:bg-amber-50 active:bg-amber-100',
+                                                    : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20',
                                         ]"
-                                        :style="isSelectedDay(day) ? 'background-color:#D4A373' : ''"
+                                        :style="isSelectedDay(day) ? 'background-color:#92A89C' : ''"
                                     >
                                         {{ day }}
                                     </button>
@@ -547,8 +547,8 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                                 type="button"
                                                 @click="timeHour = h"
                                                 class="py-1.5 rounded-lg text-xs font-medium transition-all"
-                                                :class="timeHour === h ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-amber-50'"
-                                                :style="timeHour === h ? 'background-color:#D4A373' : ''"
+                                                :class="timeHour === h ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-[#92A89C]/10'"
+                                                :style="timeHour === h ? 'background-color:#92A89C' : ''"
                                             >{{ h }}</button>
                                         </div>
                                     </div>
@@ -563,8 +563,8 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                                 type="button"
                                                 @click="timeMinute = m"
                                                 class="py-2.5 rounded-lg text-xs font-medium transition-all"
-                                                :class="timeMinute === m ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-amber-50'"
-                                                :style="timeMinute === m ? 'background-color:#D4A373' : ''"
+                                                :class="timeMinute === m ? 'text-white font-bold' : 'text-stone-600 bg-stone-50 hover:bg-[#92A89C]/10'"
+                                                :style="timeMinute === m ? 'background-color:#92A89C' : ''"
                                             >{{ m }}</button>
                                         </div>
                                     </div>
@@ -578,7 +578,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                     @click="closeDateModal"
                                     :disabled="!form.wedding_date"
                                     class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
-                                    style="background-color:#D4A373"
+                                    style="background-color:#92A89C"
                                 >
                                     <span v-if="form.wedding_date">
                                         Simpan{{ form.start_time ? ' · ' + form.start_time + ' WIB' : '' }}
@@ -601,7 +601,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 v-model="form.venue_name"
                                 type="text"
                                 placeholder="Ballroom Hotel Grand, Masjid Al-Akbar…"
-                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300"
+                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50"
                             />
                         </div>
 
@@ -611,7 +611,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 v-model="form.venue_address"
                                 rows="2"
                                 placeholder="Jl. Pemuda No. 1, Surabaya, Jawa Timur"
-                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-amber-100 focus:border-amber-300 resize-none"
+                                class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm transition-colors outline-none focus:ring-2 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50 resize-none"
                             />
                         </div>
                     </div>
@@ -626,7 +626,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                             @click="tryNext"
                             :disabled="Object.keys(step2Errors).length > 0"
                             class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
-                            style="background-color: #D4A373"
+                            style="background-color: #92A89C"
                         >
                             Lanjut →
                         </button>
@@ -641,15 +641,15 @@ watch([timeHour, timeMinute], ([h, m]) => {
                     <div class="text-center py-2">
                         <p class="text-xs text-stone-400">Undanganmu akan bisa dibuka di:</p>
                         <p class="text-sm font-mono font-semibold text-stone-700 mt-1">
-                            theday.id/<span class="text-amber-600">{{ form.skip_slug ? '...' : (form.slug || 'nama-slug') }}</span>
+                            theday.id/<span class="text-[#73877C]">{{ form.skip_slug ? '...' : (form.slug || 'nama-slug') }}</span>
                         </p>
                     </div>
 
                     <!-- Skip slug checkbox -->
                     <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors"
-                           :class="form.skip_slug ? 'border-amber-300 bg-amber-50/50' : 'border-stone-200 bg-white'">
+                           :class="form.skip_slug ? 'border-[#92A89C]/50 bg-[#92A89C]/10' : 'border-stone-200 bg-white'">
                         <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                             :style="form.skip_slug ? 'background-color:#D4A373; border-color:#D4A373' : 'border-color:#D1D5DB'">
+                             :style="form.skip_slug ? 'background-color:#92A89C; border-color:#92A89C' : 'border-color:#D1D5DB'">
                             <svg v-if="form.skip_slug" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -677,7 +677,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                     class="flex-1 px-4 py-3 rounded-r-xl border text-sm transition-colors outline-none focus:ring-2"
                                     :class="form.errors.slug
                                         ? 'border-red-300 focus:ring-red-100'
-                                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                                 />
                             </div>
                             <p v-if="form.errors.slug" class="text-xs text-red-500">{{ form.errors.slug }}</p>
@@ -689,7 +689,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                             type="button"
                             @click="suggestSlug"
                             class="text-xs font-medium transition-colors hover:underline"
-                            style="color: #D4A373"
+                            style="color: #92A89C"
                         >
                             💡 Sarankan slug otomatis
                         </button>
@@ -705,7 +705,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                             @click="submit"
                             :disabled="form.processing || (!form.skip_slug && !form.slug.trim())"
                             class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
-                            style="background-color: #D4A373"
+                            style="background-color: #92A89C"
                         >
                             <span v-if="form.processing" class="flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

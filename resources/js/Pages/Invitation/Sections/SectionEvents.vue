@@ -4,7 +4,7 @@ import { useStaggerReveal } from '@/Composables/useReveal.js';
 
 const props = defineProps({
     events:       { type: Array,  default: () => [] },
-    primaryColor: { type: String, default: '#D4A373' },
+    primaryColor: { type: String, default: '#92A89C' },
     fontFamily:   { type: String, default: 'Playfair Display' },
 });
 

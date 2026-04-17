@@ -49,7 +49,7 @@
 
     <style>
         :root {
-            --color-primary: #D4A373;
+            --color-primary: #92A89C;
             --color-primary-dark: #B8865A;
             --color-secondary: #FEFAE0;
             --color-accent: #CCD5AE;
@@ -164,7 +164,7 @@
 
         /* Decorative dots */
         .dot-pattern {
-            background-image: radial-gradient(circle, #D4A37330 1px, transparent 1px);
+            background-image: radial-gradient(circle, #92A89C30 1px, transparent 1px);
             background-size: 24px 24px;
         }
 
@@ -177,7 +177,7 @@
 
         /* Pricing highlight */
         .pricing-popular {
-            background: linear-gradient(135deg, #D4A373, #B8865A);
+            background: linear-gradient(135deg, #92A89C, #73877C);
             color: white;
         }
 
@@ -195,7 +195,7 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: linear-gradient(90deg, transparent, #D4A37340, transparent);
+            background: linear-gradient(90deg, transparent, #92A89C40, transparent);
         }
 
         /* Language toggle */
@@ -434,11 +434,11 @@
 
     {{-- Floating decorative elements --}}
     <div class="absolute top-32 right-16 w-64 h-64 rounded-full opacity-20 float-animation"
-         style="background: radial-gradient(circle, #D4A373, transparent)"></div>
+         style="background: radial-gradient(circle, #92A89C, transparent)"></div>
     <div class="absolute bottom-32 left-12 w-48 h-48 rounded-full opacity-15 float-animation-delay"
          style="background: radial-gradient(circle, #CCD5AE, transparent)"></div>
     <div class="absolute top-1/2 left-1/2 w-32 h-32 rounded-full opacity-10 float-animation-delay-2"
-         style="background: radial-gradient(circle, #D4A373, transparent)"></div>
+         style="background: radial-gradient(circle, #92A89C, transparent)"></div>
 
     <div class="max-w-6xl mx-auto px-6 py-20 relative z-10">
         <div class="flex flex-col lg:flex-row items-center gap-16">
@@ -481,7 +481,7 @@
                 {{-- Social proof --}}
                 <div class="mt-10 flex items-center gap-4 justify-center lg:justify-start">
                     <div class="flex -space-x-2">
-                        @foreach(['bg-rose-300', 'bg-amber-300', 'bg-emerald-300', 'bg-blue-300', 'bg-purple-300'] as $color)
+                        @foreach(['bg-rose-300', 'bg-[#92A89C]/50', 'bg-emerald-300', 'bg-[#B8C7BF]', 'bg-purple-300'] as $color)
                         <div class="w-9 h-9 rounded-full border-2 border-white {{ $color }} flex items-center justify-center text-xs font-bold text-white">
                             {{ chr(65 + $loop->index) }}
                         </div>
@@ -490,7 +490,7 @@
                     <div>
                         <div class="flex items-center gap-1">
                             @for($i = 0; $i < 5; $i++)
-                            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-4 h-4 text-[#C8A26B]" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
                             @endfor
@@ -632,7 +632,7 @@
                     'id_desc' => 'Pilih dari 50+ template undangan pernikahan elegan. Semua responsif & mobile-friendly.',
                     'en_desc' => 'Choose from 50+ elegant wedding invitation templates. All responsive & mobile-friendly.',
                     'color' => 'rgba(212,163,115,0.12)',
-                    'iconColor' => '#D4A373',
+                    'iconColor' => '#92A89C',
                 ],
                 [
                     'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>',
@@ -659,7 +659,7 @@
                     'id_desc' => 'Pantau berapa kali undanganmu dibuka, dari mana asalnya, dan statistik RSVP secara langsung.',
                     'en_desc' => 'Track how many times your invitation is opened, where it came from, and RSVP statistics in real time.',
                     'color' => 'rgba(59,130,246,0.1)',
-                    'iconColor' => '#3B82F6',
+                    'iconColor' => '#73877C',
                 ],
                 [
                     'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>',
@@ -898,7 +898,7 @@
                     'id_role'=> 'Pengantin Pria',
                     'en_role'=> 'Groom',
                     'avatar' => 'RP',
-                    'color'  => 'bg-blue-300',
+                    'color'  => 'bg-[#B8C7BF]',
                     'id_text'=> '"Fitur RSVP-nya sangat membantu. Kami bisa langsung tahu siapa saja yang hadir tanpa perlu hubungi satu per satu. Hemat waktu dan tenaga!"',
                     'en_text'=> '"The RSVP feature is so helpful. We could immediately know who would attend without having to contact everyone one by one. Saves time and energy!"',
                     'id_event'=> 'Pernikahan — Februari 2025',
@@ -909,7 +909,7 @@
                     'id_role'=> 'Event Organizer',
                     'en_role'=> 'Event Organizer',
                     'avatar' => 'SP',
-                    'color'  => 'bg-amber-300',
+                    'color'  => 'bg-[#92A89C]/50',
                     'id_text'=> '"Saya sudah pakai TheDay untuk 15 klien dan semuanya puas. Template-nya premium, sistemnya stabil, dan harganya sangat terjangkau. Highly recommended!"',
                     'en_text'=> '"I\'ve used TheDay for 15 clients and all of them are satisfied. The templates are premium, the system is stable, and the price is very affordable. Highly recommended!"',
                     'id_event'=> 'EO Professional — Bandung',
@@ -922,7 +922,7 @@
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-50 reveal">
                 <div class="flex items-center gap-1 mb-4">
                     @for($i = 0; $i < 5; $i++)
-                    <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 text-[#C8A26B]" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
                     @endfor
@@ -1136,7 +1136,7 @@
 {{-- ============================================================ --}}
 <section class="py-24 relative overflow-hidden" style="background: linear-gradient(135deg, #1E1E1E, #2D2520)">
     <div class="absolute inset-0 dot-pattern opacity-10"></div>
-    <div class="absolute top-0 left-0 w-96 h-96 rounded-full opacity-10" style="background: radial-gradient(circle, #D4A373, transparent); transform: translate(-50%, -50%)"></div>
+    <div class="absolute top-0 left-0 w-96 h-96 rounded-full opacity-10" style="background: radial-gradient(circle, #92A89C, transparent); transform: translate(-50%, -50%)"></div>
     <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full opacity-10" style="background: radial-gradient(circle, #CCD5AE, transparent); transform: translate(50%, 50%)"></div>
 
     <div class="max-w-3xl mx-auto px-6 text-center relative z-10 reveal">

@@ -6,7 +6,7 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f9f5ee; margin: 0; padding: 32px 16px; color: #2C2417; }
         .card { background: #fff; max-width: 520px; margin: 0 auto; border-radius: 16px; padding: 40px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
         .logo { font-size: 22px; font-weight: 700; color: #C8A26B; letter-spacing: -0.5px; margin-bottom: 24px; }
-        .badge-warn { display: inline-block; background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 24px; }
+        .badge-warn { display: inline-block; background: rgba(200,162,107,0.15); color: #C8A26B; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 24px; }
         .badge-exp { display: inline-block; background: #FEE2E2; color: #991B1B; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 24px; }
         h1 { font-size: 20px; font-weight: 700; color: #2C2417; margin: 0 0 8px; }
         p { color: #6B5B3E; font-size: 15px; line-height: 1.6; margin: 0 0 12px; }

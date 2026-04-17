@@ -90,7 +90,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                 <div class="h-1.5 bg-stone-100 rounded-full mb-4 overflow-hidden">
                     <div
                         class="h-full rounded-full transition-all duration-500"
-                        style="background-color: #D4A373"
+                        style="background-color: #92A89C"
                         :style="{ width: progressPercent + '%' }"
                     />
                 </div>
@@ -111,12 +111,12 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         <div :class="[
                             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 border-2',
                             editor.currentStep === step.number
-                                ? 'border-amber-400 text-white'
+                                ? 'border-[#92A89C] text-white'
                                 : (editor.lastSavedStep ?? 0) >= step.number
                                     ? 'border-green-300 bg-green-50 text-green-700'
                                     : 'border-stone-200 bg-stone-50 text-stone-400',
                         ]"
-                        :style="editor.currentStep === step.number ? 'background-color: #D4A373' : ''"
+                        :style="editor.currentStep === step.number ? 'background-color: #92A89C' : ''"
                         >
                             <svg v-if="(editor.lastSavedStep ?? 0) >= step.number && editor.currentStep !== step.number"
                                  class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,7 +126,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         </div>
                         <span :class="[
                             'hidden sm:block text-xs font-medium',
-                            editor.currentStep === step.number ? 'text-amber-700' : 'text-stone-400',
+                            editor.currentStep === step.number ? 'text-[#73877C]' : 'text-stone-400',
                         ]">{{ step.label }}</span>
                     </button>
                 </div>
@@ -232,7 +232,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         @click="next"
                         :disabled="editor.isSaving"
                         class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60"
-                        style="background-color: #D4A373"
+                        style="background-color: #92A89C"
                     >
                         <svg v-if="editor.isSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>

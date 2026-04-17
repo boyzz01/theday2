@@ -54,7 +54,7 @@ onMounted(() => props.fonts.forEach(f => loadGoogleFont(f.value)));
 watch(() => props.customConfig.font, loadGoogleFont, { immediate: true });
 
 const colorPresets = [
-    { label: 'Golden Sand',  value: '#D4A373' },
+    { label: 'Golden Sand',  value: '#92A89C' },
     { label: 'Rose Gold',    value: '#B76E79' },
     { label: 'Sage Green',   value: '#7D9B76' },
     { label: 'Dusty Blue',   value: '#7798AB' },
@@ -106,7 +106,7 @@ async function handleAudioUpload(event) {
                 </div>
                 <button
                     @click="showPicker = true"
-                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors">
+                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF] rounded-lg hover:bg-[#92A89C]/20 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
@@ -122,7 +122,7 @@ async function handleAudioUpload(event) {
                     </svg>
                 </div>
                 <span v-if="template.tier === 'premium'"
-                    class="absolute top-2 right-2 px-2 py-0.5 bg-stone-800 text-amber-300 text-xs font-semibold rounded-full">
+                    class="absolute top-2 right-2 px-2 py-0.5 bg-stone-800 text-[#B8C7BF] text-xs font-semibold rounded-full">
                     Premium
                 </span>
             </div>
@@ -180,8 +180,8 @@ async function handleAudioUpload(event) {
                         </div>
                         <input
                             v-model="customConfig.primary_color"
-                            type="text" placeholder="#D4A373" maxlength="7"
-                            class="flex-1 px-3 py-2 rounded-xl border border-stone-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                            type="text" placeholder="#92A89C" maxlength="7"
+                            class="flex-1 px-3 py-2 rounded-xl border border-stone-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                         />
                     </div>
                 </div>
@@ -197,7 +197,7 @@ async function handleAudioUpload(event) {
                             :class="[
                                 'px-3 py-3 rounded-xl border text-center transition-all',
                                 customConfig.font === f.value
-                                    ? 'border-amber-400 bg-amber-50'
+                                    ? 'border-[#92A89C] bg-[#92A89C]/10'
                                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
                             ]"
                         >
@@ -252,13 +252,13 @@ async function handleAudioUpload(event) {
                             :class="[
                                 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all',
                                 selectedMusic?.file_url === music.file_url
-                                    ? 'border-amber-300 bg-amber-50'
+                                    ? 'border-[#92A89C]/50 bg-[#92A89C]/10'
                                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
                             ]"
                         >
                             <div :class="[
                                 'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                                selectedMusic?.file_url === music.file_url ? 'bg-amber-400' : 'bg-stone-100',
+                                selectedMusic?.file_url === music.file_url ? 'bg-[#92A89C]' : 'bg-stone-100',
                             ]">
                                 <svg :class="['w-4 h-4', selectedMusic?.file_url === music.file_url ? 'text-white' : 'text-stone-400']"
                                      fill="currentColor" viewBox="0 0 24 24">
@@ -275,7 +275,7 @@ async function handleAudioUpload(event) {
                     <p class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Upload Sendiri</p>
                     <label :class="[
                         'w-full py-3 rounded-xl border-2 border-dashed text-sm font-medium flex items-center justify-center gap-2 cursor-pointer transition-all',
-                        uploadingAudio ? 'border-amber-200 text-amber-600' : 'border-stone-200 text-stone-500 hover:border-amber-300 hover:text-amber-700',
+                        uploadingAudio ? 'border-[#B8C7BF] text-[#73877C]' : 'border-stone-200 text-stone-500 hover:border-[#92A89C]/50 hover:text-[#73877C]',
                     ]">
                         <svg v-if="uploadingAudio" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -290,7 +290,7 @@ async function handleAudioUpload(event) {
                                :disabled="uploadingAudio || !invitationId"
                                @change="handleAudioUpload"/>
                     </label>
-                    <p v-if="!invitationId" class="text-xs text-orange-500 mt-1">Simpan Step 1 terlebih dahulu untuk upload audio.</p>
+                    <p v-if="!invitationId" class="text-xs text-[#92A89C] mt-1">Simpan Step 1 terlebih dahulu untuk upload audio.</p>
                 </div>
             </div>
         </SectionAccordionCard>

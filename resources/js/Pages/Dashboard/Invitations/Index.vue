@@ -21,7 +21,7 @@ const eventTypeLabel = {
     pernikahan: '💍 Pernikahan',
 };
 
-const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#D4A373';
+const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#92A89C';
 
 // ── Delete ────────────────────────────────────────────────────────────
 const confirmTarget = ref(null);
@@ -97,7 +97,7 @@ async function doDuplicate() {
                 <Link
                     :href="route('dashboard.templates')"
                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:-translate-y-px"
-                    style="background-color: #D4A373"
+                    style="background-color: #92A89C"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
@@ -111,8 +111,8 @@ async function doDuplicate() {
         <div v-if="!invitations.length"
              class="bg-white rounded-2xl border border-stone-100 border-dashed p-16 text-center">
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                 style="background-color: #FEF3C7">
-                <svg class="w-8 h-8" style="color: #D97706" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 style="background-color: #EFF2F0">
+                <svg class="w-8 h-8" style="color: #73877C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
@@ -122,7 +122,7 @@ async function doDuplicate() {
             <Link
                 :href="route('dashboard.templates')"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                style="background-color: #D4A373"
+                style="background-color: #92A89C"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
@@ -206,7 +206,7 @@ async function doDuplicate() {
                         </Link>
                         <button
                             @click="openPicker(inv)"
-                            class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"
+                            class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-[#B8C7BF] text-[#73877C] hover:bg-[#92A89C]/10 transition-colors"
                             title="Ganti template"
                         >
                             Template
@@ -246,11 +246,11 @@ async function doDuplicate() {
             <!-- Add new placeholder -->
             <Link
                 :href="route('dashboard.templates')"
-                class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-amber-300 hover:bg-amber-50/30 transition-all group min-h-[220px]"
+                class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-[#92A89C]/50 hover:bg-[#92A89C]/8 transition-all group min-h-[220px]"
             >
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-amber-100"
-                     style="background-color: #FEF3C7">
-                    <svg class="w-6 h-6" style="color: #D4A373" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-[#92A89C]/20"
+                     style="background-color: #EFF2F0">
+                    <svg class="w-6 h-6" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
                 </div>
@@ -313,8 +313,8 @@ async function doDuplicate() {
                  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
                  @click.self="cancelDuplicate">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-6 h-6" style="color: #D4A373" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="w-12 h-12 rounded-2xl bg-[#92A89C]/10 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                         </svg>
@@ -336,7 +336,7 @@ async function doDuplicate() {
                             @click="doDuplicate"
                             :disabled="isDuplicating"
                             class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
-                            style="background-color: #D4A373"
+                            style="background-color: #92A89C"
                         >
                             <span v-if="isDuplicating" class="flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -365,7 +365,7 @@ async function doDuplicate() {
                     <p class="text-sm font-semibold text-stone-800">Undangan berhasil diduplikat.</p>
                     <a :href="duplicateSuccess.editUrl"
                        class="text-xs font-medium hover:underline"
-                       style="color: #D4A373">
+                       style="color: #92A89C">
                         Buka salinan →
                     </a>
                 </div>

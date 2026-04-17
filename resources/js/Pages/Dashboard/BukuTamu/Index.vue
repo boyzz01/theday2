@@ -28,8 +28,8 @@ const statusConfig = {
         <div v-if="!invitations.length"
              class="bg-white rounded-2xl border border-dashed border-stone-200 p-16 text-center">
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                 style="background-color: #FEF3C7">
-                <svg class="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 style="background-color: #EFF2F0">
+                <svg class="w-8 h-8 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
@@ -39,7 +39,7 @@ const statusConfig = {
             <Link
                 :href="route('dashboard.templates')"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                style="background-color: #D4A373"
+                style="background-color: #92A89C"
             >
                 Buat Undangan
             </Link>

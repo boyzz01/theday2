@@ -22,7 +22,7 @@ const filters = [
 const attendanceBadge = {
     hadir:       { label: 'Hadir',       bg: '#D1FAE5', color: '#059669' },
     tidak_hadir: { label: 'Tidak Hadir', bg: '#FEE2E2', color: '#DC2626' },
-    ragu:        { label: 'Masih Ragu',  bg: '#FEF3C7', color: '#D97706' },
+    ragu:        { label: 'Masih Ragu',  bg: '#EFF2F0', color: '#73877C' },
 };
 
 function setFilter(key) {
@@ -70,7 +70,7 @@ function doExport() {
                 <p class="text-xs text-stone-400 mt-0.5">Tidak Hadir</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center">
-                <p class="text-2xl font-bold text-amber-500">{{ summary.ragu }}</p>
+                <p class="text-2xl font-bold text-[#92A89C]">{{ summary.ragu }}</p>
                 <p class="text-xs text-stone-400 mt-0.5">Masih Ragu</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center col-span-2 sm:col-span-1"
@@ -90,7 +90,7 @@ function doExport() {
                     @click="setFilter(f.key)"
                     class="px-3 py-2 rounded-xl text-xs font-medium transition-colors text-center"
                     :class="filter === f.key
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        ? 'bg-[#92A89C]/20 text-[#2C2417] border border-[#B8C7BF]'
                         : 'bg-stone-50 text-stone-600 border border-stone-100 hover:bg-stone-100'"
                 >
                     {{ f.emoji }} {{ f.label }}

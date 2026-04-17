@@ -51,7 +51,7 @@ onUnmounted(() => {
             class="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-stone-100 transition-colors focus:outline-none"
         >
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden"
-                 style="background-color: #D4A373">
+                 style="background-color: #92A89C">
                 <img v-if="user.avatar_url" :src="user.avatar_url" :alt="user.name" class="w-full h-full object-cover" />
                 <span v-else>{{ initials }}</span>
             </div>

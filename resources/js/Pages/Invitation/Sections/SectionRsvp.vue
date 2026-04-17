@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const props = defineProps({
     slug:         { type: String, required: true },
-    primaryColor: { type: String, default: '#D4A373' },
+    primaryColor: { type: String, default: '#92A89C' },
     fontFamily:   { type: String, default: 'Playfair Display' },
     isDemo:       { type: Boolean, default: false },
 });
@@ -87,7 +87,7 @@ async function submit() {
             <!-- Demo notice -->
             <div v-if="isDemo"
                  class="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-medium"
-                 style="background:#FEF3C7; color:#92400E">
+                 style="background:#EFF2F0; color:#2C2417">
                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

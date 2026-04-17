@@ -37,10 +37,10 @@ const closePreview = () => { showPreview.value = false; };
 // ── Helpers ───────────────────────────────────────────────────────
 const tierConfig = {
     free:    { label: 'Gratis',  bg: '#D1FAE5', color: '#065F46' },
-    premium: { label: 'Premium', bg: '#FEF3C7', color: '#92400E' },
+    premium: { label: 'Premium', bg: '#EFF2F0', color: '#2C2417' },
 };
 
-const primaryColor   = (t) => t.default_config?.primary_color   ?? '#D4A373';
+const primaryColor   = (t) => t.default_config?.primary_color   ?? '#92A89C';
 const secondaryColor = (t) => t.default_config?.secondary_color ?? '#FEFAE0';
 const accentColor    = (t) => t.default_config?.accent_color    ?? '#CCD5AE';
 const fontTitle      = (t) => t.default_config?.font_title      ?? 'serif';
@@ -117,7 +117,7 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
                                     ? 'text-white border-transparent shadow-sm'
                                     : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300',
                             ]"
-                            :style="activeTier === tier.value ? 'background-color: #D4A373; border-color: #D4A373' : ''"
+                            :style="activeTier === tier.value ? 'background-color: #92A89C; border-color: #92A89C' : ''"
                         >
                             {{ tier.label }}
                         </button>
@@ -249,7 +249,7 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
                 <button
                     @click="activeCategory = 'all'; activeTier = 'all'; applyFilters()"
                     class="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                    style="background-color: #D4A373"
+                    style="background-color: #92A89C"
                 >
                     {{ t('Reset Filter', 'Reset Filter') }}
                 </button>

@@ -95,7 +95,7 @@ function handlePhotoUpload(event, field) {
                         v-model="sections.cover.data_json.button_text"
                         type="text"
                         placeholder="Buka Undangan"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                     <p class="text-xs text-stone-400">Teks pada tombol cover. Default: "Buka Undangan"</p>
                 </div>
@@ -120,7 +120,7 @@ function handlePhotoUpload(event, field) {
                         v-model="basic.title"
                         type="text"
                         placeholder="Contoh: Pernikahan Budi & Ani"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                 </div>
                 <div class="space-y-1.5">
@@ -129,7 +129,7 @@ function handlePhotoUpload(event, field) {
                         v-model="details.opening_text"
                         rows="3"
                         placeholder="Dengan memohon rahmat dan ridho Allah SWT…"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none"
                     />
                 </div>
                 <div class="space-y-1.5">
@@ -138,7 +138,7 @@ function handlePhotoUpload(event, field) {
                         v-model="details.closing_text"
                         rows="3"
                         placeholder="Merupakan suatu kehormatan dan kebahagiaan…"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none"
                     />
                 </div>
             </div>
@@ -163,17 +163,17 @@ function handlePhotoUpload(event, field) {
                         <div class="space-y-1.5">
                             <label class="block text-xs font-medium text-stone-600">Nama Lengkap</label>
                             <input v-model="details.groom_name" type="text" placeholder="Ahmad Budi"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-xs font-medium text-stone-600">Nama Panggilan</label>
                             <input v-model="details.groom_nickname" type="text" placeholder="Budi"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
                             <label class="block text-xs font-medium text-stone-600">Nama Orang Tua</label>
                             <input v-model="details.groom_parent_names" type="text" placeholder="Bapak & Ibu Hasan"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">
@@ -213,17 +213,17 @@ function handlePhotoUpload(event, field) {
                         <div class="space-y-1.5">
                             <label class="block text-xs font-medium text-stone-600">Nama Lengkap</label>
                             <input v-model="details.bride_name" type="text" placeholder="Siti Ani"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-xs font-medium text-stone-600">Nama Panggilan</label>
                             <input v-model="details.bride_nickname" type="text" placeholder="Ani"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
                             <label class="block text-xs font-medium text-stone-600">Nama Orang Tua</label>
                             <input v-model="details.bride_parent_names" type="text" placeholder="Bapak & Ibu Rasyid"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"/>
+                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">
@@ -276,7 +276,7 @@ function handlePhotoUpload(event, field) {
                         v-model="sections.quote.data_json.text"
                         rows="3"
                         placeholder="Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri…"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition resize-none"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none"
                     />
                 </div>
                 <div class="space-y-1.5">
@@ -285,7 +285,7 @@ function handlePhotoUpload(event, field) {
                         v-model="sections.quote.data_json.source"
                         type="text"
                         placeholder="QS. Ar-Rum: 21"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                 </div>
             </div>

@@ -50,7 +50,7 @@ const strength = computed(() => {
 const strengthLabel = computed(() => {
     if (strength.value === 0) return '';
     if (strength.value <= 2)  return { text: 'Lemah',   color: '#EF4444' };
-    if (strength.value <= 3)  return { text: 'Cukup',   color: '#F59E0B' };
+    if (strength.value <= 3)  return { text: 'Cukup',   color: '#92A89C' };
     return                           { text: 'Kuat',    color: '#22C55E' };
 });
 
@@ -129,7 +129,7 @@ async function submit() {
                 class="w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 transition-colors"
                 :class="errors.name
                     ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
             />
             <p v-if="errors.name" class="mt-1 text-xs text-red-500">{{ errors.name[0] }}</p>
         </div>
@@ -150,7 +150,7 @@ async function submit() {
                         ? 'border-red-300 focus:ring-red-100 bg-red-50'
                         : emailStatus === 'available'
                             ? 'border-green-300 focus:ring-green-100'
-                            : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                            : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                 />
                 <div class="absolute right-3 top-1/2 -translate-y-1/2">
                     <svg v-if="emailChecking" class="w-4 h-4 animate-spin text-stone-400" fill="none" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ async function submit() {
                 class="w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 transition-colors"
                 :class="errors.phone
                     ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
             />
             <p v-if="errors.phone" class="mt-1 text-xs text-red-500">{{ errors.phone[0] }}</p>
         </div>
@@ -196,7 +196,7 @@ async function submit() {
                     class="w-full px-4 py-2.5 pr-10 rounded-xl border text-sm outline-none focus:ring-2 transition-colors"
                     :class="errors.password
                         ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                 />
                 <button type="button" @click="showPass = !showPass"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600" tabindex="-1">
@@ -241,7 +241,7 @@ async function submit() {
                     class="w-full px-4 py-2.5 pr-10 rounded-xl border text-sm outline-none focus:ring-2 transition-colors"
                     :class="errors.password_confirmation
                         ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                 />
                 <button type="button" @click="showConfirm = !showConfirm"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600" tabindex="-1">
@@ -263,7 +263,7 @@ async function submit() {
                 <input
                     v-model="form.agree"
                     type="checkbox"
-                    class="mt-0.5 w-4 h-4 rounded border-stone-300 text-amber-500 focus:ring-amber-300 flex-shrink-0"
+                    class="mt-0.5 w-4 h-4 rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/50 flex-shrink-0"
                 />
                 <span class="text-xs text-stone-500 leading-relaxed">
                     Saya setuju dengan
@@ -281,7 +281,7 @@ async function submit() {
             type="submit"
             :disabled="loading"
             class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-            style="background-color: #C8A26B"
+            style="background-color: #92A89C"
         >
             <span v-if="loading" class="flex items-center justify-center gap-2">
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

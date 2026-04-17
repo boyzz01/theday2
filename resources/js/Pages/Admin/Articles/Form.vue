@@ -100,7 +100,7 @@ function autoSlug() {
                             type="text"
                             placeholder="Tulis judul artikel yang menarik..."
                             class="w-full px-4 py-3 rounded-xl border border-stone-200 text-gray-800 text-lg font-medium focus:outline-none transition"
-                            onfocus="this.style.borderColor='#D4A373'"
+                            onfocus="this.style.borderColor='#92A89C'"
                             onblur="this.style.borderColor=''"
                         />
                         <p v-if="form.errors.title" class="text-red-500 text-xs mt-1">{{ form.errors.title }}</p>
@@ -116,7 +116,7 @@ function autoSlug() {
                                 type="text"
                                 placeholder="url-artikel-anda"
                                 class="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none transition"
-                                onfocus="this.style.borderColor='#D4A373'"
+                                onfocus="this.style.borderColor='#92A89C'"
                                 onblur="this.style.borderColor=''"
                             />
                         </div>
@@ -132,7 +132,7 @@ function autoSlug() {
                             rows="3"
                             placeholder="Deskripsi singkat artikel (tampil di index dan SEO)..."
                             class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-gray-700 focus:outline-none transition resize-none"
-                            onfocus="this.style.borderColor='#D4A373'"
+                            onfocus="this.style.borderColor='#92A89C'"
                             onblur="this.style.borderColor=''"
                         />
                         <div class="flex justify-end mt-1">
@@ -149,7 +149,7 @@ function autoSlug() {
                             rows="20"
                             placeholder="<h2>Subjudul</h2>&#10;<p>Paragraf pertama...</p>"
                             class="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-gray-700 focus:outline-none transition resize-y font-mono"
-                            onfocus="this.style.borderColor='#D4A373'"
+                            onfocus="this.style.borderColor='#92A89C'"
                             onblur="this.style.borderColor=''"
                         />
                         <p v-if="form.errors.content" class="text-red-500 text-xs mt-1">{{ form.errors.content }}</p>
@@ -163,7 +163,7 @@ function autoSlug() {
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Title</label>
                                 <input v-model="form.meta_title" type="text" placeholder="Default: judul artikel"
                                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none transition"
-                                       onfocus="this.style.borderColor='#D4A373'" onblur="this.style.borderColor=''"/>
+                                       onfocus="this.style.borderColor='#92A89C'" onblur="this.style.borderColor=''"/>
                                 <div class="flex justify-end mt-1">
                                     <span :class="form.meta_title.length > 60 ? 'text-red-400' : 'text-gray-400'" class="text-xs">
                                         {{ form.meta_title.length }}/60
@@ -174,7 +174,7 @@ function autoSlug() {
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Description</label>
                                 <textarea v-model="form.meta_description" rows="2" placeholder="Default: excerpt"
                                           class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none transition resize-none"
-                                          onfocus="this.style.borderColor='#D4A373'" onblur="this.style.borderColor=''"/>
+                                          onfocus="this.style.borderColor='#92A89C'" onblur="this.style.borderColor=''"/>
                                 <div class="flex justify-end mt-1">
                                     <span :class="form.meta_description.length > 160 ? 'text-red-400' : 'text-gray-400'" class="text-xs">
                                         {{ form.meta_description.length }}/160
@@ -185,7 +185,7 @@ function autoSlug() {
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Canonical URL</label>
                                 <input v-model="form.canonical_url" type="url" placeholder="https://..."
                                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none transition"
-                                       onfocus="this.style.borderColor='#D4A373'" onblur="this.style.borderColor=''"/>
+                                       onfocus="this.style.borderColor='#92A89C'" onblur="this.style.borderColor=''"/>
                             </div>
                         </div>
                     </div>
@@ -202,7 +202,7 @@ function autoSlug() {
                                 @click="saveAndPublish"
                                 :disabled="form.processing"
                                 class="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition cursor-pointer disabled:opacity-50"
-                                style="background:var(--color-primary, #D4A373)"
+                                style="background:var(--color-primary, #92A89C)"
                             >
                                 {{ isEdit && article.status === 'published' ? 'Simpan Perubahan' : 'Publikasi Artikel' }}
                             </button>
@@ -243,7 +243,7 @@ function autoSlug() {
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Kategori</label>
                                 <select v-model="form.category_id"
                                         class="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none bg-white cursor-pointer"
-                                        onfocus="this.style.borderColor='#D4A373'" onblur="this.style.borderColor=''">
+                                        onfocus="this.style.borderColor='#92A89C'" onblur="this.style.borderColor=''">
                                     <option value="">— Pilih Kategori —</option>
                                     <option v-for="cat in categories" :key="cat.id" :value="cat.id">
                                         {{ cat.name }}
@@ -254,7 +254,7 @@ function autoSlug() {
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Nama Penulis</label>
                                 <input v-model="form.author_name" type="text" placeholder="Tim TheDay"
                                        class="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none transition"
-                                       onfocus="this.style.borderColor='#D4A373'" onblur="this.style.borderColor=''"/>
+                                       onfocus="this.style.borderColor='#92A89C'" onblur="this.style.borderColor=''"/>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div>
@@ -265,7 +265,7 @@ function autoSlug() {
                                     type="button"
                                     @click="form.featured = !form.featured"
                                     class="relative inline-flex h-6 w-11 items-center rounded-full transition cursor-pointer"
-                                    :style="form.featured ? 'background:var(--color-primary,#D4A373)' : 'background:#E5E7EB'"
+                                    :style="form.featured ? 'background:var(--color-primary,#92A89C)' : 'background:#E5E7EB'"
                                 >
                                     <span class="inline-block h-4 w-4 transform rounded-full bg-white transition"
                                           :class="form.featured ? 'translate-x-6' : 'translate-x-1'" />

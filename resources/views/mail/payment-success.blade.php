@@ -8,7 +8,7 @@
         .logo { font-size: 22px; font-weight: 700; color: #C8A26B; letter-spacing: -0.5px; margin-bottom: 24px; }
         h1 { font-size: 20px; font-weight: 700; color: #2C2417; margin: 0 0 8px; }
         p { color: #6B5B3E; font-size: 15px; line-height: 1.6; margin: 0 0 12px; }
-        .badge { display: inline-block; background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 24px; }
+        .badge { display: inline-block; background: rgba(200,162,107,0.15); color: #C8A26B; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 24px; }
         .detail-box { background: #FAFAF8; border: 1px solid #E8DFD0; border-radius: 12px; padding: 20px; margin: 24px 0; }
         .detail-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
         .detail-row .label { color: #9C8B72; }

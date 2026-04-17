@@ -27,7 +27,7 @@ onMounted(() => props.fonts.forEach(f => loadGoogleFont(f.value)));
 watch(() => props.customConfig.font, loadGoogleFont, { immediate: true });
 
 const colorPresets = [
-    { label: 'Golden Sand',  value: '#D4A373' },
+    { label: 'Golden Sand',  value: '#92A89C' },
     { label: 'Rose Gold',    value: '#B76E79' },
     { label: 'Sage Green',   value: '#7D9B76' },
     { label: 'Dusty Blue',   value: '#7798AB' },
@@ -95,9 +95,9 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
                     <input
                         v-model="customConfig.primary_color"
                         type="text"
-                        placeholder="#D4A373"
+                        placeholder="#92A89C"
                         maxlength="7"
-                        class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition"
+                        class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                     />
                 </div>
                 <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-600 hover:bg-stone-50 cursor-pointer transition-all">
@@ -126,7 +126,7 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
 
             <select
                 v-model="customConfig.font"
-                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition bg-white appearance-none"
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white appearance-none"
             >
                 <template v-for="cat in fontCategories" :key="cat">
                     <optgroup :label="cat">
@@ -146,7 +146,7 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
                     :class="[
                         'px-3 py-3 rounded-xl border text-center transition-all',
                         customConfig.font === f.value
-                            ? 'border-amber-400 bg-amber-50'
+                            ? 'border-[#92A89C] bg-[#92A89C]/10'
                             : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
                     ]"
                 >

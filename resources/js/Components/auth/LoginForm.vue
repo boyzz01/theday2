@@ -56,7 +56,7 @@ async function submit() {
                 class="w-full px-4 py-2.5 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                 :class="errors.email
                     ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                    : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                    : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
             />
             <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email[0] }}</p>
         </div>
@@ -79,7 +79,7 @@ async function submit() {
                     class="w-full px-4 py-2.5 pr-10 rounded-xl border text-sm transition-colors outline-none focus:ring-2"
                     :class="errors.password
                         ? 'border-red-300 focus:ring-red-100 bg-red-50'
-                        : 'border-stone-200 focus:ring-amber-100 focus:border-amber-300'"
+                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
                 />
                 <button
                     type="button"
@@ -104,7 +104,7 @@ async function submit() {
             <input
                 v-model="form.remember"
                 type="checkbox"
-                class="w-4 h-4 rounded border-stone-300 text-amber-500 focus:ring-amber-300"
+                class="w-4 h-4 rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/50"
             />
             <span class="text-sm text-stone-500">Ingat saya</span>
         </label>
@@ -114,7 +114,7 @@ async function submit() {
             type="submit"
             :disabled="loading"
             class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-            style="background-color: #C8A26B"
+            style="background-color: #92A89C"
         >
             <span v-if="loading" class="flex items-center justify-center gap-2">
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

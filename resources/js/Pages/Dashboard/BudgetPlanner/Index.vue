@@ -92,7 +92,7 @@ function catColor(cat, idx) {
 
 const statusConfig = {
     aman:      { label: 'Aman',           bg: 'bg-emerald-100', text: 'text-emerald-700', dot: '#4CAF50', bar: '#34D399' },
-    mendekati: { label: 'Mendekati',      bg: 'bg-amber-100',   text: 'text-amber-700',   dot: '#F59E0B', bar: '#F59E0B' },
+    mendekati: { label: 'Mendekati',      bg: 'bg-[#92A89C]/20',   text: 'text-[#73877C]',   dot: '#92A89C', bar: '#92A89C' },
     melebihi:  { label: 'Melebihi',       bg: 'bg-rose-100',    text: 'text-rose-700',    dot: '#EF4444', bar: '#F87171' },
     no_data:   { label: 'Belum ada data', bg: 'bg-stone-100',   text: 'text-stone-500',   dot: '#9CA3AF', bar: '#D1D5DB' },
 };
@@ -190,8 +190,8 @@ const isFirstTime    = computed(() =>
 const progressPct   = computed(() => props.summary?.usage_percentage ?? 0);
 const progressColor = computed(() => {
     if (props.summary?.is_total_overbudget) return '#F87171';
-    if ((progressPct.value ?? 0) >= 80) return '#F59E0B';
-    return '#D4A373';
+    if ((progressPct.value ?? 0) >= 80) return '#92A89C';
+    return '#92A89C';
 });
 
 const paymentStatusOptions = [
@@ -202,7 +202,7 @@ const paymentStatusOptions = [
 
 const paymentBadge = {
     unpaid: 'bg-stone-100 text-stone-600',
-    dp:     'bg-amber-100 text-amber-700',
+    dp:     'bg-[#92A89C]/20 text-[#73877C]',
     paid:   'bg-emerald-100 text-emerald-700',
 };
 
@@ -492,7 +492,7 @@ async function archiveCategory(cat) {
                     </button>
                     <button @click="openAddItem()"
                         class="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white rounded-xl transition-opacity hover:opacity-90"
-                        style="background-color: #D4A373">
+                        style="background-color: #92A89C">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -502,11 +502,11 @@ async function archiveCategory(cat) {
             </div>
 
             <!-- ── Onboarding Card ─────────────────────────────────────────── -->
-            <div v-if="isFirstTime" class="bg-white border border-amber-100 rounded-2xl p-6 shadow-sm mb-6">
+            <div v-if="isFirstTime" class="bg-white border border-[#B8C7BF]/50 rounded-2xl p-6 shadow-sm mb-6">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
                          style="background-color: #FFF3E0">
-                        <svg class="w-6 h-6" style="color: #D4A373" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-6 h-6" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                         </svg>
@@ -522,7 +522,7 @@ async function archiveCategory(cat) {
                         </button>
                         <button @click="openSetBudget"
                             class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition-opacity hover:opacity-90"
-                            style="background-color: #D4A373">
+                            style="background-color: #92A89C">
                             Atur Total Budget
                         </button>
                     </div>
@@ -531,12 +531,12 @@ async function archiveCategory(cat) {
 
             <!-- ── No budget notice (has items but no total budget) ────────── -->
             <div v-else-if="!hasBudget && (items?.length > 0 || categoryBreakdown?.some(c => c.items_count > 0))"
-                 class="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-4 text-xs">
-                <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 class="flex items-center gap-3 bg-[#92A89C]/10 border border-[#B8C7BF]/50 rounded-xl px-4 py-3 mb-4 text-xs">
+                <svg class="w-4 h-4 text-[#92A89C] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                 </svg>
-                <span class="text-amber-700">Total budget belum diatur. Sisa budget tidak dapat dihitung.</span>
-                <button @click="openSetBudget" class="ml-auto font-semibold text-amber-700 underline whitespace-nowrap">Atur sekarang</button>
+                <span class="text-[#73877C]">Total budget belum diatur. Sisa budget tidak dapat dihitung.</span>
+                <button @click="openSetBudget" class="ml-auto font-semibold text-[#73877C] underline whitespace-nowrap">Atur sekarang</button>
             </div>
 
             <!-- ── Donut Chart + Summary ───────────────────────────────────── -->
@@ -601,7 +601,7 @@ async function archiveCategory(cat) {
                             <p class="text-base font-bold text-stone-800 mt-0.5 leading-tight">
                                 {{ summary.has_budget ? summary.formatted.total_budget : '—' }}
                             </p>
-                            <button @click="openSetBudget" class="mt-1 text-xs font-medium transition-colors" style="color: #D4A373">
+                            <button @click="openSetBudget" class="mt-1 text-xs font-medium transition-colors" style="color: #92A89C">
                                 {{ summary.has_budget ? 'Ubah' : 'Atur budget' }}
                             </button>
                         </div>
@@ -635,7 +635,7 @@ async function archiveCategory(cat) {
                                :class="summary.remaining_budget < 0 ? 'text-rose-600' : 'text-stone-800'">
                                 {{ summary.has_budget ? summary.formatted.remaining_budget : '—' }}
                             </p>
-                            <p v-if="summary.overbudget_categories_count > 0" class="mt-1 text-xs text-amber-600">
+                            <p v-if="summary.overbudget_categories_count > 0" class="mt-1 text-xs text-[#73877C]">
                                 {{ summary.overbudget_categories_count }} kategori melebihi
                             </p>
                             <p v-else class="mt-1 text-xs text-stone-400">
@@ -684,7 +684,7 @@ async function archiveCategory(cat) {
                     </div>
                     <p class="text-sm font-medium text-stone-600">Kategori default sudah siap</p>
                     <p class="text-xs text-stone-400 mt-1">Mulai tambah pengeluaran untuk melihat breakdown kategori.</p>
-                    <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #D4A373">Tambah pengeluaran pertama →</button>
+                    <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">Tambah pengeluaran pertama →</button>
                 </div>
 
                 <div v-else class="space-y-2">
@@ -760,7 +760,7 @@ async function archiveCategory(cat) {
                                 <!-- Empty state for category -->
                                 <div v-if="!cat.items?.length" class="px-4 py-5 text-center">
                                     <p class="text-xs text-stone-400">Belum ada item di kategori ini.</p>
-                                    <button @click="openAddItem(cat.id)" class="mt-2 text-xs font-medium" style="color: #D4A373">
+                                    <button @click="openAddItem(cat.id)" class="mt-2 text-xs font-medium" style="color: #92A89C">
                                         + Tambah item
                                     </button>
                                 </div>
@@ -782,7 +782,7 @@ async function archiveCategory(cat) {
                                                         Overdue
                                                     </span>
                                                     <span v-else-if="item.due_date_warning === 'soon'"
-                                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]">
                                                         Segera
                                                     </span>
                                                 </div>
@@ -863,7 +863,7 @@ async function archiveCategory(cat) {
                                 <div class="px-4 py-3 border-t border-stone-50">
                                     <button @click="openAddItem(cat.id)"
                                         class="flex items-center gap-1.5 text-xs font-medium transition-colors"
-                                        style="color: #D4A373">
+                                        style="color: #92A89C">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                                         </svg>
@@ -886,12 +886,12 @@ async function archiveCategory(cat) {
                         </svg>
                         <input v-model="searchQuery" type="search" placeholder="Cari item atau vendor"
                             class="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                            style="--tw-ring-color: #D4A373" />
+                            style="--tw-ring-color: #92A89C" />
                     </div>
                     <button @click="showFilterSheet = true"
                         :class="['flex items-center gap-1.5 px-3 py-2.5 text-sm border rounded-xl transition-colors',
                             (filterStatus !== 'all' || filterCategory || sortBy !== 'newest')
-                                ? 'bg-amber-50 border-amber-200 text-amber-700 font-medium'
+                                ? 'bg-[#92A89C]/10 border-[#B8C7BF] text-[#73877C] font-medium'
                                 : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50']"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -911,12 +911,12 @@ async function archiveCategory(cat) {
                     <template v-if="searchQuery || filterStatus !== 'all' || filterCategory">
                         <p class="text-sm font-medium text-stone-600">Tidak ada hasil yang cocok.</p>
                         <p class="text-xs text-stone-400 mt-1">Coba kata kunci atau filter lain.</p>
-                        <button @click="clearFilters" class="mt-3 text-sm font-medium" style="color: #D4A373">Reset filter →</button>
+                        <button @click="clearFilters" class="mt-3 text-sm font-medium" style="color: #92A89C">Reset filter →</button>
                     </template>
                     <template v-else>
                         <p class="text-sm font-medium text-stone-600">Belum ada pengeluaran tercatat.</p>
                         <p class="text-xs text-stone-400 mt-1">Mulai catat pengeluaran pertamamu.</p>
-                        <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #D4A373">Tambah pengeluaran →</button>
+                        <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">Tambah pengeluaran →</button>
                     </template>
                 </div>
 
@@ -933,7 +933,7 @@ async function archiveCategory(cat) {
                                     <span v-if="item.due_date_warning === 'overdue'"
                                           class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Overdue</span>
                                     <span v-else-if="item.due_date_warning === 'soon'"
-                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Segera</span>
+                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]">Segera</span>
                                 </div>
                                 <p class="text-xs text-stone-400 mb-2">
                                     {{ item.category?.name }}
@@ -992,7 +992,7 @@ async function archiveCategory(cat) {
         <div class="fixed bottom-6 right-4 sm:hidden z-20">
             <button @click="openAddItem()"
                 class="flex items-center gap-2 px-5 py-3 text-white text-sm font-semibold rounded-2xl shadow-lg transition-opacity hover:opacity-90"
-                style="background-color: #D4A373">
+                style="background-color: #92A89C">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -1016,18 +1016,18 @@ async function archiveCategory(cat) {
                                 @input="budgetForm.total_budget = $event.target.value.replace(/\D/g, '')"
                                 type="text" inputmode="numeric" placeholder="Rp 0"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-stone-600 mb-1">Catatan (opsional)</label>
                             <textarea v-model="budgetForm.notes" rows="2"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent resize-none"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
                     </div>
                     <div class="flex gap-2 mt-5">
                         <button @click="showSetBudget = false" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Batal</button>
-                        <button @click="saveBudget" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #D4A373">Simpan</button>
+                        <button @click="saveBudget" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">Simpan</button>
                     </div>
                 </div>
             </div>
@@ -1054,7 +1054,7 @@ async function archiveCategory(cat) {
                             <input v-model="itemForm.title" type="text" placeholder="Contoh: Gedung Akad"
                                 class="w-full px-3 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                                 :class="itemErrors.title ? 'border-rose-300' : 'border-stone-200'"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                             <p v-if="itemErrors.title" class="mt-1 text-xs text-rose-500">{{ itemErrors.title[0] }}</p>
                         </div>
 
@@ -1064,7 +1064,7 @@ async function archiveCategory(cat) {
                             <select v-model="itemForm.category_id"
                                 class="w-full px-3 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
                                 :class="itemErrors.category_id ? 'border-rose-300' : 'border-stone-200'"
-                                style="--tw-ring-color: #D4A373">
+                                style="--tw-ring-color: #92A89C">
                                 <option value="" disabled>Pilih kategori</option>
                                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                             </select>
@@ -1079,7 +1079,7 @@ async function archiveCategory(cat) {
                                 @input="itemForm.planned_amount = $event.target.value.replace(/\D/g, '')"
                                 type="text" inputmode="numeric" placeholder="Rp 0"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
 
                         <!-- Payment tracking mode toggle -->
@@ -1088,7 +1088,7 @@ async function archiveCategory(cat) {
                             <button
                                 @click="itemForm.use_dp_tracking = !itemForm.use_dp_tracking"
                                 :class="['relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
-                                    itemForm.use_dp_tracking ? 'bg-amber-400' : 'bg-stone-200']"
+                                    itemForm.use_dp_tracking ? 'bg-[#92A89C]' : 'bg-stone-200']"
                                 role="switch" :aria-checked="itemForm.use_dp_tracking"
                             >
                                 <span :class="['pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200',
@@ -1105,7 +1105,7 @@ async function archiveCategory(cat) {
                                     @input="itemForm.actual_amount = $event.target.value.replace(/\D/g, '')"
                                     type="text" inputmode="numeric" placeholder="Belum ada"
                                     class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                    style="--tw-ring-color: #D4A373" />
+                                    style="--tw-ring-color: #92A89C" />
                                 <p class="mt-1 text-xs text-stone-400">Kosongkan jika belum ada pembayaran.</p>
                             </div>
                             <div>
@@ -1115,7 +1115,7 @@ async function archiveCategory(cat) {
                                         @click="itemForm.payment_status = opt.value"
                                         :class="['flex-1 py-2 text-xs font-medium rounded-xl border transition-colors',
                                             itemForm.payment_status === opt.value ? 'border-transparent text-white' : 'border-stone-200 text-stone-600 hover:bg-stone-50']"
-                                        :style="itemForm.payment_status === opt.value ? 'background-color: #D4A373' : ''">
+                                        :style="itemForm.payment_status === opt.value ? 'background-color: #92A89C' : ''">
                                         {{ opt.label }}
                                     </button>
                                 </div>
@@ -1124,7 +1124,7 @@ async function archiveCategory(cat) {
                                 <label class="block text-xs font-medium text-stone-600 mb-1">Tanggal Pembayaran</label>
                                 <input v-model="itemForm.payment_date" type="date"
                                     class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                    style="--tw-ring-color: #D4A373" />
+                                    style="--tw-ring-color: #92A89C" />
                             </div>
                         </template>
 
@@ -1139,7 +1139,7 @@ async function archiveCategory(cat) {
                                             @input="itemForm.dp_amount = $event.target.value.replace(/\D/g, '')"
                                             type="text" inputmode="numeric" placeholder="Rp 0 (opsional)"
                                             class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
-                                            style="--tw-ring-color: #D4A373" />
+                                            style="--tw-ring-color: #92A89C" />
                                     </div>
                                     <button
                                         @click="itemForm.dp_paid = !itemForm.dp_paid"
@@ -1162,7 +1162,7 @@ async function archiveCategory(cat) {
                                             @input="itemForm.final_amount = $event.target.value.replace(/\D/g, '')"
                                             type="text" inputmode="numeric" placeholder="Rp 0 (opsional)"
                                             class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
-                                            style="--tw-ring-color: #D4A373" />
+                                            style="--tw-ring-color: #92A89C" />
                                     </div>
                                     <button
                                         @click="itemForm.final_paid = !itemForm.final_paid"
@@ -1183,7 +1183,7 @@ async function archiveCategory(cat) {
                             <label class="block text-xs font-medium text-stone-600 mb-1">Jatuh Tempo (opsional)</label>
                             <input v-model="itemForm.due_date" type="date"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
 
                         <!-- Vendor -->
@@ -1191,7 +1191,7 @@ async function archiveCategory(cat) {
                             <label class="block text-xs font-medium text-stone-600 mb-1">Vendor (opsional)</label>
                             <input v-model="itemForm.vendor_name" type="text" placeholder="Nama vendor"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
 
                         <!-- Notes -->
@@ -1199,7 +1199,7 @@ async function archiveCategory(cat) {
                             <label class="block text-xs font-medium text-stone-600 mb-1">Catatan (opsional)</label>
                             <textarea v-model="itemForm.notes" rows="2" placeholder="Catatan tambahan"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent resize-none"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                         </div>
                     </div>
 
@@ -1208,7 +1208,7 @@ async function archiveCategory(cat) {
                             class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Batal</button>
                         <button @click="saveItem"
                             class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90"
-                            style="background-color: #D4A373">Simpan</button>
+                            style="background-color: #92A89C">Simpan</button>
                     </div>
                 </div>
             </div>
@@ -1229,7 +1229,7 @@ async function archiveCategory(cat) {
                                 @click="filterStatus = opt.value"
                                 :class="['px-3 py-1.5 text-xs font-medium rounded-xl border transition-colors',
                                     filterStatus === opt.value ? 'border-transparent text-white' : 'border-stone-200 text-stone-600 hover:bg-stone-50']"
-                                :style="filterStatus === opt.value ? 'background-color: #D4A373' : ''">
+                                :style="filterStatus === opt.value ? 'background-color: #92A89C' : ''">
                                 {{ opt.label }}
                             </button>
                         </div>
@@ -1257,7 +1257,7 @@ async function archiveCategory(cat) {
 
                     <div class="flex gap-2">
                         <button @click="clearFilters" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Reset</button>
-                        <button @click="applyFilters" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #D4A373">Terapkan</button>
+                        <button @click="applyFilters" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">Terapkan</button>
                     </div>
                 </div>
             </div>
@@ -1281,18 +1281,18 @@ async function archiveCategory(cat) {
                             <input v-model="categoryForm.name" type="text" placeholder="Nama kategori baru"
                                 @keyup.enter="addCategory"
                                 class="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #D4A373" />
+                                style="--tw-ring-color: #92A89C" />
                             <button @click="addCategory"
                                 class="px-4 py-2 text-sm font-medium text-white rounded-xl transition-opacity hover:opacity-90"
-                                style="background-color: #D4A373">Tambah</button>
+                                style="background-color: #92A89C">Tambah</button>
                         </div>
                         <div class="space-y-2">
                             <div v-for="cat in categoryBreakdown" :key="cat.id"
                                 class="flex items-center justify-between py-2.5 px-3 bg-stone-50 rounded-xl">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: cat.color || '#D4A373' }"/>
+                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: cat.color || '#92A89C' }"/>
                                     <span class="text-sm text-stone-700 font-medium">{{ cat.name }}</span>
-                                    <span v-if="cat.type === 'custom'" class="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Custom</span>
+                                    <span v-if="cat.type === 'custom'" class="text-xs text-[#73877C] bg-[#92A89C]/10 px-1.5 py-0.5 rounded">Custom</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <span class="text-xs text-stone-400">{{ cat.items_count }} item</span>
