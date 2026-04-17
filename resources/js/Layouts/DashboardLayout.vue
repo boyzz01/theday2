@@ -230,15 +230,15 @@ const handleClickOutsideAvatar = (e) => {
                         <button
                             @click="toggleGroup(item.label)"
                             :class="[
-                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
+                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 cursor-pointer',
                                 isGroupActive(item)
-                                    ? 'bg-[#92A89C]/12 text-[#2C2417]'
-                                    : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
+                                    ? 'bg-[#92A89C]/20 text-[#2C2417] font-semibold'
+                                    : 'font-medium text-stone-500 hover:text-stone-800 hover:bg-[#92A89C]/8',
                                 sidebarCollapsed ? 'justify-center' : '',
                             ]"
                         >
                             <svg class="w-5 h-5 flex-shrink-0"
-                                 :class="isGroupActive(item) ? 'text-[#73877C]' : 'text-stone-400'"
+                                 :class="isGroupActive(item) ? 'text-[#92A89C]' : 'text-stone-400'"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                             <span v-if="!sidebarCollapsed" class="flex-1 text-left">{{ item.label }}</span>
                             <svg v-if="!sidebarCollapsed"
@@ -264,10 +264,10 @@ const handleClickOutsideAvatar = (e) => {
                                     <Link v-else
                                           :href="route(child.route)"
                                           :class="[
-                                              'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                                              'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-150',
                                               isActive(child)
-                                                  ? 'bg-[#92A89C]/12 text-[#2C2417]'
-                                                  : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
+                                                  ? 'bg-[#92A89C]/20 text-[#2C2417] font-semibold'
+                                                  : 'font-medium text-stone-500 hover:text-stone-800 hover:bg-[#92A89C]/8',
                                           ]"
                                     >
                                         {{ child.label }}
@@ -282,14 +282,14 @@ const handleClickOutsideAvatar = (e) => {
                         v-else
                         :href="route(item.route)"
                         :class="[
-                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
                             isActive(item)
-                                ? 'bg-[#92A89C]/12 text-[#2C2417]'
-                                : 'text-stone-600 hover:text-stone-900 hover:bg-[#92A89C]/6',
+                                ? 'bg-[#92A89C]/20 text-[#2C2417] font-semibold'
+                                : 'font-medium text-stone-500 hover:text-stone-800 hover:bg-[#92A89C]/8',
                             sidebarCollapsed ? 'justify-center' : '',
                         ]"
                     >
-                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-[#73877C]' : 'text-stone-400'"
+                        <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item) ? 'text-[#92A89C]' : 'text-stone-400'"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" v-html="item.icon"/>
                         <span v-if="!sidebarCollapsed" class="flex-1">{{ item.label }}</span>
                         <span

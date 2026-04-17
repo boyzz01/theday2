@@ -50,7 +50,7 @@
     <style>
         :root {
             --color-primary: #92A89C;
-            --color-primary-dark: #B8865A;
+            --color-primary-dark: #73877C;
             --color-secondary: #E8EFEC;
             --color-accent: #CCD5AE;
             --color-dark: #1E1E1E;

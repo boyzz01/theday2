@@ -364,7 +364,7 @@ const priorityDot = {
                                     :href="`/${inv.slug}`"
                                     target="_blank"
                                     class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
-                                    :style="`background-color: ${templateColor(inv)}`"
+                                    style="background-color: #92A89C"
                                 >
                                     Lihat
                                 </a>
