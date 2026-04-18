@@ -83,7 +83,7 @@ const priorityDot = {
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-stone-800">
-                        Selamat datang kembali 👋
+                        Selamat datang kembali
                     </h2>
                     <p class="text-sm text-stone-400 mt-0.5">
                         Kelola undangan digitalmu dari sini.
@@ -127,16 +127,14 @@ const priorityDot = {
                 :href="route('dashboard.budget-planner.index')"
                 class="block bg-white rounded-2xl border border-stone-100 shadow-sm p-5 hover:shadow-md transition-shadow"
             >
-                <div class="flex items-start justify-between mb-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #EFF2F0">
-                                <svg class="w-4 h-4" style="color: #73877C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                                </svg>
-                            </div>
-                            <p class="text-sm font-semibold text-stone-700">Budget Planner</p>
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #EFF2F0">
+                            <svg class="w-4 h-4" style="color: #73877C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
                         </div>
+                        <p class="text-sm font-semibold text-stone-700">Budget Planner</p>
                     </div>
                     <span class="text-xs font-medium" style="color: #92A89C">Lihat budget →</span>
                 </div>
@@ -179,7 +177,7 @@ const priorityDot = {
                 :href="route('dashboard.checklist.index')"
                 class="block bg-white rounded-2xl border border-stone-100 shadow-sm p-5 hover:shadow-md transition-shadow"
             >
-                <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: #F0FDF4">
                             <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -250,7 +248,7 @@ const priorityDot = {
 
             <!-- ── Recent Invitations ─────────────────────────────── -->
             <div>
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 px-5">
                     <h3 class="text-sm font-semibold text-stone-700">Undangan Terbaru</h3>
                     <Link :href="route('dashboard.invitations.index')"
                           class="text-xs font-medium transition-colors hover:opacity-80"

@@ -80,7 +80,7 @@ const form = useForm({
                     type="submit"
                     :disabled="form.processing"
                     class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
-                    style="background-color: #C8A26B"
+                    style="background-color: #92A89C"
                 >
                     <span v-if="form.processing">Menyimpan…</span>
                     <span v-else>Simpan Perubahan</span>
