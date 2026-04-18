@@ -18,7 +18,7 @@ class ContactAutoReplyMail extends Mailable
 
     public function __construct(
         public readonly string $senderName,
-        public readonly string $subject,
+        public readonly string $topic,
     ) {}
 
     public function envelope(): Envelope

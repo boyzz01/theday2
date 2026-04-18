@@ -19,7 +19,7 @@ class ContactFormMail extends Mailable
     public function __construct(
         public readonly string $senderName,
         public readonly string $senderEmail,
-        public readonly string $subject,
+        public readonly string $topic,
         public readonly string $messageBody,
         public readonly string $submittedAt,
     ) {}
@@ -27,7 +27,7 @@ class ContactFormMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "[Kontak TheDay] {$this->subject} — dari {$this->senderName}",
+            subject: "[Kontak TheDay] {$this->topic} — dari {$this->senderName}",
             replyTo: [new \Illuminate\Mail\Mailables\Address($this->senderEmail, $this->senderName)],
         );
     }

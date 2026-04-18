@@ -48,7 +48,7 @@ class ContactController extends Controller
             Mail::to('hello@theday.id')->send(new ContactFormMail(
                 senderName:  $data['name'],
                 senderEmail: $data['email'],
-                subject:     $data['subject'],
+                topic:       $data['subject'],
                 messageBody: $data['message'],
                 submittedAt: $submittedAt,
             ));
@@ -63,7 +63,7 @@ class ContactController extends Controller
         try {
             Mail::to($data['email'])->send(new ContactAutoReplyMail(
                 senderName: $data['name'],
-                subject:    $data['subject'],
+                topic:      $data['subject'],
             ));
         } catch (\Throwable $e) {
             Log::warning('ContactAutoReplyMail failed', ['error' => $e->getMessage()]);

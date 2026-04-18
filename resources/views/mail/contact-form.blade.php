@@ -51,7 +51,7 @@
         </div>
         <div class="field">
             <div class="field-label">Topik</div>
-            <div class="field-value">{{ $subject }}</div>
+            <div class="field-value">{{ $topic }}</div>
         </div>
         <div class="field">
             <div class="field-label">Pesan</div>
@@ -61,7 +61,7 @@
         <div class="divider"></div>
 
         <div style="text-align: center;">
-            <a href="mailto:{{ $senderEmail }}?subject=Re: {{ urlencode($subject) }}" class="reply-btn">
+            <a href="mailto:{{ $senderEmail }}?subject=Re: {{ urlencode($topic) }}" class="reply-btn">
                 Balas Pesan →
             </a>
         </div>

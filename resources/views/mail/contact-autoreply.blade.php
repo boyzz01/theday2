@@ -35,7 +35,7 @@
 
     <div class="body">
         <p>Hei <strong>{{ $senderName }}</strong>,</p>
-        <p>Kami sudah menerima pesanmu dengan topik <strong>"{{ $subject }}"</strong>. Tim kami akan segera meninjau dan membalasnya.</p>
+        <p>Kami sudah menerima pesanmu dengan topik <strong>"{{ $topic }}"</strong>. Tim kami akan segera meninjau dan membalasnya.</p>
 
         <div class="highlight">
             <p>⏰ <strong>Jam layanan:</strong> Senin–Sabtu, 09.00–21.00 WIB</p>
