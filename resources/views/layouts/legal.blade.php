@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
     <title>@yield('title') — TheDay</title>
     <meta name="description" content="@yield('meta_description')">
     <link rel="preconnect" href="https://fonts.googleapis.com">

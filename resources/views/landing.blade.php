@@ -12,6 +12,7 @@
     <meta name="author" content="TheDay">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{{ url('/') }}">
+    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
 
     {{-- ── SEO: Open Graph (WhatsApp / Facebook / LinkedIn) ─────── --}}
     <meta property="og:type" content="website">
@@ -276,9 +277,9 @@
             {
               "@type": "Offer",
               "name": "Premium",
-              "price": "99000",
+              "price": "35000",
               "priceCurrency": "IDR",
-              "description": "1 undangan premium, semua template, custom URL, musik sendiri, 30 foto, analitik lengkap"
+              "description": "Undangan tidak terbatas, semua template, custom URL, musik sendiri, foto tidak terbatas, analitik lengkap"
             },
             {
               "@type": "Offer",
@@ -984,9 +985,9 @@
                 [
                     'id_name'   => 'Premium',
                     'en_name'   => 'Premium',
-                    'price'     => 'Rp 149.000',
-                    'id_period' => 'per bulan',
-                    'en_period' => 'per month',
+                    'price'     => 'Rp 35.000',
+                    'id_period' => 'per 3 bulan',
+                    'en_period' => 'per 3 months',
                     'popular'   => true,
                     'id_features' => ['Undangan tidak terbatas', 'Semua template (50+)', 'Konfirmasi RSVP', 'Custom URL slug', 'Perlindungan kata sandi', 'Upload musik sendiri', 'Foto galeri tidak terbatas', 'Analitik lengkap', 'Tanpa watermark', 'Prioritas dukungan'],
                     'en_features' => ['Unlimited invitations', 'All templates (50+)', 'RSVP confirmation', 'Custom URL slug', 'Password protection', 'Upload own music', 'Unlimited gallery photos', 'Full analytics', 'No watermark', 'Priority support'],
