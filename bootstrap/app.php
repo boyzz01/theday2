@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Exclude Midtrans webhook from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'webhooks/midtrans',
+            'logout',
         ]);
 
         $middleware->alias([
@@ -32,5 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            return redirect('/');
+        });
     })->create();
