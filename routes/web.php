@@ -51,14 +51,27 @@ Route::get('/', function () {
 // ── Sitemap ──────────────────────────────────────────────────────────────────
 Route::get('/sitemap.xml', function () {
     $pages = [
-        ['url' => url('/'),          'priority' => '1.0', 'changefreq' => 'weekly'],
-        ['url' => url('/templates'), 'priority' => '0.9', 'changefreq' => 'daily'],
-        ['url' => url('/blog'),      'priority' => '0.8', 'changefreq' => 'daily'],
-        ['url' => url('/login'),     'priority' => '0.5', 'changefreq' => 'monthly'],
-        ['url' => url('/register'),  'priority' => '0.6', 'changefreq' => 'monthly'],
+        ['url' => url('/'),                      'priority' => '1.0', 'changefreq' => 'weekly'],
+        ['url' => url('/templates'),             'priority' => '0.9', 'changefreq' => 'daily'],
+        ['url' => url('/blog'),                  'priority' => '0.8', 'changefreq' => 'daily'],
+        ['url' => url('/register'),              'priority' => '0.6', 'changefreq' => 'monthly'],
+        ['url' => url('/login'),                 'priority' => '0.5', 'changefreq' => 'monthly'],
+        ['url' => url('/kebijakan-privasi'),     'priority' => '0.3', 'changefreq' => 'yearly'],
+        ['url' => url('/syarat-ketentuan'),      'priority' => '0.3', 'changefreq' => 'yearly'],
+        ['url' => url('/kebijakan-cookie'),      'priority' => '0.3', 'changefreq' => 'yearly'],
     ];
 
-    // Add published articles to sitemap
+    // Template demo pages
+    \App\Models\Template::where('is_active', true)->select('slug', 'updated_at')->each(function ($tpl) use (&$pages) {
+        $pages[] = [
+            'url'        => url('/templates/' . $tpl->slug . '/demo'),
+            'priority'   => '0.8',
+            'changefreq' => 'monthly',
+            'lastmod'    => $tpl->updated_at->toDateString(),
+        ];
+    });
+
+    // Published blog articles
     \App\Models\Article::published()->select('slug', 'updated_at')->each(function ($article) use (&$pages) {
         $pages[] = [
             'url'        => url('/blog/' . $article->slug),
