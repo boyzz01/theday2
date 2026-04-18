@@ -1243,7 +1243,7 @@ onUnmounted(() => clearInterval(cdTimer));
                         <p v-if="!localMessages.length"
                            class="n-msg-empty"
                            :style="{ fontFamily: fontBody, color: darkBg + '50' }">
-                            Belum ada ucapan. Jadilah yang pertama! ✨
+                            Belum ada ucapan. Jadilah yang pertama! 
                         </p>
                     </div>
 

@@ -127,7 +127,8 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     // Invitation list & wizard
     Route::get(   '/invitations',                    [InvitationController::class, 'index'])->name('invitations.index');
     Route::get(   '/invitations/create',             [InvitationController::class, 'create'])->name('invitations.create');
-    Route::get(   '/invitations/{invitation}/edit',  [InvitationController::class, 'edit'])->name('invitations.edit');
+    Route::get(   '/invitations/{invitation}/edit',    [InvitationController::class, 'edit'])->name('invitations.edit');
+    Route::get(   '/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
     Route::post(  '/invitations/from-template',      [InvitationController::class, 'createFromTemplate'])->name('invitations.from-template');
     Route::delete('/invitations/{invitation}',        [InvitationController::class, 'destroy'])->name('invitations.destroy');
 

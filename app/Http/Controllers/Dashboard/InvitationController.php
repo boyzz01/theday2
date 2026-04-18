@@ -19,12 +19,92 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class InvitationController extends Controller
 {
     // ─── Pages ───────────────────────────────────────────────────────
+
+    public function preview(Request $request, Invitation $invitation): Response
+    {
+        abort_unless($invitation->user_id === $request->user()->id, 403);
+
+        $invitation->load([
+            'details',
+            'events'    => fn ($q) => $q->orderBy('sort_order')->orderBy('event_date'),
+            'galleries' => fn ($q) => $q->orderBy('sort_order'),
+            'music'     => fn ($q) => $q->where('is_default', true)->limit(1),
+            'sections',
+            'template:id,name,slug,default_config',
+        ]);
+
+        $config = array_merge(
+            $invitation->template->default_config ?? [],
+            $invitation->custom_config             ?? []
+        );
+
+        return Inertia::render('Invitation/Show', [
+            'invitation' => [
+                'id'          => $invitation->id,
+                'title'       => $invitation->title,
+                'slug'        => $invitation->slug,
+                'event_type'  => $invitation->event_type->value,
+                'details'     => $invitation->details ? [
+                    'groom_name'         => $invitation->details->groom_name,
+                    'groom_nickname'     => $invitation->details->groom_nickname,
+                    'bride_name'         => $invitation->details->bride_name,
+                    'bride_nickname'     => $invitation->details->bride_nickname,
+                    'groom_parent_names' => $invitation->details->groom_parent_names,
+                    'bride_parent_names' => $invitation->details->bride_parent_names,
+                    'groom_photo_url'    => $invitation->details->groom_photo_url,
+                    'bride_photo_url'    => $invitation->details->bride_photo_url,
+                    'opening_text'       => $invitation->details->opening_text,
+                    'closing_text'       => $invitation->details->closing_text,
+                    'cover_photo_url'    => $invitation->details->cover_photo_url,
+                ] : null,
+                'events'    => $invitation->events->map(fn ($e) => [
+                    'id'                   => $e->id,
+                    'event_name'           => $e->event_name,
+                    'event_date'           => $e->event_date?->format('Y-m-d'),
+                    'event_date_formatted' => $e->event_date
+                        ? Carbon::parse($e->event_date)->locale('id')->translatedFormat('l, d F Y')
+                        : null,
+                    'start_time'           => $e->start_time ? substr($e->start_time, 0, 5) : null,
+                    'end_time'             => $e->end_time   ? substr($e->end_time, 0, 5)   : null,
+                    'venue_name'           => $e->venue_name,
+                    'venue_address'        => $e->venue_address,
+                    'maps_url'             => $e->maps_url,
+                ])->values(),
+                'galleries' => $invitation->galleries->map(fn ($g) => [
+                    'id'        => $g->id,
+                    'image_url' => $g->image_url,
+                    'caption'   => $g->caption,
+                ])->values(),
+                'music' => $invitation->music->first() ? [
+                    'title'    => $invitation->music->first()->title,
+                    'file_url' => $invitation->music->first()->file_url,
+                ] : null,
+                'config'        => $config,
+                'template_slug' => $invitation->template?->slug,
+                'expires_at'    => $invitation->expires_at?->toIso8601String(),
+                'sections'      => $invitation->sections->isNotEmpty()
+                    ? $invitation->sections
+                        ->mapWithKeys(fn ($s) => [
+                            $s->section_key => [
+                                'enabled' => $s->is_required ? true : (bool) $s->is_enabled,
+                                'data'    => $s->data_json ?? [],
+                            ],
+                        ])
+                        ->toArray()
+                    : null,
+            ],
+            'messages'     => [],
+            'needPassword' => false,
+            'isPreview'    => true,
+        ]);
+    }
 
     public function index(Request $request): Response
     {

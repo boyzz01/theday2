@@ -200,12 +200,14 @@ async function doDuplicate() {
                             Template
                         </button>
                         <a
-                            :href="`/${inv.slug}`"
+                            :href="inv.status === 'draft'
+                                ? route('dashboard.invitations.preview', inv.id)
+                                : `/${inv.slug}`"
                             target="_blank"
                             class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
                             style="background-color: #92A89C"
                         >
-                            Lihat
+                            {{ inv.status === 'draft' ? 'Preview' : 'Lihat' }}
                         </a>
                         <button
                             @click="confirmDuplicate(inv)"

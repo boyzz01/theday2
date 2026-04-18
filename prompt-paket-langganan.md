@@ -47,7 +47,7 @@ Show at the top of the page:
 
 #### If user is on Premium:
 - Card with label: "Paket Aktif"
-- Plan name: "Premium ✨"
+- Plan name: "Premium "
 - Show expiry: "Aktif hingga 15 Mei 2026"
 - Show days remaining: "Sisa 29 hari"
 - Color: warm gold highlight

@@ -22,7 +22,7 @@ const openFaq = ref(null);
 const faqs = [
     {
         q: 'Apakah Premium otomatis diperpanjang?',
-        a: 'Tidak. Premium adalah pembayaran satu kali untuk 30 hari. Tidak ada auto-renewal. Kamu bisa perpanjang manual kapan saja.',
+        a: 'Tidak. Premium adalah pembayaran satu kali untuk 3 bulan (90 hari). Tidak ada auto-renewal. Kamu bisa perpanjang manual kapan saja.',
     },
     {
         q: 'Bagaimana cara pembayaran?',
@@ -86,7 +86,6 @@ const startCheckout = async () => {
             onSuccess: () => {
                 checkoutState.value  = 'success';
                 isCheckingOut.value  = false;
-                // Refresh page data
                 router.reload({ only: ['currentPlan', 'transactions'] });
             },
             onPending: () => {
@@ -136,17 +135,17 @@ const features = [
             <!-- ── 1. Current Plan Status ──────────────────────────────── -->
             <div class="rounded-2xl border p-6"
                  :class="isPremium
-                    ? 'bg-gradient-to-br from-[#FFF8F0] to-[#FFF3E4] border-[#C8A26B]/35'
+                    ? 'bg-gradient-to-br from-[#EFF2F0] to-[#F4F7F5] border-[#92A89C]/40'
                     : 'bg-white border-stone-100'">
 
                 <div class="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest mb-1"
-                           :class="isPremium ? 'text-[#C8A26B]' : 'text-stone-400'">
+                           :class="isPremium ? 'text-[#73877C]' : 'text-stone-400'">
                             Paket Aktif
                         </p>
                         <h2 class="text-2xl font-bold text-[#2C2417]">
-                            {{ isPremium ? 'Premium ✨' : 'Gratis' }}
+                            {{ isPremium ? 'Premium ' : 'Gratis' }}
                         </h2>
 
                         <!-- Premium: expiry info -->
@@ -246,33 +245,33 @@ const features = [
                 </div>
 
                 <!-- Premium Card -->
-                <div class="rounded-2xl p-6 relative bg-gradient-to-br from-[#FFFCF7] to-[#FFF8F0] border-2 border-[#C8A26B]/60 shadow-[0_8px_32px_rgba(200,162,107,0.15)]">
+                <div class="rounded-2xl p-6 relative bg-gradient-to-br from-[#EFF2F0] to-[#F4F7F5] border-2 border-[#92A89C]/50 shadow-[0_8px_32px_rgba(146,168,156,0.18)]">
                     <div class="absolute -top-3 left-6">
                         <span class="text-xs font-bold px-3 py-1 rounded-full text-white"
-                              style="background:linear-gradient(90deg,#C8A26B,#E8C88B)">
-                            ✨ Paling Populer
+                              style="background:linear-gradient(90deg,#73877C,#92A89C)">
+                            Paling Populer
                         </span>
                     </div>
 
                     <div class="flex items-center gap-2 mt-2 mb-4">
                         <h3 class="text-base font-semibold text-[#2C2417]">Premium</h3>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#C8A26B]/15 text-[#C8A26B]" v-if="isPremium">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]" v-if="isPremium">
                             Paket Kamu
                         </span>
                     </div>
 
                     <div class="mb-1">
-                        <span class="text-3xl font-bold text-[#2C2417]">Rp 149.000</span>
+                        <span class="text-3xl font-bold text-[#2C2417]">Rp 35.000</span>
                     </div>
-                    <p class="text-xs mb-2 text-[#C8A26B] font-medium">/ 30 hari</p>
+                    <p class="text-xs mb-2 text-[#73877C] font-medium">/ 3 bulan (90 hari)</p>
                     <p class="text-sm mb-5 text-stone-500">Semua yang kamu butuhkan untuk undangan impian</p>
 
                     <ul class="space-y-2.5 mb-6 text-sm text-stone-700">
                         <li v-for="feat in ['Unlimited undangan aktif','Unlimited foto gallery','Semua template (gratis + premium)','Upload musik sendiri','Tanpa watermark','Custom URL slug','Password protection','Analytics kunjungan','Prioritas dukungan']"
                             :key="feat"
                             class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full bg-[#C8A26B]/15 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-2.5 h-2.5 text-[#C8A26B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <span class="w-4 h-4 rounded-full bg-[#92A89C]/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-2.5 h-2.5 text-[#73877C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </span>
@@ -290,7 +289,7 @@ const features = [
                     </button>
 
                     <p class="text-center text-xs mt-3 text-stone-400">
-                        🔒 Pembayaran aman via Midtrans. Garansi uang kembali 7 hari.
+                        Pembayaran aman. Garansi uang kembali 7 hari.
                     </p>
                 </div>
             </div>
@@ -305,7 +304,7 @@ const features = [
                         <tr class="border-b border-stone-100">
                             <th class="text-left px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider w-1/2">Fitur</th>
                             <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Gratis</th>
-                            <th class="text-center px-4 py-3 text-xs font-semibold text-[#C8A26B] uppercase tracking-wider">Premium</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold text-[#73877C] uppercase tracking-wider">Premium</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -318,9 +317,9 @@ const features = [
                                 <span v-else class="text-stone-600 font-medium text-xs">{{ row.free }}</span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span v-if="row.premium === true" class="text-[#C8A26B] font-bold">✓</span>
+                                <span v-if="row.premium === true" class="text-[#73877C] font-bold">✓</span>
                                 <span v-else-if="row.premium === false" class="text-stone-300">✗</span>
-                                <span v-else class="text-[#C8A26B] font-semibold text-xs">{{ row.premium }}</span>
+                                <span v-else class="text-[#73877C] font-semibold text-xs">{{ row.premium }}</span>
                             </td>
                         </tr>
                     </tbody>
@@ -403,7 +402,7 @@ const features = [
                                     <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
                                           :class="{
                                               'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100': t.status === 'paid',
-                                              'bg-[#C8A26B]/15 text-[#C8A26B] ring-1 ring-[#C8A26B]/30': t.status === 'pending',
+                                              'bg-[#92A89C]/15 text-[#73877C] ring-1 ring-[#92A89C]/30': t.status === 'pending',
                                               'bg-red-50 text-red-600 ring-1 ring-red-100': t.status === 'failed' || t.status === 'refunded',
                                           }">
                                         {{ t.status_label }}
@@ -413,7 +412,7 @@ const features = [
                                     <a v-if="t.status === 'paid'"
                                        :href="route('dashboard.transactions.invoice', t.id)"
                                        target="_blank"
-                                       class="text-xs font-semibold text-[#C8A26B] hover:underline">
+                                       class="text-xs font-semibold text-[#92A89C] hover:underline">
                                         Invoice
                                     </a>
                                     <span v-else class="text-xs text-stone-300">—</span>
