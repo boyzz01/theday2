@@ -714,7 +714,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 </svg>
                                 Membuat undangan…
                             </span>
-                            <span v-else>Buat Undanganku ✨</span>
+                            <span v-else>Buat Undanganku</span>
                         </button>
                     </div>
 
