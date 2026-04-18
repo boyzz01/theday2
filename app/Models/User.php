@@ -13,10 +13,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuids, Notifiable, SoftDeletes;
@@ -30,6 +32,7 @@ class User extends Authenticatable
         'google_id',
         'role',
         'onboarding_completed_at',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -45,6 +48,11 @@ class User extends Authenticatable
             'password'                => 'hashed',
             'role'                    => UserRole::class,
         ];
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification());
     }
 
     public function hasCompletedOnboarding(): bool

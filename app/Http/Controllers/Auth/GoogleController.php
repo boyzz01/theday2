@@ -33,17 +33,18 @@ class GoogleController extends Controller
             ?? User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
-            // Link google_id if not already set
-            if (! $user->google_id) {
-                $user->update(['google_id' => $googleUser->getId()]);
-            }
+            $updates = [];
+            if (! $user->google_id) $updates['google_id'] = $googleUser->getId();
+            if (! $user->email_verified_at) $updates['email_verified_at'] = now();
+            if ($updates) $user->update($updates);
         } else {
             $user = User::create([
-                'name'       => $googleUser->getName(),
-                'email'      => $googleUser->getEmail(),
-                'google_id'  => $googleUser->getId(),
-                'avatar_url' => $googleUser->getAvatar(),
-                'role'       => UserRole::User,
+                'name'              => $googleUser->getName(),
+                'email'             => $googleUser->getEmail(),
+                'google_id'         => $googleUser->getId(),
+                'avatar_url'        => $googleUser->getAvatar(),
+                'role'              => UserRole::User,
+                'email_verified_at' => now(),
             ]);
 
             $assignFreeSubscription->execute($user);

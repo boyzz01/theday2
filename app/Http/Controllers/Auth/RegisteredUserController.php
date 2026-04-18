@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        $url = route('onboarding');
+        $url = route('verification.notice');
         if ($request->wantsJson()) {
             return response()->json(['redirect' => $url]);
         }
