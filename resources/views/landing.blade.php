@@ -999,7 +999,7 @@
             @endphp
 
             @foreach($plans as $plan)
-            <div class="rounded-2xl p-6 border reveal {{ $plan['popular'] ? 'pricing-popular shadow-2xl scale-105 border-transparent' : 'border-gray-200 shadow-sm' }}">
+            <div class="rounded-2xl p-6 border reveal flex flex-col {{ $plan['popular'] ? 'pricing-popular shadow-2xl scale-105 border-transparent' : 'border-gray-200 shadow-sm' }}">
                 @if($plan['popular'])
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white bg-opacity-20 text-xs font-semibold mb-4"
                      data-id="✨ Paling Populer" data-en="✨ Most Popular">
@@ -1022,7 +1022,7 @@
                     </span>
                 </div>
 
-                <ul class="space-y-3 mb-8">
+                <ul class="space-y-3 mb-8 flex-1">
                     @foreach($plan['id_features'] as $fi => $feature)
                     <li class="flex items-center gap-2.5 text-sm {{ $plan['popular'] ? 'text-white' : 'text-gray-600' }}">
                         <svg class="w-4 h-4 flex-shrink-0 {{ $plan['popular'] ? 'text-white' : '' }}" style="{{ !$plan['popular'] ? 'color: var(--color-primary)' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">

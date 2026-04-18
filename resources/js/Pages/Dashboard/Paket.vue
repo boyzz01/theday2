@@ -182,7 +182,7 @@ const features = [
                             class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-shrink-0"
                             :class="premiumCtaDisabled
                                 ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
-                                : 'bg-[#C8A26B] hover:bg-[#B8905A] text-white'">
+                                : 'bg-brand-primary hover:bg-brand-primary-hover text-white'">
                         {{ isCheckingOut ? 'Memproses...' : (isPremium ? 'Perpanjang Premium →' : 'Upgrade ke Premium →') }}
                     </button>
                 </div>
@@ -285,7 +285,7 @@ const features = [
                             class="w-full py-3 rounded-xl text-sm font-bold transition-all"
                             :class="premiumCtaDisabled
                                 ? 'cursor-not-allowed bg-stone-100 text-stone-400'
-                                : 'text-white hover:opacity-90 bg-[#C8A26B] hover:bg-[#B8905A]'">
+                                : 'bg-brand-primary hover:bg-brand-primary-hover text-white'">
                         {{ isCheckingOut ? 'Memproses...' : premiumCtaLabel }}
                     </button>
 
