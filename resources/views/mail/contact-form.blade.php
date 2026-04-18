@@ -7,7 +7,7 @@
     .wrap { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e0d5; }
     .header { background: linear-gradient(135deg, #2C1A0E, #4A2C18); padding: 28px 32px; }
     .header-logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon { width: 32px; height: 32px; background: #C8A26B; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+    .logo-icon { width: 32px; height: 32px; background: #92A89C; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
     .logo-text { color: #fff; font-size: 18px; font-weight: 600; }
     .header h1 { color: #fff; font-size: 20px; margin: 16px 0 4px; }
     .header p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
@@ -20,7 +20,7 @@
     .meta { font-size: 12px; color: #aaa; }
     .footer { background: #f9f6f2; padding: 20px 32px; text-align: center; }
     .footer p { font-size: 12px; color: #aaa; margin: 0; }
-    .reply-btn { display: inline-block; margin-top: 12px; padding: 10px 24px; background: #C8A26B; color: #fff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; }
+    .reply-btn { display: inline-block; margin-top: 12px; padding: 10px 24px; background: #92A89C; color: #fff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -46,7 +46,7 @@
         <div class="field">
             <div class="field-label">Email</div>
             <div class="field-value">
-                <a href="mailto:{{ $senderEmail }}" style="color: #C8A26B;">{{ $senderEmail }}</a>
+                <a href="mailto:{{ $senderEmail }}" style="color: #92A89C;">{{ $senderEmail }}</a>
             </div>
         </div>
         <div class="field">
@@ -72,7 +72,7 @@
 
     <div class="footer">
         <p>TheDay — Platform Undangan Pernikahan Digital Indonesia</p>
-        <p style="margin-top:4px;"><a href="https://theday.id" style="color:#C8A26B;">theday.id</a></p>
+        <p style="margin-top:4px;"><a href="https://theday.id" style="color:#92A89C;">theday.id</a></p>
     </div>
 </div>
 </body>

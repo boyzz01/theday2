@@ -131,7 +131,7 @@ function toggleFaq(i) {
 
             <!-- ── Page header ──────────────────────────────────────────── -->
             <div class="max-w-5xl mx-auto px-6 pt-14 pb-10 text-center">
-                <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: #C8A26B;">Hubungi Kami</p>
+                <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: #92A89C;">Hubungi Kami</p>
                 <h1 class="text-3xl md:text-4xl font-bold text-stone-900 mb-3"
                     style="font-family: 'Cormorant Garamond', serif;">
                     Ada yang bisa kami bantu?
@@ -179,8 +179,8 @@ function toggleFaq(i) {
                         <div class="rounded-2xl border border-stone-100 bg-white p-6 shadow-sm">
                             <div class="flex items-start gap-4">
                                 <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                                     style="background-color: rgba(200,162,107,0.12)">
-                                    <svg class="w-5 h-5" style="color: #C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                     style="background-color: rgba(146,168,156,0.12)">
+                                    <svg class="w-5 h-5" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
                                 </div>
@@ -191,7 +191,7 @@ function toggleFaq(i) {
                                     </p>
                                     <a href="mailto:hello@theday.id"
                                        class="text-sm font-semibold hover:underline"
-                                       style="color: #C8A26B">
+                                       style="color: #92A89C">
                                         hello@theday.id
                                     </a>
                                 </div>
@@ -243,8 +243,8 @@ function toggleFaq(i) {
                         <!-- Success state -->
                         <div v-if="submitted" class="flex flex-col items-center justify-center text-center py-12">
                             <div class="w-16 h-16 rounded-full flex items-center justify-center mb-5"
-                                 style="background-color: rgba(200,162,107,0.12)">
-                                <svg class="w-8 h-8" style="color: #C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                 style="background-color: rgba(146,168,156,0.12)">
+                                <svg class="w-8 h-8" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
                             </div>
@@ -257,8 +257,7 @@ function toggleFaq(i) {
                                 <strong class="text-stone-700">{{ submittedEmail }}</strong> secepatnya.
                             </p>
                             <a href="/"
-                               class="px-6 py-3 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
-                               style="background-color: #C8A26B">
+                               class="px-6 py-3 rounded-xl text-white text-sm font-semibold transition-all bg-brand-primary hover:bg-brand-primary-hover">
                                 Kembali ke Beranda
                             </a>
                         </div>
@@ -385,8 +384,7 @@ function toggleFaq(i) {
                                 <button
                                     type="submit"
                                     :disabled="loading"
-                                    class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
-                                    style="background-color: #C8A26B"
+                                    class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-brand-primary hover:bg-brand-primary-hover active:scale-[0.99]"
                                 >
                                     <span v-if="loading" class="flex items-center justify-center gap-2">
                                         <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -406,7 +404,7 @@ function toggleFaq(i) {
             <!-- ── FAQ Section ────────────────────────────────────────────── -->
             <div class="max-w-3xl mx-auto px-6 pb-20">
                 <div class="text-center mb-8">
-                    <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #C8A26B;">FAQ</p>
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #92A89C;">FAQ</p>
                     <h2 class="text-2xl font-bold text-stone-900"
                         style="font-family: 'Cormorant Garamond', serif;">
                         Pertanyaan yang sering ditanyakan
@@ -430,7 +428,7 @@ function toggleFaq(i) {
                             <svg
                                 class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
                                 :class="openFaq === i ? 'rotate-180' : ''"
-                                style="color: #C8A26B"
+                                style="color: #92A89C"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                             >
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -447,7 +445,7 @@ function toggleFaq(i) {
 
                 <p class="text-center text-sm text-stone-400 mt-8">
                     Tidak menemukan jawaban?
-                    <a href="https://wa.me/6281234567890" target="_blank" class="font-semibold hover:underline" style="color: #C8A26B;">
+                    <a href="https://wa.me/6281234567890" target="_blank" class="font-semibold hover:underline" style="color: #92A89C;">
                         Hubungi kami langsung →
                     </a>
                 </p>

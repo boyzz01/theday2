@@ -6,15 +6,15 @@
     body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
     .wrap { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e0d5; }
     .header { background: linear-gradient(135deg, #2C1A0E, #4A2C18); padding: 32px; text-align: center; }
-    .logo-icon { width: 48px; height: 48px; background: #C8A26B; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .logo-icon { width: 48px; height: 48px; background: #92A89C; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
     .header h1 { color: #fff; font-size: 22px; margin: 0 0 8px; }
     .header p { color: rgba(255,255,255,0.65); font-size: 14px; margin: 0; }
     .body { padding: 36px 32px; }
     .body p { font-size: 15px; color: #4A3728; line-height: 1.75; margin: 0 0 16px; }
-    .highlight { background: #FFFCF7; border-left: 3px solid #C8A26B; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+    .highlight { background: #FFFCF7; border-left: 3px solid #92A89C; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
     .highlight p { margin: 0; font-size: 14px; color: #6B5040; }
     .cta { text-align: center; margin: 28px 0; }
-    .cta a { display: inline-block; padding: 13px 32px; background: #C8A26B; color: #fff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600; }
+    .cta a { display: inline-block; padding: 13px 32px; background: #92A89C; color: #fff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600; }
     .footer { background: #f9f6f2; padding: 20px 32px; text-align: center; border-top: 1px solid #F0E8DC; }
     .footer p { font-size: 12px; color: #aaa; margin: 0; }
 </style>
@@ -53,7 +53,7 @@
 
     <div class="footer">
         <p>TheDay — Platform Undangan Pernikahan Digital Indonesia</p>
-        <p style="margin-top:4px;"><a href="https://theday.id" style="color:#C8A26B;">theday.id</a> · <a href="mailto:hello@theday.id" style="color:#C8A26B;">hello@theday.id</a></p>
+        <p style="margin-top:4px;"><a href="https://theday.id" style="color:#92A89C;">theday.id</a> · <a href="mailto:hello@theday.id" style="color:#92A89C;">hello@theday.id</a></p>
     </div>
 </div>
 </body>

@@ -1178,7 +1178,7 @@
 {{-- ============================================================ --}}
 <footer style="background-color: #111; color: #888">
     <div class="max-w-6xl mx-auto px-6 py-16">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
             {{-- Brand --}}
             <div class="md:col-span-1">
                 <a href="/" class="flex items-center mb-4">
@@ -1211,17 +1211,11 @@
             @php
             $footerLinks = [
                 ['id_cat' => 'Produk',      'en_cat' => 'Product',  'links' => [
-                    ['id' => 'Template',    'en' => 'Template'],
-                    ['id' => 'Fitur',       'en' => 'Features'],
-                    ['id' => 'Harga',       'en' => 'Pricing'],
-                    ['id' => 'Cara Kerja',  'en' => 'How It Works'],
-                    ['id' => 'Demo',        'en' => 'Demo'],
-                ]],
-                ['id_cat' => 'Perusahaan',  'en_cat' => 'Company',  'links' => [
-                    ['id' => 'Tentang Kami','en' => 'About Us'],
-                    ['id' => 'Blog',        'en' => 'Blog'],
-                    ['id' => 'Karir',       'en' => 'Careers'],
-                    ['id' => 'Press Kit',   'en' => 'Press Kit'],
+                    ['id' => 'Template',    'en' => 'Template',      'href' => '/templates'],
+                    ['id' => 'Fitur',       'en' => 'Features',      'href' => '/#fitur'],
+                    ['id' => 'Harga',       'en' => 'Pricing',       'href' => '/#harga'],
+                    ['id' => 'Cara Kerja',  'en' => 'How It Works',  'href' => '/#cara-kerja'],
+                    ['id' => 'Blog',        'en' => 'Blog',          'href' => route('blog.index')],
                 ]],
                 ['id_cat' => 'Bantuan',     'en_cat' => 'Support',  'links' => [
                     ['id' => 'Pusat Bantuan',        'en' => 'Help Center',        'href' => '#'],

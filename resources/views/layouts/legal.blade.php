@@ -55,10 +55,10 @@
             content: '—';
             position: absolute;
             left: 0;
-            color: #C8A26B;
+            color: #92A89C;
             font-weight: 600;
         }
-        .prose-legal a { color: #C8A26B; text-decoration: underline; }
+        .prose-legal a { color: #92A89C; text-decoration: underline; }
         .toc-link {
             display: block;
             font-size: 0.8125rem;
@@ -69,13 +69,13 @@
             line-height: 1.4;
         }
         .toc-link:hover, .toc-link.active {
-            color: #C8A26B;
-            border-left-color: #C8A26B;
+            color: #92A89C;
+            border-left-color: #92A89C;
         }
         .nav-scroll {
             backdrop-filter: blur(12px);
             background-color: rgba(255,253,247,0.95);
-            box-shadow: 0 1px 0 rgba(212,163,115,0.15);
+            box-shadow: 0 1px 0 rgba(146,168,156,0.15);
         }
         .lang-btn {
             display: inline-flex;
@@ -83,15 +83,15 @@
             gap: 4px;
             padding: 6px 10px;
             border-radius: 8px;
-            border: 1px solid rgba(200,162,107,0.4);
+            border: 1px solid rgba(146,168,156,0.4);
             background: transparent;
-            color: #A0754A;
+            color: #73877C;
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.15s;
         }
-        .lang-btn:hover { background: rgba(200,162,107,0.08); }
+        .lang-btn:hover { background: rgba(146,168,156,0.08); }
     </style>
 </head>
 <body>
@@ -100,7 +100,7 @@
 <nav id="navbar" class="sticky top-0 z-50 nav-scroll transition-all duration-300 py-3 px-6">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 flex-shrink-0">
-            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background-color: #C8A26B">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background-color: #92A89C">
                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                 </svg>
@@ -111,11 +111,11 @@
         <div class="flex items-center gap-3">
             @auth
                 <a href="/dashboard" class="text-sm font-medium px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
-                   style="background-color: #C8A26B">Dashboard</a>
+                   style="background-color: #92A89C">Dashboard</a>
             @else
                 <a href="/login" class="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors px-3 py-2">Masuk</a>
                 <a href="/register" class="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
-                   style="background-color: #C8A26B">Daftar Gratis</a>
+                   style="background-color: #92A89C">Daftar Gratis</a>
             @endauth
         </div>
     </div>
@@ -184,7 +184,7 @@
     <div class="max-w-6xl mx-auto px-6 py-10">
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <a href="/" class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background-color: #C8A26B">
+                <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background-color: #92A89C">
                     <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>

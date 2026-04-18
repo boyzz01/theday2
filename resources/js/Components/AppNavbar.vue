@@ -18,7 +18,7 @@ const { locale, toggleLocale, t } = useLocale();
 
             <!-- Logo — plain <a> because home is a Blade page, not Inertia -->
             <a href="/" class="flex items-center gap-2 flex-shrink-0">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background-color: #C8A26B">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-brand-primary">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -39,7 +39,7 @@ const { locale, toggleLocale, t } = useLocale();
                 <button
                     @click="toggleLocale"
                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all hover:bg-stone-50"
-                    style="border-color: rgba(200,162,107,0.4); color: #A0754A"
+                    style="border-color: rgba(146,168,156,0.4); color: #73877C"
                     :aria-label="locale === 'id' ? 'Switch to English' : 'Ganti ke Indonesia'"
                 >
                     <span>{{ locale === 'id' ? '🇮🇩' : '🇬🇧' }}</span>
@@ -59,8 +59,7 @@ const { locale, toggleLocale, t } = useLocale();
                     </Link>
                     <Link
                         href="/register"
-                        class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                        style="background-color: #C8A26B"
+                        class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all bg-brand-primary hover:bg-brand-primary-hover"
                     >
                         {{ t('Daftar', 'Register') }}
                     </Link>
