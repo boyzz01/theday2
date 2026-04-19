@@ -20,7 +20,7 @@ const statusConfig = {
         <template #header>
             <div>
                 <h2 class="text-base font-semibold text-stone-800">Buku Tamu</h2>
-                <p class="text-sm text-stone-400 mt-0.5">Ucapan dan doa dari tamu undanganmu.</p>
+                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">Ucapan dan doa dari tamu undanganmu.</p>
             </div>
         </template>
 

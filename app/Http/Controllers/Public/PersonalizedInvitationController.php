@@ -24,13 +24,13 @@ class PersonalizedInvitationController extends Controller
 
     public function show(Request $request, string $invitationSlug, string $guestSlug): Response
     {
-        // Resolve invitation
         $invitation = Invitation::where('slug', $invitationSlug)
             ->with([
                 'details',
                 'events'    => fn ($q) => $q->orderBy('sort_order')->orderBy('event_date'),
                 'galleries' => fn ($q) => $q->orderBy('sort_order'),
                 'music'     => fn ($q) => $q->where('is_default', true)->limit(1),
+                'sections',
                 'template:id,name,slug,default_config',
             ])
             ->firstOrFail();
@@ -39,22 +39,18 @@ class PersonalizedInvitationController extends Controller
             abort(404);
         }
 
-        // Resolve guest
         $guest = GuestList::where('invitation_id', $invitation->id)
             ->where('guest_slug', $guestSlug)
             ->first();
 
-        // Track open
         if ($guest) {
             $this->tracker->track($guest);
         }
 
-        // Password gate check
         $sessionKey   = "inv_unlocked_{$invitation->id}";
         $needPassword = $invitation->is_password_protected
             && ! $request->session()->get($sessionKey);
 
-        // Track general view
         if (! $needPassword) {
             $this->trackView($request, $invitation);
         }
@@ -65,14 +61,16 @@ class PersonalizedInvitationController extends Controller
         );
 
         $messages = $invitation->guestMessages()
-            ->where('is_approved', true)
+            ->visible()
+            ->orderByDesc('is_pinned')
             ->latest()
             ->limit(50)
             ->get()
             ->map(fn ($m) => [
                 'id'         => $m->id,
-                'name'       => $m->name,
+                'name'       => $m->displayName(),
                 'message'    => $m->message,
+                'is_pinned'  => $m->is_pinned,
                 'created_at' => $m->created_at->diffForHumans(),
             ]);
 
@@ -83,38 +81,63 @@ class PersonalizedInvitationController extends Controller
                 'slug'       => $invitation->slug,
                 'event_type' => $invitation->event_type->value,
                 'details'    => $invitation->details ? [
-                    'groom_name'         => $invitation->details->groom_name,
-                    'bride_name'         => $invitation->details->bride_name,
-                    'groom_parent_names' => $invitation->details->groom_parent_names,
-                    'bride_parent_names' => $invitation->details->bride_parent_names,
-                    'opening_text'       => $invitation->details->opening_text,
-                    'closing_text'       => $invitation->details->closing_text,
-                    'cover_photo_url'    => $invitation->details->cover_photo_url,
-                    'groom_photo_url'    => $invitation->details->groom_photo_url,
-                    'bride_photo_url'    => $invitation->details->bride_photo_url,
+                    'groom_name'           => $invitation->details->groom_name,
+                    'groom_nickname'       => $invitation->details->groom_nickname,
+                    'bride_name'           => $invitation->details->bride_name,
+                    'bride_nickname'       => $invitation->details->bride_nickname,
+                    'groom_parent_names'   => $invitation->details->groom_parent_names,
+                    'bride_parent_names'   => $invitation->details->bride_parent_names,
+                    'groom_photo_url'      => $invitation->details->groom_photo_url,
+                    'bride_photo_url'      => $invitation->details->bride_photo_url,
+                    'opening_text'         => $invitation->details->opening_text,
+                    'closing_text'         => $invitation->details->closing_text,
+                    'cover_photo_url'      => $invitation->details->cover_photo_url,
                 ] : null,
-                'events'   => $invitation->events->map(fn ($e) => [
-                    'id'             => $e->id,
-                    'event_name'     => $e->event_name,
-                    'event_date'     => $e->event_date?->format('Y-m-d'),
-                    'start_time'     => $e->start_time,
-                    'end_time'       => $e->end_time,
-                    'venue_name'     => $e->venue_name,
-                    'venue_address'  => $e->venue_address,
-                    'maps_url'       => $e->maps_url,
-                ]),
-                'galleries'  => $invitation->galleries->map(fn ($g) => ['url' => $g->url ?? '']),
-                'music'      => $invitation->music->first()?->url,
-                'config'     => $config,
-                'is_password_protected' => $invitation->is_password_protected,
-                'need_password'         => $needPassword,
+                'events'    => $invitation->events->map(fn ($e) => [
+                    'id'                   => $e->id,
+                    'event_name'           => $e->event_name,
+                    'event_date'           => $e->event_date?->format('Y-m-d'),
+                    'event_date_formatted' => $e->event_date
+                        ? \Carbon\Carbon::parse($e->event_date)
+                            ->locale('id')
+                            ->translatedFormat('l, d F Y')
+                        : null,
+                    'start_time'           => $e->start_time ? substr($e->start_time, 0, 5) : null,
+                    'end_time'             => $e->end_time   ? substr($e->end_time, 0, 5)   : null,
+                    'venue_name'           => $e->venue_name,
+                    'venue_address'        => $e->venue_address,
+                    'maps_url'             => $e->maps_url,
+                ])->values(),
+                'galleries' => $invitation->galleries->map(fn ($g) => [
+                    'id'        => $g->id,
+                    'image_url' => $g->image_url,
+                    'caption'   => $g->caption,
+                ])->values(),
+                'music' => $invitation->music->first() ? [
+                    'title'    => $invitation->music->first()->title,
+                    'file_url' => $invitation->music->first()->file_url,
+                ] : null,
+                'config'        => $config,
+                'template_slug' => $invitation->template?->slug,
+                'expires_at'    => $invitation->expires_at?->toIso8601String(),
+                'sections'      => $invitation->sections->isNotEmpty()
+                    ? $invitation->sections
+                        ->mapWithKeys(fn ($s) => [
+                            $s->section_key => [
+                                'enabled' => $s->is_required ? true : (bool) $s->is_enabled,
+                                'data'    => $s->data_json ?? [],
+                            ],
+                        ])
+                        ->toArray()
+                    : null,
             ],
-            'guest' => $guest ? [
-                'name'     => $guest->name,
-                'greeting' => $guest->greeting,
-                'slug'     => $guest->guest_slug,
-            ] : null,
-            'messages' => $messages,
+            'guest' => [
+                'name'     => $guest?->name ?? \Illuminate\Support\Str::of($guestSlug)->replace('-', ' ')->title()->toString(),
+                'greeting' => $guest?->greeting,
+                'slug'     => $guestSlug,
+            ],
+            'messages'     => $messages,
+            'needPassword' => $needPassword,
         ]);
     }
 

@@ -9,6 +9,7 @@ const props = defineProps({
     messages:     { type: Array,   default: () => [] },
     needPassword: { type: Boolean, default: false },
     isPreview:    { type: Boolean, default: false },
+    guest:        { type: Object,  default: null },
 });
 
 const unlocked = ref(! props.needPassword);
@@ -54,6 +55,7 @@ const unlocked = ref(! props.needPassword);
         v-else
         :invitation="invitation"
         :messages="messages"
+        :guest="guest"
         :is-demo="false"
         :auto-open="false"
     />

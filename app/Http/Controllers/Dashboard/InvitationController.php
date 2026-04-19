@@ -302,11 +302,11 @@ class InvitationController extends Controller
                 'id'                   => $invitation->id,
                 'title'                => $invitation->title,
                 'event_type'           => $invitation->event_type,
-                'slug'                 => ($invitation->current_step ?? 0) >= 6 ? $invitation->slug : '',
+                'slug'                 => $invitation->slug,
                 'status'               => $invitation->status,
                 'current_step'         => $invitation->current_step ?? 0,
                 'is_password_protected' => $invitation->is_password_protected,
-                'expires_at'           => $invitation->expires_at?->format('Y-m-d'),
+                'expires_at'           => $invitation->expires_at?->format('Y-m-d\TH:i'),
                 'custom_config'        => $invitation->custom_config ?? [],
                 'details'              => $details ? [
                     'groom_name'           => $details->groom_name,

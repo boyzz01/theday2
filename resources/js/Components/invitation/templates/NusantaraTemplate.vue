@@ -9,8 +9,9 @@ import SectionGallery from '@/Pages/Invitation/Sections/SectionGallery.vue';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 const props = defineProps({
-    invitation: { type: Object, required: true },
-    messages:   { type: Array,  default: () => [] },
+    invitation: { type: Object,  required: true },
+    messages:   { type: Array,   default: () => [] },
+    guest:      { type: Object,  default: null },
     isDemo:     { type: Boolean, default: false },
     autoOpen:   { type: Boolean, default: false },
 });
@@ -416,6 +417,14 @@ onUnmounted(() => clearInterval(cdTimer));
                        :style="{ fontFamily: fontHeading, color: primaryLight }">
                         {{ firstEventDate }}
                     </p>
+
+                    <!-- Guest name -->
+                    <div v-if="guest?.name"
+                         class="n-guest-label"
+                         :style="{ fontFamily: fontHeading, color: primaryLight + 'cc' }">
+                        <span class="n-guest-kepada">Kepada Yth.</span>
+                        <span class="n-guest-name">{{ guest.name }}</span>
+                    </div>
 
                     <button
                         class="n-open-btn"
@@ -1507,6 +1516,26 @@ onUnmounted(() => clearInterval(cdTimer));
     font-size: 11px;
     margin-top: 12px;
     letter-spacing: 0.1em;
+}
+
+.n-guest-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 16px;
+    opacity: 0.9;
+}
+.n-guest-kepada {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+.n-guest-name {
+    font-size: 17px;
+    font-style: italic;
+    letter-spacing: 0.04em;
 }
 
 /* ─── Music button ─────────────────────────────────────────────────────────── */

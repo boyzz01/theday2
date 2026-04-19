@@ -505,7 +505,11 @@ export function useInvitationEditor(template, invitation = null) {
                 return res.data;
             } else {
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                    slug: publish.slug,
+                    slug:                  publish.slug,
+                    expires_at:            publish.expires_at || null,
+                    is_password_protected: publish.is_password_protected,
+                    ...(publish.password ? { password: publish.password } : {}),
+                    current_step:          Math.max(lastSavedStep.value, 6),
                 });
                 lastSavedStep.value = Math.max(lastSavedStep.value, 6);
                 return { status: 'draft' };

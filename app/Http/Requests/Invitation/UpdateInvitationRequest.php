@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Invitation;
 
 use App\Enums\EventType;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,6 +16,19 @@ class UpdateInvitationRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('expires_at')) {
+            try {
+                $this->merge([
+                    'expires_at' => Carbon::parse($this->expires_at)->format('Y-m-d H:i:s'),
+                ]);
+            } catch (\Exception) {
+                // biarkan validasi 'date' yang menolak
+            }
+        }
     }
 
     public function rules(): array
@@ -32,6 +46,9 @@ class UpdateInvitationRequest extends FormRequest
                 Rule::unique('invitations', 'slug')->ignore($invitationId),
             ],
             'current_step'                => ['sometimes', 'integer', 'min:0', 'max:6'],
+            'expires_at'                  => ['sometimes', 'nullable', 'date'],
+            'is_password_protected'       => ['sometimes', 'boolean'],
+            'password'                    => ['sometimes', 'nullable', 'string', 'min:4'],
             'custom_config'               => ['sometimes', 'array'],
             'custom_config.primary_color' => ['sometimes', 'nullable', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
             'custom_config.font'          => ['sometimes', 'nullable', 'string', 'max:100'],

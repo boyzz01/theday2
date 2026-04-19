@@ -20,8 +20,8 @@ const TEMPLATE_MAP = {
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
+    guest:      { type: Object,  default: null },
     isDemo:     { type: Boolean, default: false },
-    // When isDemo=false, show the envelope/open screen
     autoOpen:   { type: Boolean, default: false },
 });
 
@@ -107,6 +107,7 @@ onUnmounted(() => observer?.disconnect());
         :is="premiumTemplate"
         :invitation="invitation"
         :messages="messages"
+        :guest="guest"
         :is-demo="isDemo"
         :auto-open="autoOpen || isDemo"
     />
@@ -167,7 +168,10 @@ onUnmounted(() => observer?.disconnect());
                     </svg>
                 </button>
 
-                <p class="text-xs text-stone-400">Kepada Yth. Bapak/Ibu/Sdr/i Tamu Undangan</p>
+                <p class="text-xs text-stone-400">
+                    <template v-if="guest?.name">Kepada Yth. {{ guest.name }}</template>
+                    <template v-else>Kepada Yth. Bapak/Ibu/Sdr/i Tamu Undangan</template>
+                </p>
             </div>
 
             <div class="absolute bottom-0 left-0 right-0 h-2" :style="{ backgroundColor: primaryColor }"/>

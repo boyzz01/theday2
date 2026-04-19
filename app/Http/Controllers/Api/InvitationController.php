@@ -104,6 +104,12 @@ class InvitationController extends Controller
             );
         }
 
+        if (isset($data['password']) && $data['password']) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
         $invitation->update($data);
 
         return response()->json([

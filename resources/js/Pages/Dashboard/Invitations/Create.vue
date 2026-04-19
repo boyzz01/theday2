@@ -139,7 +139,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
 
                 <!-- Error banner -->
                 <Transition name="slide-down">
-                    <div v-if="editor.saveError"
+                    <div v-if="editor.saveError && editor.currentStep !== 6"
                          class="bg-red-50 border-b border-red-100 px-6 py-3 flex items-center gap-2 text-sm text-red-700">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -212,6 +212,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         :publish="editor.publish"
                         :sections="editor.sections"
                         :invitation-id="editor.invitationId"
+                        :invitation-status="invitation?.status?.value ?? invitation?.status ?? 'draft'"
                         :is-saving="editor.isSaving"
                         :save-step6="editor.saveStep6"
                         :template="currentTemplate"

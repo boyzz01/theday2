@@ -8,24 +8,54 @@ import axios from 'axios';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 
 const props = defineProps({
-    publish:         { type: Object,   required: true },
-    sections:        { type: Object,   required: true },
-    invitationId:    { type: String,   default: null },
-    isSaving:        { type: Boolean,  default: false },
-    saveStep6:       { type: Function, required: true },
-    template:        { type: Object,   required: true },
-    basic:           { type: Object,   required: true },
-    details:         { type: Object,   default: null },
-    onToggleSection: { type: Function, required: true },
-    canUsePremium:   { type: Boolean,  default: false },
+    publish:            { type: Object,   required: true },
+    sections:           { type: Object,   required: true },
+    invitationId:       { type: String,   default: null },
+    invitationStatus:   { type: String,   default: 'draft' },
+    isSaving:           { type: Boolean,  default: false },
+    saveStep6:          { type: Function, required: true },
+    template:           { type: Object,   required: true },
+    basic:              { type: Object,   required: true },
+    details:            { type: Object,   default: null },
+    onToggleSection:    { type: Function, required: true },
+    canUsePremium:      { type: Boolean,  default: false },
 });
 
-const expanded       = ref('slug_settings');
-const publishStatus  = ref(null); // null | 'draft' | 'published'
+const expanded       = ref(new Set(['slug_settings', 'password_protection', 'preview_and_publish']));
+const publishStatus  = ref(props.invitationStatus === 'published' ? 'published' : null);
 const publishError   = ref(null);
+const draftSaved     = ref(false);
+let draftSavedTimer  = null;
+
+const isPublished = computed(() => publishStatus.value === 'published');
+
+const isUnpublishing = ref(false);
+
+async function unpublish() {
+    isUnpublishing.value = true;
+    publishError.value   = null;
+    try {
+        await axios.put(`/api/invitations/${props.invitationId}/unpublish`);
+        publishStatus.value = null;
+        router.reload();
+    } catch (e) {
+        publishError.value = e.response?.data?.message ?? 'Gagal mengembalikan ke draft.';
+        isUnpublishing.value = false;
+    }
+}
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    s.has(key) ? s.delete(key) : s.add(key);
+    expanded.value = s;
+}
+
+function ensureExpanded(key) {
+    if (!expanded.value.has(key)) {
+        const s = new Set(expanded.value);
+        s.add(key);
+        expanded.value = s;
+    }
 }
 
 // ── Slug check ────────────────────────────────────────────────
@@ -71,11 +101,31 @@ const invitationUrl = computed(() =>
 // ── Publish actions ───────────────────────────────────────────
 async function handleAction(action) {
     publishError.value = null;
+
+    if (!props.publish.slug?.trim()) {
+        publishError.value = 'URL undangan wajib diisi sebelum menyimpan.';
+        ensureExpanded('slug_settings');
+        return;
+    }
+    if (slugStatus.value === 'taken') {
+        publishError.value = 'URL undangan sudah dipakai oleh undangan lain. Pilih URL yang berbeda.';
+        ensureExpanded('slug_settings');
+        return;
+    }
+
     try {
-        const result = await props.saveStep6(action);
-        publishStatus.value = result?.status ?? action;
+        await props.saveStep6(action);
+        publishStatus.value = action === 'publish' ? 'published' : 'draft';
+
+        if (action === 'draft') {
+            draftSaved.value = true;
+            clearTimeout(draftSavedTimer);
+            draftSavedTimer = setTimeout(() => { draftSaved.value = false; }, 3000);
+        }
     } catch (e) {
-        publishError.value = e.response?.data?.message ?? 'Terjadi kesalahan.';
+        publishError.value = e.response?.data?.errors?.slug?.[0]
+            ?? e.response?.data?.message
+            ?? 'Terjadi kesalahan. Coba lagi.';
     }
 }
 
@@ -95,6 +145,27 @@ function goToDashboard() {
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Publikasi</h2>
             <p class="text-sm text-stone-400 mt-0.5">Atur URL dan publikasikan undangan Anda</p>
         </div>
+
+        <!-- Validation error (slug empty / taken) -->
+        <Transition name="slide-down">
+            <p v-if="publishError" class="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ publishError }}
+            </p>
+        </Transition>
+
+        <!-- Draft saved toast -->
+        <Transition name="slide-down">
+            <div v-if="draftSaved"
+                 class="flex items-center gap-2 text-sm text-[#73877C] bg-[#EFF2F0] border border-[#B8C7BF]/60 rounded-xl px-4 py-2.5">
+                <svg class="w-4 h-4 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                Draft berhasil disimpan.
+            </div>
+        </Transition>
 
         <!-- Published success state -->
         <Transition name="slide-down">
@@ -129,16 +200,14 @@ function goToDashboard() {
             </div>
         </Transition>
 
-        <template v-if="publishStatus !== 'published'">
-
-            <!-- Slug Settings (required) -->
+        <!-- Slug Settings (required) -->
             <SectionAccordionCard
                 title="URL Undangan"
                 description="Alamat unik undangan yang akan dibagikan"
                 :is-required="sections.slug_settings?.is_required ?? true"
                 :is-enabled="sections.slug_settings?.is_enabled ?? true"
                 :status="sections.slug_settings?.completion_status ?? 'empty'"
-                :expanded="expanded === 'slug_settings'"
+                :expanded="expanded.has('slug_settings')"
                 @toggle-expand="toggle('slug_settings')"
                 @toggle-enabled="onToggleSection('slug_settings')"
             >
@@ -197,13 +266,13 @@ function goToDashboard() {
 
             <!-- Password Protection — Premium only (Pattern A: hidden for free users) -->
             <SectionAccordionCard
-                v-if="canUsePremium"
+                v-if="false && canUsePremium"
                 title="Proteksi Password"
                 description="Tamu harus memasukkan password untuk membuka undangan"
                 :is-required="sections.password_protection?.is_required ?? false"
                 :is-enabled="sections.password_protection?.is_enabled ?? false"
                 :status="sections.password_protection?.completion_status ?? 'disabled'"
-                :expanded="expanded === 'password_protection'"
+                :expanded="expanded.has('password_protection')"
                 @toggle-expand="toggle('password_protection')"
                 @toggle-enabled="onToggleSection('password_protection')"
             >
@@ -226,7 +295,7 @@ function goToDashboard() {
                 :is-required="sections.preview_and_publish?.is_required ?? true"
                 :is-enabled="sections.preview_and_publish?.is_enabled ?? true"
                 :status="sections.preview_and_publish?.completion_status ?? 'empty'"
-                :expanded="expanded === 'preview_and_publish'"
+                :expanded="expanded.has('preview_and_publish')"
                 @toggle-expand="toggle('preview_and_publish')"
                 @toggle-enabled="onToggleSection('preview_and_publish')"
             >
@@ -248,8 +317,8 @@ function goToDashboard() {
                     </div>
 
                     <!-- Preview link -->
-                    <a v-if="invitationUrl && publishStatus !== 'published'"
-                       :href="`/i/${publish.slug}?preview=1`"
+                    <a v-if="invitationId && publishStatus !== 'published'"
+                       :href="route('dashboard.invitations.preview', invitationId)"
                        target="_blank"
                        class="w-full py-2.5 rounded-xl border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-all flex items-center justify-center gap-2"
                     >
@@ -260,14 +329,11 @@ function goToDashboard() {
                         Preview Undangan
                     </a>
 
-                    <!-- Error -->
-                    <p v-if="publishError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
-                        {{ publishError }}
-                    </p>
-
                     <!-- Action buttons -->
                     <div class="flex flex-col sm:flex-row gap-3">
+                        <!-- Draft: Simpan Draft | Published: Kembalikan ke Draft -->
                         <button
+                            v-if="!isPublished"
                             @click="handleAction('draft')"
                             :disabled="isSaving || !invitationId"
                             class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-all"
@@ -283,6 +349,25 @@ function goToDashboard() {
                             Simpan Draft
                         </button>
                         <button
+                            v-else
+                            @click="unpublish"
+                            :disabled="isUnpublishing"
+                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-all"
+                        >
+                            <svg v-if="isUnpublishing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                            </svg>
+                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                            Kembalikan ke Draft
+                        </button>
+
+                        <!-- Publikasi: aktif saat draft, disabled saat sudah published -->
+                        <button
+                            v-if="!isPublished"
                             @click="handleAction('publish')"
                             :disabled="isSaving || !invitationId"
                             class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
@@ -298,11 +383,19 @@ function goToDashboard() {
                             </svg>
                             Publikasikan Sekarang
                         </button>
+                        <div
+                            v-else
+                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Sudah Dipublikasikan
+                        </div>
                     </div>
                 </div>
             </SectionAccordionCard>
 
-        </template>
     </div>
 </template>
 
