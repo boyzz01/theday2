@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="Theday Instagram profile cream">
+<defs></defs>
+<rect width="1080" height="1080" fill="#FFFCF7"></rect>
+<g>
+  <text x="540" y="500" text-anchor="middle" style="font-family:&#39;Fraunces&#39;,serif;font-style:italic;font-weight:300;font-size:240px;fill:#73877C;">the</text>
+  <path d="M 400 550 Q 540 470 680 550" stroke="#92A89C" stroke-width="9" fill="none" stroke-linecap="round"></path>
+  <text x="540" y="760" text-anchor="middle" style="font-family:&#39;Fraunces&#39;,serif;font-weight:500;font-size:240px;fill:#2C2417;letter-spacing:-8px;">day.</text>
+</g>
+<line x1="340" y1="850" x2="740" y2="850" stroke="#C8A26B" stroke-width="1.5" opacity="0.7"></line>
+<text x="540" y="900" text-anchor="middle" style="font-family:&#39;DM Mono&#39;,monospace;font-size:28px;letter-spacing:0.4em;fill:#73877C;">YOUR DAY, YOUR WAY.</text>
+</svg>

@@ -43,8 +43,8 @@ const statCards = computed(() => [
     },
     {
         label: 'Paket Aktif',
-        value: props.activePlan?.name ?? 'Free',
-        sub: props.activePlan ? `Maks ${props.activePlan.max_invitations === 9999 ? '∞' : props.activePlan.max_invitations} undangan` : 'Gratis selamanya',
+        value: props.activePlan.name,
+        sub: `Maks ${props.activePlan.max_invitations === 9999 ? '∞' : props.activePlan.max_invitations} undangan`,
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
         bg: '#FEE2E2',
@@ -53,9 +53,9 @@ const statCards = computed(() => [
 ]);
 
 const statusConfig = {
-    draft:     { label: 'Draft',     bg: '#F3F4F6', color: '#6B7280' },
-    published: { label: 'Aktif',     bg: '#D1FAE5', color: '#059669' },
-    expired:   { label: 'Kedaluwarsa', bg: '#FEE2E2', color: '#DC2626' },
+    draft:    { label: 'Draft',      bg: '#F3F4F6', color: '#6B7280' },
+    published:{ label: 'Aktif',      bg: '#D1FAE5', color: '#059669' },
+    archived: { label: 'Diarsipkan', bg: '#FEE2E2', color: '#DC2626' },
 };
 
 const eventTypeLabel = {

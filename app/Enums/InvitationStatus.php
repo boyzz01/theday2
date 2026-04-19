@@ -10,14 +10,14 @@ enum InvitationStatus: string
 {
     case Draft     = 'draft';
     case Published = 'published';
-    case Expired   = 'expired';
+    case Archived  = 'archived';
 
     public function label(): string
     {
         return match($this) {
             self::Draft     => 'Draft',
             self::Published => 'Dipublikasikan',
-            self::Expired   => 'Kedaluwarsa',
+            self::Archived  => 'Diarsipkan',
         };
     }
 
@@ -26,7 +26,12 @@ enum InvitationStatus: string
         return match($this) {
             self::Draft     => 'gray',
             self::Published => 'green',
-            self::Expired   => 'red',
+            self::Archived  => 'red',
         };
+    }
+
+    public function isActive(): bool
+    {
+        return $this === self::Draft || $this === self::Published;
     }
 }

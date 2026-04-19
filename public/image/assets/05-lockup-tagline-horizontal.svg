@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-label="Theday with tagline Your day, your way">
+<defs></defs>
+<text x="170" y="210" style="font-family:&#39;Fraunces&#39;,serif;font-style:italic;font-weight:300;font-size:170px;fill:#73877C;">the</text>
+<path d="M 368 186 Q 412 158 468 180" stroke="#92A89C" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+<text x="470" y="210" style="font-family:&#39;Fraunces&#39;,serif;font-weight:500;font-size:170px;fill:#2C2417;letter-spacing:-5px;">day.</text>
+<line x1="172" y1="258" x2="810" y2="258" stroke="#C8A26B" stroke-width="1" opacity="0.7"></line>
+<text x="172" y="293" style="font-family:&#39;DM Mono&#39;,monospace;font-size:18px;letter-spacing:0.36em;fill:#73877C;">YOUR DAY, YOUR WAY.</text>
+</svg>

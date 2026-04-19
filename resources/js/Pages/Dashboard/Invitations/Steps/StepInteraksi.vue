@@ -11,10 +11,12 @@ const props = defineProps({
     canUsePremium:   { type: Boolean,  default: false },
 });
 
-const expanded = ref(null);
+const expanded = ref(new Set());
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    if (s.has(key)) s.delete(key); else s.add(key);
+    expanded.value = s;
 }
 
 function addBankAccount() {
@@ -44,7 +46,7 @@ function removeBankAccount(index) {
             :is-required="sections.rsvp?.is_required ?? false"
             :is-enabled="sections.rsvp?.is_enabled ?? true"
             :status="sections.rsvp?.completion_status ?? 'complete'"
-            :expanded="expanded === 'rsvp'"
+            :expanded="expanded.has('rsvp')"
             @toggle-expand="toggle('rsvp')"
             @toggle-enabled="onToggleSection('rsvp')"
         >
@@ -74,7 +76,7 @@ function removeBankAccount(index) {
             :is-required="sections.wishes?.is_required ?? false"
             :is-enabled="sections.wishes?.is_enabled ?? true"
             :status="sections.wishes?.completion_status ?? 'complete'"
-            :expanded="expanded === 'wishes'"
+            :expanded="expanded.has('wishes')"
             @toggle-expand="toggle('wishes')"
             @toggle-enabled="onToggleSection('wishes')"
         >
@@ -94,7 +96,7 @@ function removeBankAccount(index) {
             :is-required="sections.gift?.is_required ?? false"
             :is-enabled="sections.gift?.is_enabled ?? false"
             :status="sections.gift?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'gift'"
+            :expanded="expanded.has('gift')"
             @toggle-expand="toggle('gift')"
             @toggle-enabled="onToggleSection('gift')"
         >

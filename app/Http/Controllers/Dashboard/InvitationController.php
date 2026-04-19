@@ -100,9 +100,10 @@ class InvitationController extends Controller
                         ->toArray()
                     : null,
             ],
-            'messages'     => [],
-            'needPassword' => false,
-            'isPreview'    => true,
+            'messages'      => [],
+            'needPassword'  => false,
+            'isPreview'     => true,
+            'showWatermark' => false,
         ]);
     }
 
@@ -197,7 +198,7 @@ class InvitationController extends Controller
         $limit = $user->currentPlan()?->max_invitations
             ?? Plan::where('slug', 'free')->value('max_invitations')
             ?? 1;
-        if ($user->invitations()->count() >= $limit) {
+        if ($user->invitations()->whereIn('status', ['draft', 'published'])->count() >= $limit) {
             return redirect()->route('dashboard.invitations.index')
                 ->with('error', 'Batas undangan paketmu sudah tercapai. Upgrade untuk membuat undangan baru.');
         }
@@ -571,6 +572,11 @@ class InvitationController extends Controller
         }
 
         if (isset($data['is_password_protected'])) {
+            if ($data['is_password_protected'] && ! SectionAccess::isPremium($request->user())) {
+                return response()->json([
+                    'error' => 'Perlindungan kata sandi hanya tersedia di paket Premium.',
+                ], 403);
+            }
             $updateData['is_password_protected'] = $data['is_password_protected'];
         }
 
@@ -702,7 +708,7 @@ class InvitationController extends Controller
         $limit = $plan?->max_invitations;
 
         if ($limit !== null) {
-            $count = $user->invitations()->count();
+            $count = $user->invitations()->whereIn('status', ['draft', 'published'])->count();
             if ($count >= $limit) {
                 return response()->json(['error' => 'invitation_limit_reached'], 422);
             }

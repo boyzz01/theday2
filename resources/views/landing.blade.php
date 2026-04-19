@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {{-- ── SEO: Core ─────────────────────────────────────────────── --}}
-    <title>TheDay — Undangan Digital Pernikahan Online Premium | Gratis</title>
+    <title>TheDay - Undangan Digital Pernikahan Online Premium | Gratis</title>
     <meta name="description"
         content="Buat undangan digital pernikahan yang elegan dalam hitungan menit. 50+ template premium, RSVP online real-time, bagikan via WhatsApp. Mulai gratis, tanpa kartu kredit.">
     <meta name="keywords"
@@ -15,7 +15,8 @@
     <meta name="author" content="TheDay">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{{ url('/') }}">
-    <link rel="icon" type="image/png" href="{{ asset('image/favicon.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('image/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('image/favicon-96x96.png') }}">
 
     {{-- ── SEO: Open Graph (WhatsApp / Facebook / LinkedIn) ─────── --}}
     <meta property="og:type" content="website">
@@ -24,7 +25,7 @@
     <meta property="og:title" content="TheDay — Undangan Digital Pernikahan Premium | Gratis">
     <meta property="og:description"
         content="Buat undangan pernikahan digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp. Mulai gratis!">
-    <meta property="og:image" content="{{ asset('image/logo.png') }}">
+    <meta property="og:image" content="{{ asset('image/logo.svg') }}">
     <meta property="og:image:width" content="300">
     <meta property="og:image:height" content="150">
     <meta property="og:image:alt" content="TheDay — Platform Undangan Digital Pernikahan Premium Online">
@@ -36,7 +37,7 @@
     <meta name="twitter:title" content="TheDay — Undangan Digital Pernikahan Premium Online">
     <meta name="twitter:description"
         content="Buat undangan pernikahan digital yang cantik dalam hitungan menit. 50+ template elegan, RSVP online, bagikan via WhatsApp.">
-    <meta name="twitter:image" content="{{ asset('image/logo.png') }}">
+    <meta name="twitter:image" content="{{ asset('image/logo.svg') }}">
 
     {{-- ── SEO: Hreflang (bilingual ID / EN) ────────────────────── --}}
     <link rel="alternate" hreflang="id" href="{{ url('/') }}">
@@ -274,7 +275,7 @@
           "url": "{{ url('/') }}",
           "logo": {
             "@type": "ImageObject",
-            "url": "{{ asset('image/logo.png') }}",
+            "url": "{{ asset('image/logo.svg') }}",
             "width": 300,
             "height": 150
           },
@@ -382,7 +383,7 @@
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             {{-- Logo --}}
             <a href="/" class="flex items-center">
-                <img src="{{ asset('image/logo.png') }}" alt="TheDay" class="h-10 w-auto">
+                <img src="{{ asset('image/logo.svg') }}" alt="TheDay" class="h-10 w-auto">
             </a>
 
             {{-- Desktop Nav Links --}}
@@ -1480,7 +1481,7 @@
                 {{-- Brand --}}
                 <div class="md:col-span-1">
                     <a href="/" class="flex items-center mb-4">
-                        <img src="{{ asset('image/logo.png') }}" alt="TheDay"
+                        <img src="{{ asset('image/logo.svg') }}" alt="TheDay"
                             class="h-10 w-auto brightness-0 invert">
                     </a>
                     <p class="text-sm leading-relaxed mb-5"

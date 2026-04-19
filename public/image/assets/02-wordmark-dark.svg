@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-label="Theday wordmark on dark">
+<defs></defs>
+<rect width="900" height="260" fill="#2C2417"></rect>
+<text x="170" y="190" style="font-family:&#39;Fraunces&#39;,serif;font-style:italic;font-weight:300;font-size:170px;fill:#B8C7BF;">the</text>
+<path d="M 368 166 Q 412 138 468 160" stroke="#C8A26B" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+<text x="470" y="190" style="font-family:&#39;Fraunces&#39;,serif;font-weight:500;font-size:170px;fill:#FFFCF7;letter-spacing:-5px;">day.</text>
+</svg>

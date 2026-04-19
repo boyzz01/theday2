@@ -95,12 +95,13 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard/Index', [
             'stats'             => $stats,
             'recentInvitations' => $recentInvitations,
-            'activePlan'        => $activePlan ? [
-                'name'             => $activePlan->name,
-                'max_invitations'  => $activePlan->max_invitations,
-                'analytics_access' => $activePlan->analytics_access,
-                'remove_watermark' => $activePlan->remove_watermark,
-            ] : null,
+            'activePlan'        => [
+                'slug'             => $activePlan?->slug ?? 'free',
+                'name'             => $activePlan?->name ?? 'Free',
+                'max_invitations'  => $activePlan?->max_invitations ?? 1,
+                'analytics_access' => $activePlan?->analytics_access ?? false,
+                'remove_watermark' => $activePlan?->remove_watermark ?? false,
+            ],
             'checklistWidget' => [
                 'total'          => $checklistSummary['total'],
                 'todo'           => $checklistSummary['todo'],

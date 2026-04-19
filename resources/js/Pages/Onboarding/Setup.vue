@@ -95,7 +95,11 @@ function suggestSlug() {
 }
 
 function sanitizeSlug() {
-    form.slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    form.slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-/, '');
+}
+
+function finalizeSlug() {
+    form.slug = form.slug.replace(/-$/, '');
 }
 
 // ── Restore from localStorage on mount ───────────────────────────
@@ -672,6 +676,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                                 <input
                                     v-model="form.slug"
                                     @input="sanitizeSlug"
+                                    @blur="finalizeSlug"
                                     type="text"
                                     placeholder="budi-dan-rahayu"
                                     class="flex-1 px-4 py-3 rounded-r-xl border text-sm transition-colors outline-none focus:ring-2"

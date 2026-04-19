@@ -16,20 +16,12 @@ const props = defineProps({
     canUsePremium:     { type: Boolean,  default: false },
 });
 
-// Which card is expanded (only one at a time)
-const expanded = ref(getFirstIncompleteOrFirst());
-
-function getFirstIncompleteOrFirst() {
-    const order = ['cover', 'konten_utama', 'couple', 'quote'];
-    for (const key of order) {
-        const s = props.sections[key];
-        if (s?.is_enabled && s?.completion_status !== 'complete') return key;
-    }
-    return 'cover';
-}
+const expanded = ref(new Set(['cover', 'konten_utama', 'couple']));
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    if (s.has(key)) s.delete(key); else s.add(key);
+    expanded.value = s;
 }
 
 function handlePhotoUpload(event, field) {
@@ -55,7 +47,7 @@ function handlePhotoUpload(event, field) {
             :is-required="sections.cover?.is_required ?? true"
             :is-enabled="sections.cover?.is_enabled ?? true"
             :status="sections.cover?.completion_status ?? 'empty'"
-            :expanded="expanded === 'cover'"
+            :expanded="expanded.has('cover')"
             @toggle-expand="toggle('cover')"
             @toggle-enabled="onToggleSection('cover')"
         >
@@ -111,7 +103,7 @@ function handlePhotoUpload(event, field) {
             :is-required="sections.konten_utama?.is_required ?? true"
             :is-enabled="sections.konten_utama?.is_enabled ?? true"
             :status="sections.konten_utama?.completion_status ?? 'empty'"
-            :expanded="expanded === 'konten_utama'"
+            :expanded="expanded.has('konten_utama')"
             @toggle-expand="toggle('konten_utama')"
             @toggle-enabled="onToggleSection('konten_utama')"
         >
@@ -153,7 +145,7 @@ function handlePhotoUpload(event, field) {
             :is-required="sections.couple?.is_required ?? true"
             :is-enabled="sections.couple?.is_enabled ?? true"
             :status="sections.couple?.completion_status ?? 'empty'"
-            :expanded="expanded === 'couple'"
+            :expanded="expanded.has('couple')"
             @toggle-expand="toggle('couple')"
             @toggle-enabled="onToggleSection('couple')"
         >
@@ -268,7 +260,7 @@ function handlePhotoUpload(event, field) {
             :is-required="sections.quote?.is_required ?? false"
             :is-enabled="sections.quote?.is_enabled ?? false"
             :status="sections.quote?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'quote'"
+            :expanded="expanded.has('quote')"
             @toggle-expand="toggle('quote')"
             @toggle-enabled="onToggleSection('quote')"
         >

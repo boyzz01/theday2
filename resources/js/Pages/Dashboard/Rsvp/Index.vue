@@ -9,7 +9,7 @@ const props = defineProps({
 const statusConfig = {
     draft:     { label: 'Draft',         cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
     published: { label: 'Aktif',         cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
-    expired:   { label: 'Kedaluwarsa',   cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+    archived:  { label: 'Diarsipkan',    cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
 };
 </script>
 

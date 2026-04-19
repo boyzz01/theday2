@@ -5,11 +5,12 @@ import PasswordGate       from './PasswordGate.vue';
 import InvitationRenderer from '@/Components/invitation/InvitationRenderer.vue';
 
 const props = defineProps({
-    invitation:   { type: Object,  required: true },
-    messages:     { type: Array,   default: () => [] },
-    needPassword: { type: Boolean, default: false },
-    isPreview:    { type: Boolean, default: false },
-    guest:        { type: Object,  default: null },
+    invitation:    { type: Object,  required: true },
+    messages:      { type: Array,   default: () => [] },
+    needPassword:  { type: Boolean, default: false },
+    isPreview:     { type: Boolean, default: false },
+    guest:         { type: Object,  default: null },
+    showWatermark: { type: Boolean, default: false },
 });
 
 const unlocked = ref(! props.needPassword);
@@ -59,6 +60,20 @@ const unlocked = ref(! props.needPassword);
         :is-demo="false"
         :auto-open="false"
     />
+
+    <!-- Watermark badge for free tier (fixed overlay, independent of v-if/v-else chain) -->
+    <a
+        v-if="showWatermark && unlocked"
+        href="/"
+        target="_blank"
+        rel="noopener"
+        style="position:fixed;bottom:16px;right:16px;z-index:9998;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,0.08);border-radius:999px;padding:6px 12px 6px 8px;text-decoration:none;box-shadow:0 2px 12px rgba(0,0,0,0.12);font-family:Arial,sans-serif;"
+    >
+        <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#92A89C" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <span style="font-size:11px;font-weight:600;color:#4B5563;white-space:nowrap;">Dibuat dengan <span style="color:#73877C;">TheDay</span></span>
+    </a>
 </template>
 
 <style>

@@ -20,11 +20,13 @@ const props = defineProps({
 
 const galleryAtLimit = computed(() => !props.canUsePremium && props.galleries.length >= props.maxGalleryPhotos);
 
-const expanded      = ref(null);
+const expanded = ref(new Set());
 const uploadingGallery = ref(false);
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    if (s.has(key)) s.delete(key); else s.add(key);
+    expanded.value = s;
 }
 
 async function handleGalleryUpload(event) {
@@ -57,7 +59,7 @@ async function handleGalleryUpload(event) {
             :is-required="sections.gallery?.is_required ?? false"
             :is-enabled="sections.gallery?.is_enabled ?? false"
             :status="sections.gallery?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'gallery'"
+            :expanded="expanded.has('gallery')"
             @toggle-expand="toggle('gallery')"
             @toggle-enabled="onToggleSection('gallery')"
         >
@@ -138,7 +140,7 @@ async function handleGalleryUpload(event) {
             :is-required="sections.video?.is_required ?? false"
             :is-enabled="sections.video?.is_enabled ?? false"
             :status="sections.video?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'video'"
+            :expanded="expanded.has('video')"
             @toggle-expand="toggle('video')"
             @toggle-enabled="onToggleSection('video')"
         >
@@ -172,7 +174,7 @@ async function handleGalleryUpload(event) {
             :is-required="sections.love_story?.is_required ?? false"
             :is-enabled="sections.love_story?.is_enabled ?? false"
             :status="sections.love_story?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'love_story'"
+            :expanded="expanded.has('love_story')"
             @toggle-expand="toggle('love_story')"
             @toggle-enabled="onToggleSection('love_story')"
         >

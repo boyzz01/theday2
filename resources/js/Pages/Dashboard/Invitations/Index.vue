@@ -14,7 +14,7 @@ const props = defineProps({
 const statusConfig = {
     draft:     { label: 'Draft',        bg: '#F3F4F6', color: '#6B7280' },
     published: { label: 'Aktif',        bg: '#D1FAE5', color: '#059669' },
-    expired:   { label: 'Kedaluwarsa',  bg: '#FEE2E2', color: '#DC2626' },
+    archived:  { label: 'Diarsipkan',   bg: '#FEE2E2', color: '#DC2626' },
 };
 
 const eventTypeLabel = {

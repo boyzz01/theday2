@@ -170,18 +170,10 @@ const handleClickOutsideAvatar = (e) => {
             ]"
         >
             <!-- Logo — expanded -->
-            <div v-if="!sidebarCollapsed" class="flex items-center gap-3 px-5 py-5 border-b border-stone-100">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                     style="background-color: #92A89C">
-                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </div>
-                <span class="font-semibold text-lg tracking-tight"
-                      style="font-family: 'Playfair Display', serif; color: #2C2417">
-                    TheDay
-                </span>
+            <div v-if="!sidebarCollapsed" class="flex items-center gap-3 px-5 py-4 border-b border-stone-100">
+                <a :href="route('home')" class="flex-shrink-0">
+                    <img src="/image/logo.svg" alt="TheDay" class="h-8 w-auto" />
+                </a>
                 <!-- Collapse button -->
                 <button
                     class="hidden lg:flex ml-auto p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"

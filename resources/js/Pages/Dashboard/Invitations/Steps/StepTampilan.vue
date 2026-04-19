@@ -31,11 +31,13 @@ function onTemplateChanged(newTemplate) {
     emit('template-changed', newTemplate);
 }
 
-const expanded = ref('theme_settings');
+const expanded = ref(new Set(['theme_settings']));
 const uploadingAudio = ref(false);
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    if (s.has(key)) s.delete(key); else s.add(key);
+    expanded.value = s;
 }
 
 // ── Font loading ──────────────────────────────────────────────
@@ -150,7 +152,7 @@ async function handleAudioUpload(event) {
             :is-required="sections.theme_settings?.is_required ?? true"
             :is-enabled="sections.theme_settings?.is_enabled ?? true"
             :status="sections.theme_settings?.completion_status ?? 'empty'"
-            :expanded="expanded === 'theme_settings'"
+            :expanded="expanded.has('theme_settings')"
             @toggle-expand="toggle('theme_settings')"
             @toggle-enabled="onToggleSection('theme_settings')"
         >
@@ -225,7 +227,7 @@ async function handleAudioUpload(event) {
             :is-required="sections.music?.is_required ?? false"
             :is-enabled="sections.music?.is_enabled ?? false"
             :status="sections.music?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'music'"
+            :expanded="expanded.has('music')"
             @toggle-expand="toggle('music')"
             @toggle-enabled="onToggleSection('music')"
         >

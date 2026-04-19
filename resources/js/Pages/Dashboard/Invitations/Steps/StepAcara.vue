@@ -16,10 +16,12 @@ const props = defineProps({
     canUsePremium:   { type: Boolean,  default: false },
 });
 
-const expanded = ref('events');
+const expanded = ref(new Set(['events']));
 
 function toggle(key) {
-    expanded.value = expanded.value === key ? null : key;
+    const s = new Set(expanded.value);
+    if (s.has(key)) s.delete(key); else s.add(key);
+    expanded.value = s;
 }
 
 const dragState = { from: null };
@@ -54,7 +56,7 @@ function onTimeInput(event, obj, key) {
             :is-required="sections.events?.is_required ?? true"
             :is-enabled="sections.events?.is_enabled ?? true"
             :status="sections.events?.completion_status ?? 'empty'"
-            :expanded="expanded === 'events'"
+            :expanded="expanded.has('events')"
             @toggle-expand="toggle('events')"
             @toggle-enabled="onToggleSection('events')"
         >
@@ -156,7 +158,7 @@ function onTimeInput(event, obj, key) {
             :is-required="sections.countdown?.is_required ?? false"
             :is-enabled="sections.countdown?.is_enabled ?? true"
             :status="sections.countdown?.completion_status ?? 'complete'"
-            :expanded="expanded === 'countdown'"
+            :expanded="expanded.has('countdown')"
             @toggle-expand="toggle('countdown')"
             @toggle-enabled="onToggleSection('countdown')"
         >
@@ -174,7 +176,7 @@ function onTimeInput(event, obj, key) {
             :is-required="sections.live_streaming?.is_required ?? false"
             :is-enabled="sections.live_streaming?.is_enabled ?? false"
             :status="sections.live_streaming?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'live_streaming'"
+            :expanded="expanded.has('live_streaming')"
             @toggle-expand="toggle('live_streaming')"
             @toggle-enabled="onToggleSection('live_streaming')"
         >
@@ -208,7 +210,7 @@ function onTimeInput(event, obj, key) {
             :is-required="sections.additional_info?.is_required ?? false"
             :is-enabled="sections.additional_info?.is_enabled ?? false"
             :status="sections.additional_info?.completion_status ?? 'disabled'"
-            :expanded="expanded === 'additional_info'"
+            :expanded="expanded.has('additional_info')"
             @toggle-expand="toggle('additional_info')"
             @toggle-enabled="onToggleSection('additional_info')"
         >

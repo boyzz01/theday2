@@ -119,9 +119,9 @@ class Invitation extends Model
         return $query->where('status', InvitationStatus::Published);
     }
 
-    public function scopeExpired(Builder $query): Builder
+    public function scopeArchived(Builder $query): Builder
     {
-        return $query->where('status', InvitationStatus::Expired);
+        return $query->where('status', InvitationStatus::Archived);
     }
 
     public function scopeByUser(Builder $query, string $userId): Builder
@@ -136,13 +136,9 @@ class Invitation extends Model
 
     // ─── Business Logic ───────────────────────────────────────────
 
-    public function isExpired(): bool
+    public function isArchived(): bool
     {
-        if ($this->status === InvitationStatus::Expired) {
-            return true;
-        }
-
-        return $this->expires_at !== null && $this->expires_at->isPast();
+        return $this->status === InvitationStatus::Archived;
     }
 
     public function isOwner(User $user): bool
@@ -152,6 +148,6 @@ class Invitation extends Model
 
     public function isPublished(): bool
     {
-        return $this->status === InvitationStatus::Published && ! $this->isExpired();
+        return $this->status === InvitationStatus::Published;
     }
 }

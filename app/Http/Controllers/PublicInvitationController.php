@@ -33,6 +33,7 @@ class PublicInvitationController extends Controller
                 'music'     => fn ($q) => $q->where('is_default', true)->limit(1),
                 'sections',
                 'template:id,name,slug,default_config',
+                'user.activeSubscription.plan',
             ])
             ->firstOrFail();
 
@@ -130,8 +131,9 @@ class PublicInvitationController extends Controller
                         ->toArray()
                     : null,
             ],
-            'messages'     => $messages,
-            'needPassword' => $needPassword,
+            'messages'      => $messages,
+            'needPassword'  => $needPassword,
+            'showWatermark' => ! ($invitation->user->activeSubscription?->plan?->remove_watermark ?? false),
         ]);
     }
 
