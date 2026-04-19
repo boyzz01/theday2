@@ -273,8 +273,12 @@ Route::get( '/{slug}/messages', [PublicInvitationController::class, 'messages'])
 // Excludes reserved second-segment names to avoid conflicts.
 Route::get('/{invitationSlug}/{guestSlug}', [PersonalizedInvitationController::class, 'show'])
     ->where(['invitationSlug' => $slugExclusion, 'guestSlug' => '^(?!rsvp$|messages$|unlock$).*'])
+    ->middleware('invitation.access')
     ->name('invitation.personal.show');
 
-Route::get( '/{slug}',          [PublicInvitationController::class, 'show'])->where('slug', $slugExclusion)->name('invitation.show');
+Route::get('/{slug}', [PublicInvitationController::class, 'show'])
+    ->where('slug', $slugExclusion)
+    ->middleware('invitation.access')
+    ->name('invitation.show');
 
 require __DIR__.'/auth.php';

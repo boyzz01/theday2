@@ -49,14 +49,14 @@ class CheckSubscriptionExpiryCommand extends Command
 
     private function handleExpiredToday(): void
     {
-        // Mark subscriptions that expired as 'expired'
+        // Transition active subscriptions past expires_at → grace period
         $expired = Subscription::where('status', 'active')
             ->where('expires_at', '<=', now())
             ->with('user', 'plan')
             ->get();
 
         foreach ($expired as $sub) {
-            $sub->update(['status' => 'expired']);
+            $sub->update(['status' => 'grace']);
 
             if ($sub->plan->slug === 'premium') {
                 Mail::to($sub->user->email)
@@ -67,7 +67,30 @@ class CheckSubscriptionExpiryCommand extends Command
         }
 
         if ($expired->count() > 0) {
-            $this->info("  Marked {$expired->count()} subscription(s) as expired.");
+            $this->info("  Moved {$expired->count()} subscription(s) to grace period.");
+        }
+
+        // Send grace period reminders at 30, 15, 2 days remaining
+        $this->sendGraceReminders();
+    }
+
+    private function sendGraceReminders(): void
+    {
+        $graceSubscriptions = Subscription::where('status', 'grace')
+            ->whereNotNull('grace_until')
+            ->where('grace_until', '>', now())
+            ->with('user', 'plan')
+            ->get();
+
+        foreach ($graceSubscriptions as $sub) {
+            $daysLeft = $sub->graceDaysRemaining();
+
+            if (in_array($daysLeft, [30, 15, 2], true)) {
+                Mail::to($sub->user->email)
+                    ->queue(new SubscriptionExpiryMail($sub->user, $sub, -$daysLeft));
+
+                $this->info("  Sent grace reminder ({$daysLeft}d left) to {$sub->user->email}");
+            }
         }
     }
 }

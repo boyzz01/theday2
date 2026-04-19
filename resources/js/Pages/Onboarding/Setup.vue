@@ -23,8 +23,6 @@ function saveProgress() {
             start_time:     form.start_time,
             venue_name:     form.venue_name,
             venue_address:  form.venue_address,
-            skip_slug:      form.skip_slug,
-            slug:           form.slug,
         },
     }));
 }
@@ -35,12 +33,11 @@ function clearProgress() {
 
 // ── Step management ───────────────────────────────────────────────
 const step    = ref(1);
-const STEPS   = 3;
+const STEPS   = 2;
 
 const stepMeta = [
-    { label: 'Mempelai',   hint: 'Siapa yang akan menikah?' },
-    { label: 'Hari H',     hint: 'Kapan dan di mana?' },
-    { label: 'Tautan',     hint: 'Alamat undangan digitalmu' },
+    { label: 'Mempelai', hint: 'Siapa yang akan menikah?' },
+    { label: 'Hari H',   hint: 'Kapan dan di mana?' },
 ];
 
 const goNext = () => { if (step.value < STEPS) step.value++ };
@@ -58,8 +55,6 @@ const form = useForm({
     start_time:     '',
     venue_name:     '',
     venue_address:  '',
-    skip_slug:      false,
-    slug:           '',
 });
 
 // ── Step 1 validation (client-side gate before advancing) ─────────
@@ -83,23 +78,8 @@ const step2Errors = computed(() => {
 function tryNext() {
     if (step.value === 1 && Object.keys(step1Errors.value).length) return;
     if (step.value === 2 && Object.keys(step2Errors.value).length) return;
-    goNext();
-    saveProgress();
-}
-
-// ── Slug helpers ──────────────────────────────────────────────────
-function suggestSlug() {
-    const g = (form.groom_nickname || form.groom_name).trim().toLowerCase().replace(/\s+/g, '');
-    const b = (form.bride_nickname || form.bride_name).trim().toLowerCase().replace(/\s+/g, '');
-    if (g && b) form.slug = `${g}-${b}`;
-}
-
-function sanitizeSlug() {
-    form.slug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-/, '');
-}
-
-function finalizeSlug() {
-    form.slug = form.slug.replace(/-$/, '');
+    if (step.value < STEPS) { goNext(); saveProgress(); }
+    else submit();
 }
 
 // ── Restore from localStorage on mount ───────────────────────────
@@ -628,87 +608,7 @@ watch([timeHour, timeMinute], ([h, m]) => {
                         <button
                             type="button"
                             @click="tryNext"
-                            :disabled="Object.keys(step2Errors).length > 0"
-                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
-                            style="background-color: #92A89C"
-                        >
-                            Lanjut →
-                        </button>
-                    </div>
-                </div>
-                </transition>
-
-                <!-- ── STEP 3: Slug ───────────────────────────────────── -->
-                <transition name="slide" mode="out-in">
-                <div v-if="step === 3" key="step3" class="space-y-5">
-
-                    <div class="text-center py-2">
-                        <p class="text-xs text-stone-400">Undanganmu akan bisa dibuka di:</p>
-                        <p class="text-sm font-mono font-semibold text-stone-700 mt-1">
-                            theday.id/<span class="text-[#73877C]">{{ form.skip_slug ? '...' : (form.slug || 'nama-slug') }}</span>
-                        </p>
-                    </div>
-
-                    <!-- Skip slug checkbox -->
-                    <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors"
-                           :class="form.skip_slug ? 'border-[#92A89C]/50 bg-[#92A89C]/10' : 'border-stone-200 bg-white'">
-                        <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                             :style="form.skip_slug ? 'background-color:#92A89C; border-color:#92A89C' : 'border-color:#D1D5DB'">
-                            <svg v-if="form.skip_slug" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                        </div>
-                        <input type="checkbox" v-model="form.skip_slug" class="sr-only"/>
-                        <div>
-                            <p class="text-sm font-medium text-stone-700">Lewati dan isi slug nanti</p>
-                            <p class="text-xs text-stone-400">Sistem akan membuat tautan sementara untukmu</p>
-                        </div>
-                    </label>
-
-                    <!-- Slug input -->
-                    <div v-if="!form.skip_slug" class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5 space-y-3">
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">
-                                Slug Undangan <span class="text-red-400">*</span>
-                            </label>
-                            <div class="flex">
-                                <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-stone-200 bg-stone-50 text-xs text-stone-400">theday.id/</span>
-                                <input
-                                    v-model="form.slug"
-                                    @input="sanitizeSlug"
-                                    @blur="finalizeSlug"
-                                    type="text"
-                                    placeholder="budi-dan-rahayu"
-                                    class="flex-1 px-4 py-3 rounded-r-xl border text-sm transition-colors outline-none focus:ring-2"
-                                    :class="form.errors.slug
-                                        ? 'border-red-300 focus:ring-red-100'
-                                        : 'border-stone-200 focus:ring-[#92A89C]/20 focus:border-[#92A89C]/50'"
-                                />
-                            </div>
-                            <p v-if="form.errors.slug" class="text-xs text-red-500">{{ form.errors.slug }}</p>
-                            <p class="text-xs text-stone-400">Hanya huruf kecil, angka, dan tanda hubung (-). Tidak bisa diubah setelah undangan dipublikasi.</p>
-                        </div>
-
-                        <button
-                            v-if="form.groom_name && form.bride_name"
-                            type="button"
-                            @click="suggestSlug"
-                            class="text-xs font-medium transition-colors hover:underline"
-                            style="color: #92A89C"
-                        >
-                            💡 Sarankan slug otomatis
-                        </button>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button type="button" @click="goBack"
-                                class="flex-none px-5 py-3.5 rounded-2xl text-sm font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">
-                            ← Kembali
-                        </button>
-                        <button
-                            type="button"
-                            @click="submit"
-                            :disabled="form.processing || (!form.skip_slug && !form.slug.trim())"
+                            :disabled="form.processing || Object.keys(step2Errors).length > 0"
                             class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
                             style="background-color: #92A89C"
                         >

@@ -62,7 +62,9 @@
       "Bash(sed -i 's/--brand-bg:             #FFFCF7/--brand-bg:             #F4F7F5/' resources/css/app.css)",
       "Bash(grep -n \"verified\\\\|verification\\\\|MustVerify\" routes/web.php routes/auth.php)",
       "Bash(grep -rn \"verified\\\\|verification\" routes/)",
-      "Bash(curl -s http://127.0.0.1:8000/sitemap.xml)"
+      "Bash(curl -s http://127.0.0.1:8000/sitemap.xml)",
+      "Bash(php -r 'require '\\\\''c:/laragon/www/theday/vendor/autoload.php'\\\\''; $app = require '\\\\''c:/laragon/www/theday/bootstrap/app.php'\\\\''; $app->boot\\(\\);')",
+      "Bash(mysql -u root theday -e \"DESCRIBE subscriptions;\")"
     ]
   }
 }

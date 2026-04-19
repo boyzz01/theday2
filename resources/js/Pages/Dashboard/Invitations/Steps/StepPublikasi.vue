@@ -92,7 +92,7 @@ watch(() => props.publish.slug, (val) => {
     if (!val) return;
     slugTimer = setTimeout(() => checkSlug(val), 500);
 });
-onMounted(() => { if (props.publish.slug) checkSlug(props.publish.slug); });
+onMounted(() => { if (props.canUsePremium && props.publish.slug) checkSlug(props.publish.slug); });
 
 const invitationUrl = computed(() =>
     props.publish.slug ? `${window.location.origin}/i/${props.publish.slug}` : null
@@ -102,15 +102,17 @@ const invitationUrl = computed(() =>
 async function handleAction(action) {
     publishError.value = null;
 
-    if (!props.publish.slug?.trim()) {
-        publishError.value = 'URL undangan wajib diisi sebelum menyimpan.';
-        ensureExpanded('slug_settings');
-        return;
-    }
-    if (slugStatus.value === 'taken') {
-        publishError.value = 'URL undangan sudah dipakai oleh undangan lain. Pilih URL yang berbeda.';
-        ensureExpanded('slug_settings');
-        return;
+    if (props.canUsePremium) {
+        if (!props.publish.slug?.trim()) {
+            publishError.value = 'URL undangan wajib diisi sebelum menyimpan.';
+            ensureExpanded('slug_settings');
+            return;
+        }
+        if (slugStatus.value === 'taken') {
+            publishError.value = 'URL undangan sudah dipakai oleh undangan lain. Pilih URL yang berbeda.';
+            ensureExpanded('slug_settings');
+            return;
+        }
     }
 
     try {
@@ -211,14 +213,43 @@ function goToDashboard() {
                 @toggle-expand="toggle('slug_settings')"
                 @toggle-enabled="onToggleSection('slug_settings')"
             >
-                <div class="space-y-3">
+                <!-- Free user: read-only slug display -->
+                <div v-if="!canUsePremium" class="space-y-3">
+                    <div class="flex rounded-xl border border-stone-200 overflow-hidden bg-stone-50">
+                        <span class="flex items-center px-3 border-r border-stone-200 text-xs text-stone-400 whitespace-nowrap">
+                            {{ window?.location?.origin ?? '' }}/
+                        </span>
+                        <span class="flex-1 px-3 py-2.5 text-sm text-stone-500 font-mono select-all">
+                            {{ publish.slug || '—' }}
+                        </span>
+                        <span class="flex items-center px-3 gap-1.5 border-l border-stone-200">
+                            <svg class="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#C8A26B]/8 border border-[#C8A26B]/20">
+                        <svg class="w-4 h-4 flex-shrink-0" style="color:#C8A26B" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        <p class="text-xs" style="color:#92400E">
+                            URL kustom hanya tersedia di paket Premium.
+                            <a :href="route('dashboard.paket')" class="font-semibold underline" style="color:#C8A26B">Upgrade →</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Premium user: editable slug input -->
+                <div v-else class="space-y-3">
                     <div :class="[
                         'flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-[#92A89C]/50',
                         slugStatus === 'taken'     ? 'border-red-300'   :
                         slugStatus === 'available' ? 'border-green-300' : 'border-stone-200',
                     ]">
                         <span class="flex items-center px-3 bg-stone-50 border-r border-stone-200 text-xs text-stone-400 whitespace-nowrap">
-                            {{ window?.location?.origin ?? '' }}/i/
+                            {{ window?.location?.origin ?? '' }}/
                         </span>
                         <input
                             v-model="publish.slug"
@@ -249,18 +280,6 @@ function goToDashboard() {
                         </button>
                     </div>
                     <p v-else class="text-xs text-stone-400">Hanya huruf, angka, dan tanda hubung. Contoh: budi-dan-ani-2025</p>
-
-                    <!-- Expiry -->
-                    <div class="space-y-1.5 pt-1">
-                        <label class="block text-sm font-medium text-stone-700">
-                            Tanggal Kedaluwarsa <span class="text-stone-400 font-normal text-xs">(opsional)</span>
-                        </label>
-                        <input
-                            v-model="publish.expires_at"
-                            type="datetime-local"
-                            class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
-                        />
-                    </div>
                 </div>
             </SectionAccordionCard>
 

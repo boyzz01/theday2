@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Invitation;
+use App\Models\Subscription;
+use App\Observers\SubscriptionObserver;
 use App\Policies\InvitationPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
@@ -26,5 +28,7 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         Gate::policy(Invitation::class, InvitationPolicy::class);
+
+        Subscription::observe(SubscriptionObserver::class);
     }
 }

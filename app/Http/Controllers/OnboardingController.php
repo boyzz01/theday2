@@ -11,7 +11,6 @@ use App\Models\Template;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,8 +44,7 @@ class OnboardingController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $noDate   = $request->boolean('no_date');
-        $skipSlug = $request->boolean('skip_slug');
+        $noDate = $request->boolean('no_date');
 
         $data = $request->validate([
             'groom_name'     => ['required', 'string', 'max:255'],
@@ -59,26 +57,12 @@ class OnboardingController extends Controller
             'start_time'     => ['nullable', 'date_format:H:i'],
             'venue_name'     => ['nullable', 'string', 'max:255'],
             'venue_address'  => ['nullable', 'string', 'max:1000'],
-            'skip_slug'      => ['boolean'],
-            'slug'           => [
-                $skipSlug ? 'nullable' : 'required',
-                'nullable',
-                'string',
-                'max:100',
-                'regex:/^[a-z0-9\-]+$/',
-                Rule::unique('invitations', 'slug'),
-                Rule::notIn(self::RESERVED_SLUGS),
-            ],
         ], [
             'groom_name.required'   => 'Nama mempelai pria wajib diisi.',
             'bride_name.required'   => 'Nama mempelai wanita wajib diisi.',
             'groom_nickname.max'    => 'Nama panggilan pria maksimal 10 karakter.',
             'bride_nickname.max'    => 'Nama panggilan wanita maksimal 10 karakter.',
             'wedding_date.required' => 'Tanggal pernikahan wajib diisi, atau centang "Belum menentukan tanggal".',
-            'slug.required'         => 'Slug undangan wajib diisi, atau centang "Lewati dan isi slug nanti".',
-            'slug.unique'           => 'Slug ini sudah dipakai. Coba slug lain.',
-            'slug.regex'            => 'Slug hanya boleh huruf kecil, angka, dan tanda hubung (-).',
-            'slug.not_in'           => 'Slug ini tidak bisa digunakan. Pilih slug lain.',
         ]);
 
         $user = $request->user();
@@ -94,11 +78,9 @@ class OnboardingController extends Controller
             ? Template::find($pendingTemplateId)
             : Template::active()->where('tier', 'free')->ordered()->first();
 
-        // Build title and slug
+        // Build title and auto-generate slug
         $title = trim("{$data['groom_name']} & {$data['bride_name']}");
-        $slug  = ($skipSlug || empty($data['slug']))
-            ? $this->generateUniqueSlug($title)
-            : $data['slug'];
+        $slug  = $this->generateUniqueSlug($data);
 
         // Create the first invitation draft
         $invitation = Invitation::create([
@@ -142,9 +124,12 @@ class OnboardingController extends Controller
             ]);
     }
 
-    private function generateUniqueSlug(string $title): string
+    private function generateUniqueSlug(array $data): string
     {
-        $base = Str::slug($title) ?: 'undangan';
+        $bride = Str::slug($data['bride_nickname'] ?? explode(' ', $data['bride_name'])[0]);
+        $groom = Str::slug($data['groom_nickname'] ?? explode(' ', $data['groom_name'])[0]);
+        $base  = ($bride && $groom) ? "{$bride}-{$groom}" : ($bride ?: ($groom ?: 'undangan'));
+
         $slug = $base;
         $i    = 1;
 

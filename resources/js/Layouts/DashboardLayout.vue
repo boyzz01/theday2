@@ -85,13 +85,21 @@ const checklistTodo        = computed(() => page.props.checklist_todo ?? 0);
 const canCreateInvitation  = computed(() => page.props.can_create_invitation ?? true);
 const showLimitModal       = ref(false);
 
-// Expiry warning banner
+// Expiry warning banner (subscription about to expire, ≤7 days left)
 const showExpiryBanner = computed(() => {
     const sub = plan.value;
     if (!sub || sub.plan_slug !== 'premium') return false;
-    return (sub.days_remaining ?? 999) <= 7;
+    return sub.status === 'active' && (sub.days_remaining ?? 999) <= 7;
 });
 const dismissedExpiry  = ref(false);
+
+// Grace period banner (subscription expired, still within 30-day grace window)
+const showGraceBanner = computed(() => {
+    const sub = plan.value;
+    if (!sub) return false;
+    return sub.in_grace_period === true && (sub.grace_days_remaining ?? 0) > 0;
+});
+const dismissedGrace = ref(false);
 
 const isActive = (item) => {
     if (item.noActive) return false;
@@ -408,7 +416,7 @@ const handleClickOutsideAvatar = (e) => {
                 </div>
             </header>
 
-            <!-- Expiry Warning Banner -->
+            <!-- Expiry Warning Banner (≤7 days before expiry) -->
             <Transition name="slide-down">
                 <div v-if="showExpiryBanner && !dismissedExpiry"
                      class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
@@ -427,6 +435,33 @@ const handleClickOutsideAvatar = (e) => {
                         <button @click="dismissedExpiry = true"
                                 class="transition-colors cursor-pointer"
                                 style="color: #73877C">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+
+            <!-- Grace Period Banner (subscription expired, 30-day window active) -->
+            <Transition name="slide-down">
+                <div v-if="showGraceBanner && !dismissedGrace"
+                     class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
+                     style="background-color:#FEF3C7;border-bottom:1px solid #FDE68A">
+                    <span style="color:#92400E">
+                        ⚠️ Subscription habis. Undangan masih aktif selama
+                        <strong>{{ plan.grace_days_remaining }} hari</strong> lagi.
+                        Setelah itu undangan akan diarsipkan otomatis.
+                    </span>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <Link :href="route('dashboard.paket')"
+                              class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 cursor-pointer"
+                              style="background-color:#D97706">
+                            Perpanjang →
+                        </Link>
+                        <button @click="dismissedGrace = true"
+                                class="transition-colors cursor-pointer"
+                                style="color:#B45309">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>

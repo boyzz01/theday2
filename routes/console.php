@@ -11,3 +11,6 @@ Artisan::command('inspire', function () {
 // Check subscription expiry and send reminder emails daily at 08:00 WIB (01:00 UTC)
 Schedule::command('theday:check-subscription-expiry')->dailyAt('01:00');
 
+// Archive invitations for users whose grace period has fully expired (02:00 WIB / 19:00 UTC prev day)
+Schedule::command('invitations:archive-expired')->dailyAt('01:30');
+

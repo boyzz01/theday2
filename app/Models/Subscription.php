@@ -21,13 +21,15 @@ class Subscription extends Model
         'status',
         'starts_at',
         'expires_at',
+        'grace_until',
     ];
 
     protected function casts(): array
     {
         return [
-            'starts_at'  => 'datetime',
-            'expires_at' => 'datetime',
+            'starts_at'   => 'datetime',
+            'expires_at'  => 'datetime',
+            'grace_until' => 'datetime',
         ];
     }
 
@@ -51,12 +53,6 @@ class Subscription extends Model
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
     }
 
-    public function scopeExpiredStatus(Builder $query): Builder
-    {
-        return $query->where('status', 'expired')
-            ->orWhere('expires_at', '<=', now());
-    }
-
     public function scopeByUser(Builder $query, string $userId): Builder
     {
         return $query->where('user_id', $userId);
@@ -64,20 +60,64 @@ class Subscription extends Model
 
     // ─── Business Logic ───────────────────────────────────────────
 
+    public function isPremium(): bool
+    {
+        return $this->plan?->slug === 'premium';
+    }
+
+    /** Subscription masih dalam masa aktif premium */
+    public function isActive(): bool
+    {
+        return $this->status === 'active'
+            && ($this->expires_at === null || $this->expires_at->isFuture());
+    }
+
+    /** Subscription expired tapi masih dalam grace period */
+    public function isInGracePeriod(): bool
+    {
+        return $this->status === 'grace'
+            && $this->grace_until !== null
+            && $this->grace_until->isFuture();
+    }
+
+    /** Grace period sudah habis */
+    public function isFullyExpired(): bool
+    {
+        if (! $this->isPremium()) {
+            return false;
+        }
+
+        return $this->status === 'expired'
+            || ($this->grace_until !== null && $this->grace_until->isPast() && $this->status !== 'active');
+    }
+
+    /** User berhak atas fitur premium (hanya saat active) */
+    public function hasPremiumAccess(): bool
+    {
+        return $this->isPremium() && $this->isActive();
+    }
+
+    /** Free plan tidak pernah expired */
     public function isExpired(): bool
     {
         if ($this->expires_at === null) {
-            return false; // null = tidak pernah expired (free plan)
+            return false;
         }
 
         return $this->status === 'expired' || $this->expires_at->isPast();
     }
 
-    public function isActive(): bool
+    /** Sisa hari grace period */
+    public function graceDaysRemaining(): int
     {
-        return $this->status === 'active' && ! $this->isExpired();
+        if (! $this->isInGracePeriod() || $this->grace_until === null) {
+            return 0;
+        }
+
+        return (int) now()->diffInDays($this->grace_until, absolute: false);
     }
 
+    /** Sisa hari sampai expires_at */
     public function daysRemaining(): int
     {
         if ($this->expires_at === null || $this->isExpired()) {
