@@ -19,10 +19,6 @@ class ChecklistService
 {
     // ─── Initialization ───────────────────────────────────────────
 
-    /**
-     * Initialize default checklist from templates.
-     * Idempotent: no-op if already initialized.
-     */
     public function initialize(WeddingPlan $plan): void
     {
         if ($plan->isChecklistInitialized()) {
@@ -59,31 +55,36 @@ class ChecklistService
         $maxOrder = $plan->checklistTasks()->max('sort_order') ?? -1;
 
         return $plan->checklistTasks()->create([
-            'source'      => ChecklistTaskSource::User,
-            'title'       => $data['title'],
-            'description' => $data['description'] ?? null,
-            'category'    => $data['category'],
-            'priority'    => $data['priority'] ?? 'medium',
-            'status'      => ChecklistTaskStatus::Todo,
-            'due_date'    => $data['due_date'] ?? null,
-            'sort_order'  => $maxOrder + 1,
+            'source'               => ChecklistTaskSource::User,
+            'title'                => $data['title'],
+            'description'          => $data['description'] ?? null,
+            'category'             => $data['category'],
+            'priority'             => $data['priority'] ?? 'medium',
+            'status'               => ChecklistTaskStatus::Todo,
+            'due_date'             => $data['due_date'] ?? null,
+            'assignee_type'        => $data['assignee_type'] ?? null,
+            'assignee_label'       => $data['assignee_label'] ?? null,
+            'reminder_enabled'     => $data['reminder_enabled'] ?? false,
+            'reminder_offset_days' => $data['reminder_offset_days'] ?? null,
+            'sort_order'           => $maxOrder + 1,
         ]);
     }
 
     public function updateTask(ChecklistTask $task, array $data): ChecklistTask
     {
-        $wasModified = $task->is_user_modified;
-
-        // Any edit by user sets is_user_modified=true on system tasks
-        $isUserModified = $wasModified || $task->isSystemTask();
+        $isUserModified = $task->is_user_modified || $task->isSystemTask();
 
         $task->update([
-            'title'            => $data['title']       ?? $task->title,
-            'description'      => array_key_exists('description', $data) ? $data['description'] : $task->description,
-            'category'         => $data['category']    ?? $task->category,
-            'priority'         => $data['priority']    ?? $task->priority,
-            'due_date'         => array_key_exists('due_date', $data) ? $data['due_date'] : $task->due_date,
-            'is_user_modified' => $isUserModified,
+            'title'                => $data['title']       ?? $task->title,
+            'description'          => array_key_exists('description', $data) ? $data['description'] : $task->description,
+            'category'             => $data['category']    ?? $task->category,
+            'priority'             => $data['priority']    ?? $task->priority,
+            'due_date'             => array_key_exists('due_date', $data) ? $data['due_date'] : $task->due_date,
+            'assignee_type'        => array_key_exists('assignee_type', $data) ? $data['assignee_type'] : $task->assignee_type,
+            'assignee_label'       => array_key_exists('assignee_label', $data) ? $data['assignee_label'] : $task->assignee_label,
+            'reminder_enabled'     => array_key_exists('reminder_enabled', $data) ? $data['reminder_enabled'] : $task->reminder_enabled,
+            'reminder_offset_days' => array_key_exists('reminder_offset_days', $data) ? $data['reminder_offset_days'] : $task->reminder_offset_days,
+            'is_user_modified'     => $isUserModified,
         ]);
 
         return $task->refresh();
@@ -91,10 +92,6 @@ class ChecklistService
 
     // ─── State Transitions ────────────────────────────────────────
 
-    /**
-     * Toggle todo <-> done.
-     * Throws if task is archived.
-     */
     public function toggle(ChecklistTask $task): ChecklistTask
     {
         if ($task->isArchived()) {
@@ -118,9 +115,6 @@ class ChecklistService
         return $task->refresh();
     }
 
-    /**
-     * Archive a task (todo or done → archived).
-     */
     public function archive(ChecklistTask $task): ChecklistTask
     {
         if ($task->isArchived()) {
@@ -135,9 +129,6 @@ class ChecklistService
         return $task->refresh();
     }
 
-    /**
-     * Restore archived task → todo.
-     */
     public function restore(ChecklistTask $task): ChecklistTask
     {
         if (! $task->isArchived()) {
@@ -145,8 +136,8 @@ class ChecklistService
         }
 
         $task->update([
-            'status'      => ChecklistTaskStatus::Todo,
-            'archived_at' => null,
+            'status'       => ChecklistTaskStatus::Todo,
+            'archived_at'  => null,
             'completed_at' => null,
         ]);
 
@@ -155,9 +146,6 @@ class ChecklistService
 
     // ─── Summary ─────────────────────────────────────────────────
 
-    /**
-     * Progress excludes archived tasks (per spec).
-     */
     public function getSummary(WeddingPlan $plan): array
     {
         $counts = $plan->checklistTasks()
@@ -171,12 +159,28 @@ class ChecklistService
         $archived = (int) ($counts['archived'] ?? 0);
         $total    = $todo + $done;
 
+        $today = now()->startOfDay();
+
+        $overdue = $plan->checklistTasks()
+            ->where('status', ChecklistTaskStatus::Todo)
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', $today)
+            ->count();
+
+        $upcoming7d = $plan->checklistTasks()
+            ->where('status', ChecklistTaskStatus::Todo)
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [$today, $today->copy()->addDays(7)])
+            ->count();
+
         return [
             'total'          => $total,
             'todo'           => $todo,
             'done'           => $done,
             'archived'       => $archived,
             'progress'       => $total > 0 ? round(($done / $total) * 100) : 0,
+            'overdue'        => $overdue,
+            'upcoming_7d'    => $upcoming7d,
             'has_event_date' => $plan->hasEventDate(),
             'event_date'     => $plan->event_date?->format('Y-m-d'),
         ];
@@ -184,10 +188,6 @@ class ChecklistService
 
     // ─── Recalculation ────────────────────────────────────────────
 
-    /**
-     * Recalculate due dates for system tasks not modified by user.
-     * Called when event_date changes on wedding_plan.
-     */
     public function recalculateDueDates(WeddingPlan $plan): void
     {
         $tasks = $plan->checklistTasks()
@@ -217,7 +217,11 @@ class ChecklistService
 
     public function getTasks(WeddingPlan $plan, array $filters = []): Collection
     {
-        $query = $plan->checklistTasks();
+        $query = $plan->checklistTasks()
+            ->withCount([
+                'subtasks',
+                'subtasks as subtasks_done_count' => fn ($q) => $q->where('is_completed', true),
+            ]);
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);

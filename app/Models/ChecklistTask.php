@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChecklistTask extends Model
@@ -31,6 +32,12 @@ class ChecklistTask extends Model
         'priority',
         'status',
         'due_date',
+        'assignee_type',
+        'assignee_label',
+        'reminder_enabled',
+        'reminder_offset_days',
+        'last_reminded_at',
+        'next_reminder_at',
         'sort_order',
         'is_user_modified',
         'completed_at',
@@ -40,15 +47,19 @@ class ChecklistTask extends Model
     protected function casts(): array
     {
         return [
-            'source'           => ChecklistTaskSource::class,
-            'category'         => ChecklistTaskCategory::class,
-            'priority'         => ChecklistTaskPriority::class,
-            'status'           => ChecklistTaskStatus::class,
-            'due_date'         => 'date',
-            'is_user_modified' => 'boolean',
-            'completed_at'     => 'datetime',
-            'archived_at'      => 'datetime',
-            'sort_order'       => 'integer',
+            'source'               => ChecklistTaskSource::class,
+            'category'             => ChecklistTaskCategory::class,
+            'priority'             => ChecklistTaskPriority::class,
+            'status'               => ChecklistTaskStatus::class,
+            'due_date'             => 'date',
+            'reminder_enabled'     => 'boolean',
+            'reminder_offset_days' => 'integer',
+            'last_reminded_at'     => 'datetime',
+            'next_reminder_at'     => 'datetime',
+            'is_user_modified'     => 'boolean',
+            'completed_at'         => 'datetime',
+            'archived_at'          => 'datetime',
+            'sort_order'           => 'integer',
         ];
     }
 
@@ -67,6 +78,11 @@ class ChecklistTask extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(ChecklistTemplate::class, 'template_id');
+    }
+
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(ChecklistSubtask::class, 'task_id')->orderBy('sort_order')->orderBy('created_at');
     }
 
     // ─── Scopes ───────────────────────────────────────────────────

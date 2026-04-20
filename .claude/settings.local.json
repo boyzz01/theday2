@@ -64,7 +64,8 @@
       "Bash(grep -rn \"verified\\\\|verification\" routes/)",
       "Bash(curl -s http://127.0.0.1:8000/sitemap.xml)",
       "Bash(php -r 'require '\\\\''c:/laragon/www/theday/vendor/autoload.php'\\\\''; $app = require '\\\\''c:/laragon/www/theday/bootstrap/app.php'\\\\''; $app->boot\\(\\);')",
-      "Bash(mysql -u root theday -e \"DESCRIBE subscriptions;\")"
+      "Bash(mysql -u root theday -e \"DESCRIBE subscriptions;\")",
+      "Bash(grep -E \"\\\\.\\(php|js|vue\\)$\")"
     ]
   }
 }

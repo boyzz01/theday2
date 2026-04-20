@@ -9,13 +9,15 @@ const props = defineProps({
 
 // ── State ──────────────────────────────────────────────────────────────────
 const tasks          = ref([]);
-const summary        = ref({ total: 0, todo: 0, done: 0, archived: 0, progress: 0, has_event_date: false });
+const summary        = ref({ total: 0, todo: 0, done: 0, archived: 0, progress: 0, overdue: 0, upcoming_7d: 0, has_event_date: false });
 const loading        = ref(true);
 const error          = ref(null);
 const filterStatus   = ref('');
 const filterCat      = ref('');
 const filterPriority = ref('');
+const filterAssignee = ref('');
 const sortBy         = ref('');
+const groupBy        = ref('category');
 const eventDate      = ref('');
 const savingDate     = ref(false);
 const eventDateError = ref('');
@@ -24,21 +26,97 @@ const editingTask    = ref(null);
 const togglingId     = ref(null);
 const moveDoneToBottom = ref(false);
 
-// ── Collapse state (session-persisted) ────────────────────────────────────
-const COLLAPSE_KEY = 'checklist_collapsed_v1';
-const collapsedGroups = ref(new Set(
-    JSON.parse(sessionStorage.getItem(COLLAPSE_KEY) ?? '[]')
+// ── Expand state — default empty = all closed ─────────────────────────────
+const EXPAND_KEY = 'checklist_expanded_v1';
+const expandedGroups = ref(new Set(
+    JSON.parse(sessionStorage.getItem(EXPAND_KEY) ?? '[]')
 ));
 
-watch(collapsedGroups, (v) => {
-    sessionStorage.setItem(COLLAPSE_KEY, JSON.stringify([...v]));
+watch(expandedGroups, (v) => {
+    sessionStorage.setItem(EXPAND_KEY, JSON.stringify([...v]));
 }, { deep: true });
 
-function toggleGroup(cat) {
-    const next = new Set(collapsedGroups.value);
-    if (next.has(cat)) next.delete(cat);
-    else next.add(cat);
-    collapsedGroups.value = next;
+function toggleGroup(key) {
+    const next = new Set(expandedGroups.value);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    expandedGroups.value = next;
+}
+
+// ── Subtask state ──────────────────────────────────────────────────────────
+const expandedTasks = ref(new Set());
+const subtaskMap    = reactive({});
+
+function getSubtaskState(taskId) {
+    if (!subtaskMap[taskId]) {
+        subtaskMap[taskId] = { items: [], loading: false, loaded: false, newTitle: '', saving: false };
+    }
+    return subtaskMap[taskId];
+}
+
+async function loadSubtasks(taskId) {
+    const state = getSubtaskState(taskId);
+    if (state.loaded || state.loading) return;
+    state.loading = true;
+    try {
+        const { data } = await axios.get(route('dashboard.checklist.tasks.subtasks.index', taskId));
+        state.items  = data.subtasks;
+        state.loaded = true;
+    } finally {
+        state.loading = false;
+    }
+}
+
+function toggleExpand(task) {
+    const next = new Set(expandedTasks.value);
+    if (next.has(task.id)) {
+        next.delete(task.id);
+    } else {
+        next.add(task.id);
+        loadSubtasks(task.id);
+    }
+    expandedTasks.value = next;
+}
+
+async function addSubtask(task) {
+    const state = getSubtaskState(task.id);
+    const title = state.newTitle.trim();
+    if (!title || state.saving) return;
+    state.saving = true;
+    try {
+        const { data } = await axios.post(route('dashboard.checklist.tasks.subtasks.store', task.id), { title });
+        state.items.push(data);
+        state.newTitle = '';
+        task.subtasks_count = (task.subtasks_count || 0) + 1;
+    } finally {
+        state.saving = false;
+    }
+}
+
+async function toggleSubtask(task, subtask) {
+    const prev = subtask.is_completed;
+    subtask.is_completed = !subtask.is_completed;
+    try {
+        await axios.patch(
+            route('dashboard.checklist.tasks.subtasks.update', [task.id, subtask.id]),
+            { is_completed: subtask.is_completed }
+        );
+        const state = getSubtaskState(task.id);
+        task.subtasks_done_count = state.items.filter(s => s.is_completed).length;
+    } catch {
+        subtask.is_completed = prev;
+    }
+}
+
+async function deleteSubtask(task, subtask) {
+    await axios.delete(route('dashboard.checklist.tasks.subtasks.destroy', [task.id, subtask.id]));
+    const state = getSubtaskState(task.id);
+    const idx   = state.items.indexOf(subtask);
+    if (idx > -1) state.items.splice(idx, 1);
+    task.subtasks_count      = Math.max(0, (task.subtasks_count || 0) - 1);
+    if (subtask.is_completed) {
+        task.subtasks_done_count = Math.max(0, (task.subtasks_done_count || 0) - 1);
+    }
 }
 
 // ── Bulk selection ─────────────────────────────────────────────────────────
@@ -85,7 +163,7 @@ function getSwipe(id) {
 function onSwipeStart(task, e) {
     if (bulkMode.value) return;
     const sw = getSwipe(task.id);
-    sw.startX  = e.touches[0].clientX;
+    sw.startX   = e.touches[0].clientX;
     sw.dragging = true;
 }
 
@@ -100,13 +178,8 @@ function onSwipeMove(task, e) {
 function onSwipeEnd(task) {
     const sw = getSwipe(task.id);
     sw.dragging = false;
-    if (sw.offsetX < -55) {
-        sw.offsetX = -120;
-        sw.open = true;
-    } else {
-        sw.offsetX = 0;
-        sw.open = false;
-    }
+    if (sw.offsetX < -55) { sw.offsetX = -120; sw.open = true; }
+    else { sw.offsetX = 0; sw.open = false; }
 }
 
 function closeSwipe(id) {
@@ -119,11 +192,32 @@ function closeAllSwipes() {
 }
 
 // ── Form ───────────────────────────────────────────────────────────────────
-const emptyForm = () => ({ title: '', category: 'lainnya', priority: 'medium', due_date: '', description: '' });
+const ASSIGNEE_OPTIONS = [
+    { value: 'bride',   label: 'Mempelai Wanita' },
+    { value: 'groom',   label: 'Mempelai Pria' },
+    { value: 'both',    label: 'Bersama' },
+    { value: 'parents', label: 'Orang Tua' },
+    { value: 'family',  label: 'Keluarga' },
+    { value: 'wo',      label: 'Wedding Organizer' },
+    { value: 'custom',  label: 'Lainnya…' },
+];
+
+const emptyForm = () => ({
+    title:                '',
+    category:             'lainnya',
+    priority:             'medium',
+    due_date:             '',
+    description:          '',
+    assignee_type:        '',
+    assignee_label:       '',
+    reminder_enabled:     false,
+    reminder_offset_days: 7,
+});
+
 const form      = ref(emptyForm());
 const formError = ref({});
 const saving    = ref(false);
-const customCategory = ref('');
+const customCategory     = ref('');
 const usingCustomCategory = ref(false);
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -166,6 +260,26 @@ const priorityConfig = {
     low:    { label: 'Rendah', dotClass: 'bg-stone-300', textClass: 'text-stone-400' },
 };
 
+const assigneeLabel = (type, label) => {
+    if (!type) return null;
+    if (type === 'custom') return label || 'Custom';
+    return ASSIGNEE_OPTIONS.find(o => o.value === type)?.label ?? type;
+};
+
+// ── Urgency ────────────────────────────────────────────────────────────────
+function urgencyInfo(task) {
+    if (!task.due_date || task.status === 'done' || task.status === 'archived') return null;
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const due = new Date(task.due_date + 'T00:00:00');
+    const diff = Math.round((due - now) / 86400000);
+
+    if (diff < 0)  return { label: `Lewat ${Math.abs(diff)} hari`, cls: 'bg-red-50 text-red-500 border border-red-100' };
+    if (diff === 0) return { label: 'Hari ini',               cls: 'bg-orange-50 text-orange-500 border border-orange-100' };
+    if (diff === 1) return { label: 'Besok',                  cls: 'bg-amber-50 text-amber-600 border border-amber-100' };
+    if (diff <= 7)  return { label: `${diff} hari lagi`,      cls: 'bg-yellow-50 text-yellow-600 border border-yellow-100' };
+    return { label: `H-${diff}`, cls: 'bg-stone-50 text-stone-400' };
+}
+
 // ── Computed ───────────────────────────────────────────────────────────────
 const activeTasks   = computed(() => tasks.value.filter(t => t.status !== 'archived'));
 const archivedTasks = computed(() => tasks.value.filter(t => t.status === 'archived'));
@@ -179,6 +293,7 @@ const baseList = computed(() => {
     }
     if (filterCat.value)      list = list.filter(t => t.category === filterCat.value);
     if (filterPriority.value) list = list.filter(t => t.priority === filterPriority.value);
+    if (filterAssignee.value) list = list.filter(t => t.assignee_type === filterAssignee.value);
     return list;
 });
 
@@ -204,14 +319,25 @@ function sortList(list) {
     return sorted;
 }
 
-const groups = computed(() => {
-    const list = baseList.value;
-    const map  = new Map();
+function buildGroupShape(key, label, list) {
+    const done  = list.filter(t => t.status === 'done').length;
+    const total = list.length;
+    return {
+        cat: key,
+        label,
+        tasks:    sortList(list),
+        done,
+        total,
+        progress: total > 0 ? Math.round((done / total) * 100) : 0,
+    };
+}
+
+function categoryGroups(list) {
+    const map = new Map();
     for (const task of list) {
         if (!map.has(task.category)) map.set(task.category, []);
         map.get(task.category).push(task);
     }
-
     return [...map.entries()]
         .sort((a, b) => {
             const ai = CATEGORY_ORDER.indexOf(a[0]);
@@ -234,11 +360,89 @@ const groups = computed(() => {
                 progress: totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0,
             };
         });
+}
+
+function deadlineGroups(list) {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const buckets = {
+        overdue: [],
+        today:   [],
+        week:    [],
+        month:   [],
+        later:   [],
+        done:    [],
+    };
+
+    for (const task of list) {
+        if (task.status === 'done') { buckets.done.push(task); continue; }
+        if (!task.due_date) { buckets.later.push(task); continue; }
+        const due  = new Date(task.due_date + 'T00:00:00');
+        const diff = Math.round((due - now) / 86400000);
+        if (diff < 0)       buckets.overdue.push(task);
+        else if (diff === 0) buckets.today.push(task);
+        else if (diff <= 7)  buckets.week.push(task);
+        else if (diff <= 30) buckets.month.push(task);
+        else                 buckets.later.push(task);
+    }
+
+    const sections = [
+        { key: 'overdue', label: 'Terlambat',        list: buckets.overdue },
+        { key: 'today',   label: 'Hari ini',          list: buckets.today   },
+        { key: 'week',    label: '7 hari ke depan',   list: buckets.week    },
+        { key: 'month',   label: '30 hari ke depan',  list: buckets.month   },
+        { key: 'later',   label: 'Nanti',              list: buckets.later   },
+        { key: 'done',    label: 'Selesai',            list: buckets.done    },
+    ];
+
+    return sections
+        .filter(s => s.list.length > 0)
+        .map(s => buildGroupShape(s.key, s.label, s.list));
+}
+
+function assigneeGroups(list) {
+    const map = new Map();
+    for (const task of list) {
+        const key = task.assignee_type || '__none__';
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(task);
+    }
+    return [...map.entries()].map(([key, items]) => {
+        const label = key === '__none__'
+            ? 'Tanpa PIC'
+            : assigneeLabel(key, items[0]?.assignee_label) ?? key;
+        return buildGroupShape(key, label, items);
+    });
+}
+
+const groups = computed(() => {
+    const list = baseList.value;
+    if (groupBy.value === 'deadline') return deadlineGroups(list);
+    if (groupBy.value === 'assignee') return assigneeGroups(list);
+    return categoryGroups(list);
 });
 
 const allDone = computed(() =>
     summary.value.total > 0 && summary.value.todo === 0
 );
+
+// ── Swipe hint (one-time peek animation) ──────────────────────────────────
+const SWIPE_HINT_KEY = 'checklist_swipe_hinted_v1';
+const swipeHintId    = ref(null);
+
+async function playSwipeHint() {
+    if (localStorage.getItem(SWIPE_HINT_KEY)) return;
+    const firstTask = tasks.value.find(t => t.status !== 'archived');
+    if (!firstTask) return;
+    localStorage.setItem(SWIPE_HINT_KEY, '1');
+    await new Promise(r => setTimeout(r, 700));
+    swipeHintId.value = firstTask.id;
+    const sw = getSwipe(firstTask.id);
+    sw.offsetX = -72;
+    await new Promise(r => setTimeout(r, 550));
+    sw.offsetX = 0;
+    await new Promise(r => setTimeout(r, 300));
+    swipeHintId.value = null;
+}
 
 // ── Bootstrap ──────────────────────────────────────────────────────────────
 onMounted(async () => {
@@ -247,6 +451,7 @@ onMounted(async () => {
             await axios.post(route('dashboard.checklist.initialize'));
         }
         await Promise.all([loadTasks(), loadSummary()]);
+        playSwipeHint();
     } catch {
         error.value = 'Gagal memuat checklist. Silakan muat ulang halaman.';
     } finally {
@@ -359,11 +564,15 @@ function openEdit(task) {
     usingCustomCategory.value = !isKnown;
     customCategory.value = isKnown ? '' : task.category;
     form.value = {
-        title:       task.title,
-        category:    isKnown ? task.category : 'lainnya',
-        priority:    task.priority,
-        due_date:    task.due_date ?? '',
-        description: task.description ?? '',
+        title:                task.title,
+        category:             isKnown ? task.category : 'lainnya',
+        priority:             task.priority,
+        due_date:             task.due_date ?? '',
+        description:          task.description ?? '',
+        assignee_type:        task.assignee_type ?? '',
+        assignee_label:       task.assignee_label ?? '',
+        reminder_enabled:     task.reminder_enabled ?? false,
+        reminder_offset_days: task.reminder_offset_days ?? 7,
     };
     formError.value = {};
     showForm.value = true;
@@ -388,8 +597,10 @@ async function saveForm() {
     try {
         const payload = {
             ...form.value,
-            category: effectiveCategory,
-            due_date: form.value.due_date || null,
+            category:       effectiveCategory,
+            due_date:       form.value.due_date || null,
+            assignee_type:  form.value.assignee_type || null,
+            assignee_label: form.value.assignee_type === 'custom' ? (form.value.assignee_label || null) : null,
         };
         if (editingTask.value) {
             await axios.patch(route('dashboard.checklist.tasks.update', editingTask.value.id), payload);
@@ -415,7 +626,7 @@ const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agu
 const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 
 const showDatePicker = ref(false);
-const datePickerMode = ref(''); // 'event' | 'due'
+const datePickerMode = ref('');
 const calToday       = new Date();
 const calYear        = ref(calToday.getFullYear());
 const calMonth       = ref(calToday.getMonth());
@@ -452,8 +663,8 @@ const calDays = computed(() => {
 });
 function pickDay(day) {
     if (!day) return;
-    const m = String(calMonth.value + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
+    const m   = String(calMonth.value + 1).padStart(2, '0');
+    const d   = String(day).padStart(2, '0');
     const val = `${calYear.value}-${m}-${d}`;
     if (datePickerMode.value === 'event') eventDate.value = val;
     else form.value.due_date = val;
@@ -483,15 +694,6 @@ const currentPickerDate = computed(() =>
 function formatDate(d) {
     if (!d) return null;
     return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-function isDueSoon(d) {
-    if (!d) return false;
-    const diff = (new Date(d) - new Date()) / 86400000;
-    return diff <= 7 && diff >= 0;
-}
-function isOverdue(d) {
-    if (!d) return false;
-    return new Date(d) < new Date();
 }
 </script>
 
@@ -540,21 +742,13 @@ function isOverdue(d) {
             <Transition name="slide-down">
                 <div v-if="bulkMode"
                      class="sticky top-0 z-20 mb-4 px-4 py-3 bg-white border border-stone-200 rounded-xl shadow-sm flex items-center gap-2">
-                    <span class="text-sm font-medium text-stone-700 flex-1">
-                        {{ selectedIds.size }} dipilih
-                    </span>
+                    <span class="text-sm font-medium text-stone-700 flex-1">{{ selectedIds.size }} dipilih</span>
                     <button @click="doBulkAction('done')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50">
-                        Selesai
-                    </button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50">Selesai</button>
                     <button @click="doBulkAction('archive')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-50">
-                        Arsipkan
-                    </button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-50">Arsipkan</button>
                     <button @click="doBulkAction('delete')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50">
-                        Hapus
-                    </button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50">Hapus</button>
                     <button @click="cancelBulkMode"
                             class="ml-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -580,13 +774,27 @@ function isOverdue(d) {
                     <p class="text-2xl font-bold text-green-600">{{ summary.done }}</p>
                     <p class="text-xs text-stone-400 mt-1">dari {{ summary.total }} task</p>
                 </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Perlu dikerjakan</p>
-                    <p class="text-2xl font-bold text-[#73877C]">{{ summary.todo }}</p>
+                <div
+                    class="rounded-xl border p-4 cursor-pointer transition-colors"
+                    :class="summary.overdue > 0
+                        ? 'bg-red-50 border-red-100 hover:bg-red-100'
+                        : 'bg-white border-stone-100'"
+                    @click="summary.overdue > 0 && (groupBy = 'deadline')"
+                >
+                    <p class="text-xs mb-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-400'">Terlambat</p>
+                    <p class="text-2xl font-bold" :class="summary.overdue > 0 ? 'text-red-600' : 'text-stone-300'">{{ summary.overdue }}</p>
+                    <p class="text-xs mt-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-300'">task overdue</p>
                 </div>
-                <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Diarsipkan</p>
-                    <p class="text-2xl font-bold text-stone-400">{{ summary.archived }}</p>
+                <div
+                    class="rounded-xl border p-4 cursor-pointer transition-colors"
+                    :class="summary.upcoming_7d > 0
+                        ? 'bg-amber-50 border-amber-100 hover:bg-amber-100'
+                        : 'bg-white border-stone-100'"
+                    @click="summary.upcoming_7d > 0 && (groupBy = 'deadline')"
+                >
+                    <p class="text-xs mb-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-400'">7 Hari Lagi</p>
+                    <p class="text-2xl font-bold" :class="summary.upcoming_7d > 0 ? 'text-amber-600' : 'text-stone-300'">{{ summary.upcoming_7d }}</p>
+                    <p class="text-xs mt-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-300'">deadline dekat</p>
                 </div>
             </div>
 
@@ -627,8 +835,15 @@ function isOverdue(d) {
 
             <!-- ── Controls row ───────────────────────────────────── -->
             <div class="mb-5 space-y-2">
-                <!-- Dropdowns: 2-col grid mobile, single row desktop -->
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                    <!-- Group by -->
+                    <select v-model="groupBy"
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
+                        <option value="category">Grup: Kategori</option>
+                        <option value="deadline">Grup: Deadline</option>
+                        <option value="assignee">Grup: PIC</option>
+                    </select>
+
                     <select v-model="filterStatus"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Semua status</option>
@@ -651,6 +866,12 @@ function isOverdue(d) {
                         <option value="low">Rendah</option>
                     </select>
 
+                    <select v-model="filterAssignee"
+                            class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
+                        <option value="">Semua PIC</option>
+                        <option v-for="o in ASSIGNEE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+                    </select>
+
                     <select v-model="sortBy"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                         <option value="">Urutan default</option>
@@ -661,29 +882,16 @@ function isOverdue(d) {
 
                 <!-- Toggle + Add button row -->
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-1.5">
-                        <label class="flex items-center gap-1.5 text-xs text-stone-500 cursor-pointer select-none">
-                            <div class="relative w-8 h-4 flex-shrink-0"
-                                 @click="moveDoneToBottom = !moveDoneToBottom">
-                                <div class="w-full h-full rounded-full transition-colors"
-                                     :class="moveDoneToBottom ? 'bg-[#92A89C]' : 'bg-stone-200'"/>
-                                <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform"
-                                     :class="moveDoneToBottom ? 'translate-x-4' : 'translate-x-0'"/>
-                            </div>
-                            Selesai ke bawah
-                        </label>
-                        <div class="group relative flex-shrink-0">
-                            <svg class="w-3.5 h-3.5 text-stone-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-lg bg-stone-800 text-white text-xs leading-relaxed
-                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
-                                Task yang sudah selesai otomatis dipindah ke bagian bawah grup, agar task yang belum selesai lebih mudah dilihat.
-                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800"/>
-                            </div>
+                    <label class="flex items-center gap-1.5 text-xs text-stone-500 cursor-pointer select-none">
+                        <div class="relative w-8 h-4 flex-shrink-0"
+                             @click="moveDoneToBottom = !moveDoneToBottom">
+                            <div class="w-full h-full rounded-full transition-colors"
+                                 :class="moveDoneToBottom ? 'bg-[#92A89C]' : 'bg-stone-200'"/>
+                            <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform"
+                                 :class="moveDoneToBottom ? 'translate-x-4' : 'translate-x-0'"/>
                         </div>
-                    </div>
+                        Selesai ke bawah
+                    </label>
 
                     <button @click="openCreate"
                             class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -706,21 +914,19 @@ function isOverdue(d) {
                 </div>
                 <h3 class="text-stone-700 font-medium mb-1">Belum ada task</h3>
                 <p class="text-stone-400 text-sm mb-4">Mulai persiapan pernikahanmu</p>
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-2">
-                    <button @click="openCreate"
-                            class="px-4 py-2 rounded-xl text-sm font-medium text-white"
-                            style="background-color: #92A89C">
-                        Tambah task
-                    </button>
-                </div>
+                <button @click="openCreate"
+                        class="px-4 py-2 rounded-xl text-sm font-medium text-white"
+                        style="background-color: #92A89C">
+                    Tambah task
+                </button>
             </div>
 
-            <!-- ── Empty state (filtered, has tasks) ─────────────── -->
+            <!-- ── Empty state (filtered) ─────────────────────────── -->
             <div v-else-if="groups.length === 0" class="py-12 text-center">
                 <p class="text-stone-400 text-sm">Tidak ada task yang cocok dengan filter ini.</p>
             </div>
 
-            <!-- ── Category groups ────────────────────────────────── -->
+            <!-- ── Groups ─────────────────────────────────────────── -->
             <div v-else class="space-y-1">
                 <div v-for="group in groups" :key="group.cat">
 
@@ -729,28 +935,29 @@ function isOverdue(d) {
                         class="w-full flex items-center gap-2.5 py-2.5 px-1 text-left select-none hover:bg-stone-50 rounded-lg transition-colors"
                         @click="toggleGroup(group.cat)"
                     >
-                        <!-- Chevron -->
                         <svg class="w-4 h-4 text-stone-400 flex-shrink-0 transition-transform duration-200"
-                             :class="collapsedGroups.has(group.cat) ? '' : 'rotate-90'"
+                             :class="expandedGroups.has(group.cat) ? 'rotate-90' : ''"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
 
-                        <!-- Category name -->
-                        <span class="text-sm font-semibold text-stone-700">{{ group.label }}</span>
+                        <!-- Overdue indicator dot -->
+                        <span v-if="group.cat === 'overdue'"
+                              class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"/>
 
-                        <!-- Count -->
+                        <span class="text-sm font-semibold"
+                              :class="group.cat === 'overdue' ? 'text-red-600' : 'text-stone-700'">
+                            {{ group.label }}
+                        </span>
                         <span class="text-xs text-stone-400">{{ group.done }}/{{ group.total }}</span>
-
-                        <!-- Mini progress bar -->
                         <div class="flex-1 h-1.5 rounded-full bg-stone-100 overflow-hidden max-w-24">
                             <div class="h-full rounded-full transition-all duration-500"
-                                 style="background-color: #92A89C"
-                                 :style="{ width: group.progress + '%' }"/>
+                                 :style="{
+                                     width: group.progress + '%',
+                                     backgroundColor: group.cat === 'overdue' ? '#ef4444' : '#92A89C',
+                                 }"/>
                         </div>
-
-                        <!-- Collapsed count -->
-                        <span v-if="collapsedGroups.has(group.cat)"
+                        <span v-if="!expandedGroups.has(group.cat)"
                               class="text-xs text-stone-400 ml-auto">
                             {{ group.tasks.length }} task
                         </span>
@@ -765,14 +972,14 @@ function isOverdue(d) {
                         leave-from-class="opacity-100 translate-y-0"
                         leave-to-class="opacity-0 -translate-y-1"
                     >
-                        <div v-show="!collapsedGroups.has(group.cat)" class="space-y-1.5 pb-3 pl-6">
+                        <div v-show="expandedGroups.has(group.cat)" class="space-y-1.5 pb-3 pl-6">
 
                             <div v-for="task in group.tasks" :key="task.id"
                                  class="relative overflow-hidden rounded-xl"
                                  @click.self="closeSwipe(task.id)">
 
-                                <!-- Swipe action backdrop (mobile) -->
-                                <div v-if="task.status !== 'archived'"
+                                <!-- Swipe backdrop (mobile) -->
+                                <div v-if="task.status === 'todo'"
                                      class="absolute right-0 top-0 h-full flex items-stretch">
                                     <button @click="toggle(task)"
                                             class="h-full px-4 flex flex-col items-center justify-center gap-0.5 text-xs font-medium text-green-700 bg-green-50">
@@ -799,135 +1006,223 @@ function isOverdue(d) {
                                     </button>
                                 </div>
 
-                                <!-- Task content (slides left on swipe) -->
+                                <!-- Task card -->
                                 <div
-                                    class="relative z-10 bg-white border rounded-xl px-3 py-3 flex items-start gap-0 transition-opacity"
-                                    :class="task.status === 'done' || task.status === 'archived' ? 'opacity-60' : ''"
+                                    class="relative z-10 bg-white border rounded-xl px-3 py-3 transition-opacity"
+                                    :class="[
+                                        task.status === 'done' || task.status === 'archived' ? 'opacity-60' : '',
+                                        expandedTasks.has(task.id) ? 'rounded-b-none border-b-0' : '',
+                                    ]"
                                     :style="{
                                         transform: `translateX(${getSwipe(task.id).offsetX}px)`,
-                                        transition: getSwipe(task.id).dragging ? 'none' : 'transform 0.2s ease',
+                                        transition: swipeHintId === task.id
+                                            ? 'transform 0.45s cubic-bezier(0.4,0,0.2,1)'
+                                            : getSwipe(task.id).dragging ? 'none' : 'transform 0.2s ease',
                                         borderColor: selectedIds.has(task.id) ? '#92A89C' : '',
                                     }"
                                     @touchstart.passive="onSwipeStart(task, $event); onLongPressStart(task)"
                                     @touchmove.passive="onSwipeMove(task, $event); onLongPressCancel()"
                                     @touchend="onSwipeEnd(task); onLongPressCancel()"
                                 >
-                                    <!-- Checkbox (44x44px touch target) -->
-                                    <button
-                                        class="flex-shrink-0 flex items-center justify-center w-11 h-11 -ml-1.5 -mt-0.5"
-                                        @click.stop="bulkMode ? toggleSelect(task) : toggle(task)"
-                                        :disabled="togglingId === task.id && !bulkMode"
-                                    >
-                                        <!-- Bulk select -->
-                                        <div v-if="bulkMode"
-                                             class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
-                                             :class="selectedIds.has(task.id)
-                                                 ? 'border-[#92A89C] bg-[#92A89C]/100'
-                                                 : 'border-stone-300'">
-                                            <svg v-if="selectedIds.has(task.id)" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                        </div>
-                                        <!-- Archived icon -->
-                                        <div v-else-if="task.status === 'archived'"
-                                             class="w-5 h-5 rounded-full border-2 border-stone-200 flex items-center justify-center">
-                                            <svg class="w-3 h-3 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
-                                            </svg>
-                                        </div>
-                                        <!-- Todo / Done circle -->
-                                        <div v-else
-                                             class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
-                                             :class="task.status === 'done'
-                                                 ? 'border-green-500 bg-green-500'
-                                                 : 'border-stone-300 hover:border-[#92A89C]'">
-                                            <svg v-if="task.status === 'done'" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    <!-- Content -->
-                                    <div class="flex-1 min-w-0 ml-0.5">
-                                        <p class="text-sm font-medium text-stone-800 leading-snug line-clamp-2"
-                                           :class="task.status === 'done' ? 'line-through text-stone-400' : ''">
-                                            {{ task.title }}
-                                        </p>
-                                        <p v-if="task.description"
-                                           class="text-xs text-stone-400 mt-0.5 truncate">
-                                            {{ task.description }}
-                                        </p>
-
-                                        <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                            <!-- Priority dot + label -->
-                                            <div class="flex items-center gap-1">
-                                                <div class="w-2 h-2 rounded-full flex-shrink-0"
-                                                     :class="priorityConfig[task.priority]?.dotClass"/>
-                                                <span class="text-xs"
-                                                      :class="priorityConfig[task.priority]?.textClass">
-                                                    {{ priorityConfig[task.priority]?.label }}
-                                                </span>
-                                            </div>
-
-                                            <!-- Due date -->
-                                            <span v-if="task.due_date && task.status !== 'archived'"
-                                                  class="text-xs px-1.5 py-0.5 rounded-full"
-                                                  :class="task.status !== 'done' && isOverdue(task.due_date)
-                                                      ? 'bg-red-50 text-red-500'
-                                                      : task.status !== 'done' && isDueSoon(task.due_date)
-                                                          ? 'bg-[#92A89C]/10 text-[#73877C]'
-                                                          : 'bg-stone-50 text-stone-400'">
-                                                {{ formatDate(task.due_date) }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Desktop actions -->
-                                    <div class="hidden sm:flex items-center gap-0.5 flex-shrink-0 ml-2">
-                                        <template v-if="task.status !== 'archived'">
-                                            <button @click.stop="openEdit(task)"
-                                                    class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
-                                                    title="Edit">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    <div class="flex items-start gap-0">
+                                        <!-- Checkbox -->
+                                        <button
+                                            class="flex-shrink-0 flex items-center justify-center w-11 h-11 -ml-1.5 -mt-0.5"
+                                            @click.stop="bulkMode ? toggleSelect(task) : toggle(task)"
+                                            :disabled="togglingId === task.id && !bulkMode"
+                                        >
+                                            <div v-if="bulkMode"
+                                                 class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                                                 :class="selectedIds.has(task.id) ? 'border-[#92A89C] bg-[#92A89C]' : 'border-stone-300'">
+                                                <svg v-if="selectedIds.has(task.id)" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                                 </svg>
-                                            </button>
-                                            <button @click.stop="archiveTask(task)"
-                                                    class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
-                                                    title="Arsipkan">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            </div>
+                                            <div v-else-if="task.status === 'archived'"
+                                                 class="w-5 h-5 rounded-full border-2 border-stone-200 flex items-center justify-center">
+                                                <svg class="w-3 h-3 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
                                                 </svg>
-                                            </button>
-                                            <button @click.stop="deleteTask(task)"
-                                                    class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                                    title="Hapus">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </div>
+                                            <div v-else
+                                                 class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                                 :class="task.status === 'done'
+                                                     ? 'border-green-500 bg-green-500'
+                                                     : 'border-stone-300 hover:border-[#92A89C]'">
+                                                <svg v-if="task.status === 'done'" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                                 </svg>
-                                            </button>
-                                        </template>
-                                        <template v-else>
+                                            </div>
+                                        </button>
+
+                                        <!-- Content -->
+                                        <div class="flex-1 min-w-0 ml-0.5">
+                                            <p class="text-sm font-medium text-stone-800 leading-snug line-clamp-2"
+                                               :class="task.status === 'done' ? 'line-through text-stone-400' : ''">
+                                                {{ task.title }}
+                                            </p>
+                                            <p v-if="task.description"
+                                               class="text-xs text-stone-400 mt-0.5 truncate">
+                                                {{ task.description }}
+                                            </p>
+
+                                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                                <!-- Priority -->
+                                                <div class="flex items-center gap-1">
+                                                    <div class="w-2 h-2 rounded-full flex-shrink-0"
+                                                         :class="priorityConfig[task.priority]?.dotClass"/>
+                                                    <span class="text-xs" :class="priorityConfig[task.priority]?.textClass">
+                                                        {{ priorityConfig[task.priority]?.label }}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Urgency badge -->
+                                                <span v-if="urgencyInfo(task)"
+                                                      class="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                                                      :class="urgencyInfo(task).cls">
+                                                    {{ urgencyInfo(task).label }}
+                                                </span>
+
+                                                <!-- Assignee badge -->
+                                                <span v-if="task.assignee_type"
+                                                      class="text-xs px-1.5 py-0.5 rounded-full bg-[#92A89C]/10 text-[#73877C]">
+                                                    {{ assigneeLabel(task.assignee_type, task.assignee_label) }}
+                                                </span>
+
+                                                <!-- Subtasks count -->
+                                                <button
+                                                    v-if="task.subtasks_count > 0 && task.status !== 'archived'"
+                                                    class="text-xs px-1.5 py-0.5 rounded-full bg-stone-50 text-stone-500 hover:bg-stone-100 transition-colors"
+                                                    @click.stop="toggleExpand(task)"
+                                                >
+                                                    {{ task.subtasks_done_count }}/{{ task.subtasks_count }} subtugas
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Desktop actions -->
+                                        <div class="hidden sm:flex items-center gap-0.5 flex-shrink-0 ml-2">
+                                            <template v-if="task.status !== 'archived'">
+                                                <!-- Add subtask -->
+                                                <button @click.stop="toggleExpand(task)"
+                                                        class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
+                                                        title="Subtugas">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                                    </svg>
+                                                </button>
+                                                <button @click.stop="openEdit(task)"
+                                                        class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
+                                                        title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                </button>
+                                                <button @click.stop="archiveTask(task)"
+                                                        class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
+                                                        title="Arsipkan">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
+                                                    </svg>
+                                                </button>
+                                                <button @click.stop="deleteTask(task)"
+                                                        class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                        title="Hapus">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            </template>
+                                            <template v-else>
+                                                <button @click.stop="restoreTask(task)"
+                                                        class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10 hover:bg-[#92A89C]/20 transition-colors">
+                                                    Pulihkan
+                                                </button>
+                                            </template>
+                                        </div>
+
+                                        <!-- Mobile: archived restore -->
+                                        <div v-if="task.status === 'archived'" class="flex sm:hidden items-center ml-2">
                                             <button @click.stop="restoreTask(task)"
-                                                    class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10 hover:bg-[#92A89C]/20 transition-colors">
+                                                    class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10">
                                                 Pulihkan
                                             </button>
-                                        </template>
-                                    </div>
+                                        </div>
 
-                                    <!-- Mobile: archived restore -->
-                                    <div v-if="task.status === 'archived'" class="flex sm:hidden items-center ml-2">
-                                        <button @click.stop="restoreTask(task)"
-                                                class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10">
-                                            Pulihkan
-                                        </button>
+                                        <!-- Mobile: swipe indicator dots -->
+                                        <div v-if="task.status !== 'archived' && !bulkMode"
+                                             class="sm:hidden flex-shrink-0 flex flex-col items-center justify-center gap-0.5 ml-1 opacity-20">
+                                            <span class="w-1 h-1 rounded-full bg-stone-500"/>
+                                            <span class="w-1 h-1 rounded-full bg-stone-500"/>
+                                            <span class="w-1 h-1 rounded-full bg-stone-500"/>
+                                        </div>
                                     </div>
-
                                 </div>
+
+                                <!-- ── Subtask expand panel ────────── -->
+                                <div v-if="expandedTasks.has(task.id) && task.status !== 'archived'"
+                                     class="relative z-10 bg-stone-50 border border-t-0 rounded-b-xl px-4 py-3 space-y-2">
+
+                                    <div v-if="getSubtaskState(task.id).loading"
+                                         class="flex items-center gap-2 text-xs text-stone-400 py-1">
+                                        <div class="w-3 h-3 rounded-full border border-stone-300 border-t-[#92A89C] animate-spin"/>
+                                        Memuat subtugas…
+                                    </div>
+
+                                    <template v-else>
+                                        <!-- Subtask items -->
+                                        <div v-for="sub in getSubtaskState(task.id).items" :key="sub.id"
+                                             class="flex items-center gap-2 group">
+                                            <button @click="toggleSubtask(task, sub)"
+                                                    class="flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+                                                    :class="sub.is_completed
+                                                        ? 'border-green-500 bg-green-500'
+                                                        : 'border-stone-300 hover:border-[#92A89C]'">
+                                                <svg v-if="sub.is_completed" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            </button>
+                                            <span class="flex-1 text-xs text-stone-700"
+                                                  :class="sub.is_completed ? 'line-through text-stone-400' : ''">
+                                                {{ sub.title }}
+                                            </span>
+                                            <button @click="deleteSubtask(task, sub)"
+                                                    class="opacity-0 group-hover:opacity-100 p-0.5 rounded text-stone-300 hover:text-red-400 transition-all">
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Empty subtasks -->
+                                        <p v-if="getSubtaskState(task.id).items.length === 0 && getSubtaskState(task.id).loaded"
+                                           class="text-xs text-stone-400 italic">Belum ada subtugas.</p>
+
+                                        <!-- Add subtask input -->
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <input
+                                                v-model="getSubtaskState(task.id).newTitle"
+                                                type="text"
+                                                placeholder="Tambah subtugas…"
+                                                class="flex-1 text-xs border border-stone-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-[#92A89C]/40"
+                                                @keydown.enter="addSubtask(task)"
+                                            />
+                                            <button
+                                                @click="addSubtask(task)"
+                                                :disabled="!getSubtaskState(task.id).newTitle.trim() || getSubtaskState(task.id).saving"
+                                                class="text-xs px-2 py-1.5 rounded-lg font-medium text-white disabled:opacity-40 transition-opacity"
+                                                style="background-color: #92A89C">
+                                                + Tambah
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+
                             </div>
 
                         </div>
@@ -951,7 +1246,7 @@ function isOverdue(d) {
             <div v-if="showForm"
                  class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4"
                  @click.self="closeForm">
-                <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl p-6">
+                <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[90dvh] overflow-y-auto">
                     <h2 class="text-base font-semibold text-stone-800 mb-4">
                         {{ editingTask ? 'Edit Task' : 'Tambah Task Baru' }}
                     </h2>
@@ -975,15 +1270,12 @@ function isOverdue(d) {
                                         class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                     <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                                 </select>
-                                <input v-else
-                                       v-model="customCategory"
-                                       type="text"
-                                       placeholder="Nama kategori"
+                                <input v-else v-model="customCategory" type="text" placeholder="Nama kategori"
                                        class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                        :class="formError.category ? 'border-red-300' : 'border-stone-200'"/>
                                 <button @click="usingCustomCategory = !usingCustomCategory"
                                         class="mt-1 text-xs text-[#73877C] hover:underline">
-                                    {{ usingCustomCategory ? '← Pilih dari daftar' : '+ Kategori lain' }}
+                                    {{ usingCustomCategory ? '← Dari daftar' : '+ Kategori lain' }}
                                 </button>
                                 <p v-if="formError.category" class="text-xs text-red-500 mt-1">{{ formError.category }}</p>
                             </div>
@@ -999,6 +1291,21 @@ function isOverdue(d) {
                             </div>
                         </div>
 
+                        <!-- Assignee -->
+                        <div>
+                            <label class="text-xs text-stone-500 mb-1 block">Penanggung jawab (opsional)</label>
+                            <select v-model="form.assignee_type"
+                                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
+                                <option value="">Tidak ditentukan</option>
+                                <option v-for="o in ASSIGNEE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+                            </select>
+                            <input v-if="form.assignee_type === 'custom'"
+                                   v-model="form.assignee_label"
+                                   type="text"
+                                   placeholder="Nama penanggung jawab"
+                                   class="mt-1.5 w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
+                        </div>
+
                         <!-- Due date -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Tenggat (opsional)</label>
@@ -1009,12 +1316,36 @@ function isOverdue(d) {
                                     <span v-else class="text-stone-400">Pilih tanggal</span>
                                 </button>
                                 <button v-if="form.due_date" type="button" @click="form.due_date = ''"
-                                        class="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0"
-                                        title="Hapus tanggal">
+                                        class="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Reminder toggle -->
+                        <div class="flex items-center justify-between py-1">
+                            <div>
+                                <p class="text-xs text-stone-700 font-medium">Aktifkan pengingat</p>
+                                <p class="text-xs text-stone-400">Pengingat in-app sebelum tenggat</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <select v-if="form.reminder_enabled"
+                                        v-model="form.reminder_offset_days"
+                                        class="text-xs border border-stone-200 rounded-lg px-2 py-1 bg-white text-stone-700 focus:outline-none">
+                                    <option :value="1">1 hari sebelum</option>
+                                    <option :value="7">7 hari sebelum</option>
+                                    <option :value="14">14 hari sebelum</option>
+                                    <option :value="30">30 hari sebelum</option>
+                                </select>
+                                <div class="relative w-9 h-5 flex-shrink-0 cursor-pointer"
+                                     @click="form.reminder_enabled = !form.reminder_enabled">
+                                    <div class="w-full h-full rounded-full transition-colors"
+                                         :class="form.reminder_enabled ? 'bg-[#92A89C]' : 'bg-stone-200'"/>
+                                    <div class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform"
+                                         :class="form.reminder_enabled ? 'translate-x-4' : 'translate-x-0'"/>
+                                </div>
                             </div>
                         </div>
 
@@ -1040,6 +1371,7 @@ function isOverdue(d) {
                 </div>
             </div>
         </Transition>
+
         <!-- ── Date Picker Modal ──────────────────────────────────── -->
         <Teleport to="body">
             <Transition name="modal">

@@ -1,1 +1,0 @@
-import{N as r,r as u}from"./app-DeyZS8jR.js";const a="theday_lang",o=u(localStorage.getItem(a)||"id");function s(){function t(e){o.value=e,localStorage.setItem(a,e)}function l(){t(o.value==="id"?"en":"id")}function n(e,c){return o.value==="en"?c:e}return{locale:r(o),setLocale:t,toggleLocale:l,t:n}}export{s as u};

@@ -219,6 +219,10 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::delete('/checklist/tasks/{id}',               [ChecklistController::class, 'destroy'])->name('checklist.tasks.destroy');
     Route::get(   '/checklist/summary',                  [ChecklistController::class, 'summary'])->name('checklist.summary');
     Route::patch( '/checklist/event-date',               [ChecklistController::class, 'updateEventDate'])->name('checklist.event-date');
+    Route::get(   '/checklist/tasks/{taskId}/subtasks',              [ChecklistController::class, 'subtasks'])->name('checklist.tasks.subtasks.index');
+    Route::post(  '/checklist/tasks/{taskId}/subtasks',              [ChecklistController::class, 'storeSubtask'])->name('checklist.tasks.subtasks.store');
+    Route::patch( '/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'updateSubtask'])->name('checklist.tasks.subtasks.update');
+    Route::delete('/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'destroySubtask'])->name('checklist.tasks.subtasks.destroy');
 });
 
 // Keep legacy route alias so Breeze redirects still work

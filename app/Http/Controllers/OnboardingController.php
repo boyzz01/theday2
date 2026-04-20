@@ -117,7 +117,7 @@ class OnboardingController extends Controller
         $user->update(['onboarding_completed_at' => now()]);
 
         return redirect()
-            ->route('dashboard.invitations.edit', $invitation)
+            ->route('dashboard')
             ->with('flash', [
                 'type'    => 'success',
                 'message' => 'Selamat! Setup selesai. Undanganmu siap dikustomisasi.',

@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChecklistSubtask;
 use App\Models\ChecklistTask;
 use App\Models\WeddingPlan;
 use App\Services\ChecklistService;
@@ -28,8 +29,8 @@ class ChecklistController extends Controller
 
         return Inertia::render('Dashboard/Checklist/Index', [
             'weddingPlan' => [
-                'id'         => $plan->id,
-                'event_date' => $plan->event_date?->format('Y-m-d'),
+                'id'          => $plan->id,
+                'event_date'  => $plan->event_date?->format('Y-m-d'),
                 'initialized' => $plan->isChecklistInitialized(),
             ],
         ]);
@@ -60,7 +61,7 @@ class ChecklistController extends Controller
         $tasks   = $this->service->getTasks($plan, $filters);
 
         return response()->json([
-            'tasks' => $tasks->map(fn($t) => $this->taskResource($t))->values(),
+            'tasks' => $tasks->map(fn ($t) => $this->taskResource($t))->values(),
         ]);
     }
 
@@ -71,15 +72,19 @@ class ChecklistController extends Controller
         $plan = $this->resolveOrCreatePlan();
 
         $data = $request->validate([
-            'title'       => 'required|string|min:3|max:200',
-            'category'    => 'required|string|max:50',
-            'priority'    => 'sometimes|string|in:low,medium,high',
-            'due_date'    => 'nullable|date',
-            'description' => 'nullable|string|max:1000',
+            'title'                => 'required|string|min:3|max:200',
+            'category'             => 'required|string|max:50',
+            'priority'             => 'sometimes|string|in:low,medium,high',
+            'due_date'             => 'nullable|date',
+            'description'          => 'nullable|string|max:1000',
+            'assignee_type'        => 'nullable|string|in:bride,groom,both,parents,family,wo,custom',
+            'assignee_label'       => 'nullable|string|max:100',
+            'reminder_enabled'     => 'sometimes|boolean',
+            'reminder_offset_days' => 'nullable|integer|in:1,7,14,30',
         ], [
             'title.required' => 'Nama task wajib diisi.',
             'title.min'      => 'Nama task minimal 3 karakter.',
-            'title.max'      => 'Nama task maksimal 120 karakter.',
+            'title.max'      => 'Nama task maksimal 200 karakter.',
         ]);
 
         $task = $this->service->createTask($plan, $data);
@@ -94,11 +99,15 @@ class ChecklistController extends Controller
         $task = $this->resolveTask($id);
 
         $data = $request->validate([
-            'title'       => 'sometimes|string|min:3|max:200',
-            'category'    => 'sometimes|string|max:50',
-            'priority'    => 'sometimes|string|in:low,medium,high',
-            'due_date'    => 'nullable|date',
-            'description' => 'nullable|string|max:1000',
+            'title'                => 'sometimes|string|min:3|max:200',
+            'category'             => 'sometimes|string|max:50',
+            'priority'             => 'sometimes|string|in:low,medium,high',
+            'due_date'             => 'nullable|date',
+            'description'          => 'nullable|string|max:1000',
+            'assignee_type'        => 'nullable|string|in:bride,groom,both,parents,family,wo,custom',
+            'assignee_label'       => 'nullable|string|max:100',
+            'reminder_enabled'     => 'sometimes|boolean',
+            'reminder_offset_days' => 'nullable|integer|in:1,7,14,30',
         ]);
 
         $task = $this->service->updateTask($task, $data);
@@ -198,11 +207,69 @@ class ChecklistController extends Controller
         return response()->json($this->service->getSummary($plan));
     }
 
+    // ─── API: Subtasks list ───────────────────────────────────────
+
+    public function subtasks(string $taskId): JsonResponse
+    {
+        $task = $this->resolveTask($taskId);
+
+        $subtasks = $task->subtasks()->get();
+
+        return response()->json([
+            'subtasks' => $subtasks->map(fn ($s) => $this->subtaskResource($s))->values(),
+        ]);
+    }
+
+    // ─── API: Create subtask ──────────────────────────────────────
+
+    public function storeSubtask(Request $request, string $taskId): JsonResponse
+    {
+        $task = $this->resolveTask($taskId);
+
+        $data = $request->validate([
+            'title' => 'required|string|min:1|max:200',
+        ]);
+
+        $maxOrder = $task->subtasks()->max('sort_order') ?? -1;
+
+        $subtask = $task->subtasks()->create([
+            'title'      => $data['title'],
+            'sort_order' => $maxOrder + 1,
+        ]);
+
+        return response()->json($this->subtaskResource($subtask), 201);
+    }
+
+    // ─── API: Update subtask ──────────────────────────────────────
+
+    public function updateSubtask(Request $request, string $taskId, string $subtaskId): JsonResponse
+    {
+        $task    = $this->resolveTask($taskId);
+        $subtask = $this->resolveSubtask($task, $subtaskId);
+
+        $data = $request->validate([
+            'title'        => 'sometimes|string|min:1|max:200',
+            'is_completed' => 'sometimes|boolean',
+        ]);
+
+        $subtask->update($data);
+
+        return response()->json($this->subtaskResource($subtask->refresh()));
+    }
+
+    // ─── API: Delete subtask ──────────────────────────────────────
+
+    public function destroySubtask(string $taskId, string $subtaskId): \Illuminate\Http\Response
+    {
+        $task    = $this->resolveTask($taskId);
+        $subtask = $this->resolveSubtask($task, $subtaskId);
+        $subtask->delete();
+
+        return response()->noContent();
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────
 
-    /**
-     * Get or create the wedding plan for the authenticated user.
-     */
     private function resolveOrCreatePlan(): WeddingPlan
     {
         return WeddingPlan::firstOrCreate(
@@ -210,9 +277,6 @@ class ChecklistController extends Controller
         );
     }
 
-    /**
-     * Resolve task and authorize ownership via wedding plan.
-     */
     private function resolveTask(string $id): ChecklistTask
     {
         $task = ChecklistTask::findOrFail($id);
@@ -224,25 +288,49 @@ class ChecklistController extends Controller
         return $task;
     }
 
-    /**
-     * Consistent task shape for API responses.
-     */
+    private function resolveSubtask(ChecklistTask $task, string $subtaskId): ChecklistSubtask
+    {
+        $subtask = ChecklistSubtask::findOrFail($subtaskId);
+
+        if ($subtask->task_id !== $task->id) {
+            abort(403);
+        }
+
+        return $subtask;
+    }
+
     private function taskResource(ChecklistTask $task): array
     {
         return [
-            'id'               => $task->id,
-            'source'           => $task->source->value,
-            'title'            => $task->title,
-            'description'      => $task->description,
-            'category'         => $task->category->value,
-            'priority'         => $task->priority->value,
-            'status'           => $task->status->value,
-            'due_date'         => $task->due_date?->format('Y-m-d'),
-            'sort_order'       => $task->sort_order,
-            'is_user_modified' => $task->is_user_modified,
-            'completed_at'     => $task->completed_at?->toISOString(),
-            'archived_at'      => $task->archived_at?->toISOString(),
-            'created_at'       => $task->created_at->toISOString(),
+            'id'                   => $task->id,
+            'source'               => $task->source->value,
+            'title'                => $task->title,
+            'description'          => $task->description,
+            'category'             => $task->category->value,
+            'priority'             => $task->priority->value,
+            'status'               => $task->status->value,
+            'due_date'             => $task->due_date?->format('Y-m-d'),
+            'assignee_type'        => $task->assignee_type,
+            'assignee_label'       => $task->assignee_label,
+            'reminder_enabled'     => $task->reminder_enabled,
+            'reminder_offset_days' => $task->reminder_offset_days,
+            'subtasks_count'       => $task->subtasks_count ?? 0,
+            'subtasks_done_count'  => $task->subtasks_done_count ?? 0,
+            'sort_order'           => $task->sort_order,
+            'is_user_modified'     => $task->is_user_modified,
+            'completed_at'         => $task->completed_at?->toISOString(),
+            'archived_at'          => $task->archived_at?->toISOString(),
+            'created_at'           => $task->created_at->toISOString(),
+        ];
+    }
+
+    private function subtaskResource(ChecklistSubtask $subtask): array
+    {
+        return [
+            'id'           => $subtask->id,
+            'title'        => $subtask->title,
+            'is_completed' => $subtask->is_completed,
+            'sort_order'   => $subtask->sort_order,
         ];
     }
 }
