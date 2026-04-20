@@ -36,6 +36,7 @@ const navItems = [
                 label: 'Guest List Manager',
                 route: 'dashboard.guest-list.index',
                 activePattern: 'dashboard.guest-list.*',
+                premiumOnly: true,
             },
             {
                 label: 'RSVP',
@@ -50,7 +51,7 @@ const navItems = [
         ],
     },
     {
-        label: 'Checklist Pernikahan',
+        label: 'Wedding Planner',
         route: 'dashboard.checklist.index',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>`,
@@ -258,6 +259,11 @@ const handleClickOutsideAvatar = (e) => {
                                           ]"
                                     >
                                         {{ child.label }}
+                                        <span v-if="child.premiumOnly && plan?.plan_slug !== 'premium'"
+                                              class="ml-auto text-xs font-semibold px-1.5 py-0.5 rounded-md"
+                                              style="background-color:#C8A26B20;color:#C8A26B">
+                                            Pro
+                                        </span>
                                     </Link>
                                 </template>
                             </div>

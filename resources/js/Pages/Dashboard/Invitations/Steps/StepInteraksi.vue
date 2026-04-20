@@ -2,7 +2,7 @@
 // Step 4 — Interaksi
 // Sections: rsvp (opt), wishes (opt), gift (opt)
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 
 const props = defineProps({
@@ -29,6 +29,64 @@ function addBankAccount() {
 function removeBankAccount(index) {
     props.sections.gift.data_json.accounts?.splice(index, 1);
 }
+
+// ── Date picker ──────────────────────────────────────────────────
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+const showDatePicker = ref(false);
+const calToday       = new Date();
+const calYear        = ref(calToday.getFullYear());
+const calMonth       = ref(calToday.getMonth());
+
+function openDatePicker() {
+    const val = props.sections.rsvp?.data_json?.deadline;
+    if (val) {
+        const [y, m] = val.split('-').map(Number);
+        calYear.value  = y;
+        calMonth.value = m - 1;
+    } else {
+        calYear.value  = calToday.getFullYear();
+        calMonth.value = calToday.getMonth();
+    }
+    showDatePicker.value = true;
+}
+function closeDatePicker() { showDatePicker.value = false; }
+function prevCalMonth() {
+    if (calMonth.value === 0) { calMonth.value = 11; calYear.value--; }
+    else calMonth.value--;
+}
+function nextCalMonth() {
+    if (calMonth.value === 11) { calMonth.value = 0; calYear.value++; }
+    else calMonth.value++;
+}
+const calDays = computed(() => {
+    const first = new Date(calYear.value, calMonth.value, 1).getDay();
+    const total = new Date(calYear.value, calMonth.value + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push(null);
+    for (let d = 1; d <= total; d++) cells.push(d);
+    return cells;
+});
+function pickDay(day) {
+    if (!day) return;
+    const m = String(calMonth.value + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    props.sections.rsvp.data_json.deadline = `${calYear.value}-${m}-${d}`;
+}
+function isPickedDay(day) {
+    if (!day) return false;
+    const val = props.sections.rsvp?.data_json?.deadline;
+    if (!val) return false;
+    const [y, m, d] = val.split('-').map(Number);
+    return y === calYear.value && m === calMonth.value + 1 && d === day;
+}
+function calDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+const currentPickerDate = computed(() => props.sections.rsvp?.data_json?.deadline ?? '');
 </script>
 
 <template>
@@ -53,11 +111,20 @@ function removeBankAccount(index) {
             <div class="space-y-3">
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-stone-700">Batas RSVP</label>
-                    <input
-                        v-model="sections.rsvp.data_json.deadline"
-                        type="date"
-                        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
-                    />
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" @click="openDatePicker()"
+                                class="flex-1 border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-left transition-colors hover:border-[#92A89C]/50 bg-white">
+                            <span v-if="sections.rsvp?.data_json?.deadline" class="text-stone-800">{{ calDisplayDate(sections.rsvp.data_json.deadline) }}</span>
+                            <span v-else class="text-stone-400">Pilih tanggal (opsional)</span>
+                        </button>
+                        <button v-if="sections.rsvp?.data_json?.deadline" type="button"
+                                @click="sections.rsvp.data_json.deadline = ''"
+                                class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
                     <p class="text-xs text-stone-400">Opsional. Tamu masih bisa RSVP setelah tanggal ini jika tidak diisi.</p>
                 </div>
                 <div class="flex items-center gap-3 p-3 bg-[#92A89C]/10 border border-[#B8C7BF]/50 rounded-xl">
@@ -147,4 +214,74 @@ function removeBankAccount(index) {
         </SectionAccordionCard>
 
     </div>
+
+    <!-- Date Picker Modal -->
+    <Teleport to="body">
+        <Transition name="datepicker-modal">
+            <div v-if="showDatePicker" class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDatePicker"/>
+                <div class="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                     style="max-height: 92dvh; overflow-y: auto">
+                    <div class="sm:hidden flex justify-center pt-3 pb-1">
+                        <div class="w-10 h-1 rounded-full bg-stone-200"/>
+                    </div>
+                    <div class="flex items-center justify-between px-5 py-4">
+                        <div>
+                            <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                            <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
+                        </div>
+                        <button type="button" @click="closeDatePicker"
+                                class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                            <svg class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between px-5 pb-2">
+                        <button type="button" @click="prevCalMonth"
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                        <button type="button" @click="nextCalMonth"
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 px-4 pb-1">
+                        <div v-for="d in DAYS_ID" :key="d"
+                             class="text-center text-xs font-semibold py-1"
+                             :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                    </div>
+                    <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
+                        <div v-for="(day, i) in calDays" :key="i" class="flex items-center justify-center aspect-square">
+                            <button v-if="day" type="button" @click="pickDay(day)"
+                                    class="w-9 h-9 rounded-full text-sm font-medium transition-all"
+                                    :class="isPickedDay(day) ? 'text-white font-bold shadow-sm' : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20'"
+                                    :style="isPickedDay(day) ? 'background-color:#92A89C' : ''">
+                                {{ day }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-6 pt-2">
+                        <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
+                                class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                                style="background-color:#92A89C">
+                            <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
+                            <span v-else>Pilih tanggal dulu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
+
+<style scoped>
+.datepicker-modal-enter-active, .datepicker-modal-leave-active { transition: opacity 0.2s; }
+.datepicker-modal-enter-from, .datepicker-modal-leave-to { opacity: 0; }
+</style>

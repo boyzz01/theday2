@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GuestList;
 use App\Models\WhatsAppMessageTemplate;
 use App\Services\WhatsAppTemplateRenderer;
+use App\Support\SectionAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ class WhatsAppTemplateController extends Controller
 
     public function show(): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $template = $this->resolveDefaultTemplate();
 
         return response()->json([
@@ -39,6 +41,7 @@ class WhatsAppTemplateController extends Controller
 
     public function update(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $data = $request->validate([
             'name'    => 'required|string|max:100',
             'content' => 'required|string|max:5000',
@@ -67,6 +70,7 @@ class WhatsAppTemplateController extends Controller
 
     public function reset(): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $userId   = Auth::id();
         $template = WhatsAppMessageTemplate::updateOrCreate(
             ['user_id' => $userId, 'is_default' => true],
@@ -90,6 +94,7 @@ class WhatsAppTemplateController extends Controller
 
     public function previewRender(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $data = $request->validate([
             'content'  => 'required|string|max:5000',
             'guest_id' => 'nullable|exists:guest_lists,id',

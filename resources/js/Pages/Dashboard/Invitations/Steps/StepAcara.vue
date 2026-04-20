@@ -2,7 +2,7 @@
 // Step 2 — Acara
 // Sections: events (req), countdown (opt), live_streaming (opt), additional_info (opt)
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
 
@@ -39,6 +39,63 @@ function onTimeInput(event, obj, key) {
     event.target.value = v;
     obj[key] = v.length === 5 ? v : '';
 }
+
+// ── Date picker ──────────────────────────────────────────────────
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+const showDatePicker = ref(false);
+const activeEvent    = ref(null);
+const calToday       = new Date();
+const calYear        = ref(calToday.getFullYear());
+const calMonth       = ref(calToday.getMonth());
+
+function openDatePicker(event) {
+    activeEvent.value = event;
+    if (event.event_date) {
+        const [y, m] = event.event_date.split('-').map(Number);
+        calYear.value  = y;
+        calMonth.value = m - 1;
+    } else {
+        calYear.value  = calToday.getFullYear();
+        calMonth.value = calToday.getMonth();
+    }
+    showDatePicker.value = true;
+}
+function closeDatePicker() { showDatePicker.value = false; activeEvent.value = null; }
+function prevCalMonth() {
+    if (calMonth.value === 0) { calMonth.value = 11; calYear.value--; }
+    else calMonth.value--;
+}
+function nextCalMonth() {
+    if (calMonth.value === 11) { calMonth.value = 0; calYear.value++; }
+    else calMonth.value++;
+}
+const calDays = computed(() => {
+    const first = new Date(calYear.value, calMonth.value, 1).getDay();
+    const total = new Date(calYear.value, calMonth.value + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push(null);
+    for (let d = 1; d <= total; d++) cells.push(d);
+    return cells;
+});
+function pickDay(day) {
+    if (!day || !activeEvent.value) return;
+    const m = String(calMonth.value + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    activeEvent.value.event_date = `${calYear.value}-${m}-${d}`;
+}
+function isPickedDay(day) {
+    if (!day || !activeEvent.value?.event_date) return false;
+    const [y, m, d] = activeEvent.value.event_date.split('-').map(Number);
+    return y === calYear.value && m === calMonth.value + 1 && d === day;
+}
+function calDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 </script>
 
 <template>
@@ -103,8 +160,11 @@ function onTimeInput(event, obj, key) {
                         </div>
                         <div class="space-y-1">
                             <label class="block text-xs font-medium text-stone-600">Tanggal *</label>
-                            <input v-model="event.event_date" type="date"
-                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
+                            <button type="button" @click="openDatePicker(event)"
+                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm text-left transition-colors hover:border-[#92A89C]/50 bg-white">
+                                <span v-if="event.event_date" class="text-stone-800">{{ calDisplayDate(event.event_date) }}</span>
+                                <span v-else class="text-stone-400">Pilih tanggal</span>
+                            </button>
                         </div>
                         <div class="space-y-1">
                             <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
@@ -231,4 +291,74 @@ function onTimeInput(event, obj, key) {
         />
 
     </div>
+
+    <!-- Date Picker Modal -->
+    <Teleport to="body">
+        <Transition name="datepicker-modal">
+            <div v-if="showDatePicker" class="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDatePicker"/>
+                <div class="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                     style="max-height: 92dvh; overflow-y: auto">
+                    <div class="sm:hidden flex justify-center pt-3 pb-1">
+                        <div class="w-10 h-1 rounded-full bg-stone-200"/>
+                    </div>
+                    <div class="flex items-center justify-between px-5 py-4">
+                        <div>
+                            <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                            <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
+                        </div>
+                        <button type="button" @click="closeDatePicker"
+                                class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                            <svg class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between px-5 pb-2">
+                        <button type="button" @click="prevCalMonth"
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                        <button type="button" @click="nextCalMonth"
+                                class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 px-4 pb-1">
+                        <div v-for="d in DAYS_ID" :key="d"
+                             class="text-center text-xs font-semibold py-1"
+                             :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                    </div>
+                    <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
+                        <div v-for="(day, i) in calDays" :key="i" class="flex items-center justify-center aspect-square">
+                            <button v-if="day" type="button" @click="pickDay(day)"
+                                    class="w-9 h-9 rounded-full text-sm font-medium transition-all"
+                                    :class="isPickedDay(day) ? 'text-white font-bold shadow-sm' : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20'"
+                                    :style="isPickedDay(day) ? 'background-color:#92A89C' : ''">
+                                {{ day }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-6 pt-2">
+                        <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
+                                class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                                style="background-color:#92A89C">
+                            <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
+                            <span v-else>Pilih tanggal dulu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
+
+<style scoped>
+.datepicker-modal-enter-active, .datepicker-modal-leave-active { transition: opacity 0.2s; }
+.datepicker-modal-enter-from, .datepicker-modal-leave-to { opacity: 0; }
+</style>

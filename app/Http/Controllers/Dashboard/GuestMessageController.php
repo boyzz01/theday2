@@ -13,6 +13,7 @@ use App\Models\GuestMessageLog;
 use App\Models\WhatsAppMessageTemplate;
 use App\Services\PersonalInvitationUrlBuilder;
 use App\Services\WhatsAppTemplateRenderer;
+use App\Support\SectionAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,6 +29,7 @@ class GuestMessageController extends Controller
 
     public function generate(GuestList $guest): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $this->authorizeGuest($guest);
 
         $template = WhatsAppMessageTemplate::where('user_id', Auth::id())
@@ -65,6 +67,7 @@ class GuestMessageController extends Controller
 
     public function markSent(GuestList $guest): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $this->authorizeGuest($guest);
 
         $guest->update([
@@ -91,6 +94,7 @@ class GuestMessageController extends Controller
 
     public function storeCopyLog(GuestList $guest): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $this->authorizeGuest($guest);
 
         GuestMessageLog::create([

@@ -13,7 +13,9 @@ use App\Models\Invitation;
 use App\Models\WhatsAppMessageTemplate;
 use App\Services\GuestSlugGenerator;
 use App\Services\PhoneNumberNormalizer;
+use App\Support\SectionAccess;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -28,10 +30,20 @@ class GuestListController extends Controller
         private readonly PhoneNumberNormalizer $normalizer,
     ) {}
 
+    private function requirePremium(): ?RedirectResponse
+    {
+        if (! SectionAccess::isPremium(Auth::user())) {
+            return redirect()->route('dashboard.paket')
+                ->with('error', 'Fitur Guest List Manager hanya tersedia di paket Premium.');
+        }
+        return null;
+    }
+
     // ─── Inertia Page ─────────────────────────────────────────────
 
-    public function index(): Response
+    public function index(): Response|RedirectResponse
     {
+        if ($redirect = $this->requirePremium()) return $redirect;
         $userId = Auth::id();
 
         $invitations = Invitation::where('user_id', $userId)
@@ -66,6 +78,7 @@ class GuestListController extends Controller
 
     public function guests(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $userId = Auth::id();
 
         $query = GuestList::with('invitation:id,slug,title')
@@ -106,6 +119,7 @@ class GuestListController extends Controller
 
     public function summary(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $userId = Auth::id();
 
         $base = GuestList::where('user_id', $userId);
@@ -131,6 +145,7 @@ class GuestListController extends Controller
 
     public function categories(): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $categories = GuestList::where('user_id', Auth::id())
             ->whereNotNull('category')
             ->distinct()
@@ -145,6 +160,7 @@ class GuestListController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $data = $request->validate([
             'invitation_id' => 'nullable|exists:invitations,id',
             'name'          => 'required|string|max:150',
@@ -188,6 +204,7 @@ class GuestListController extends Controller
 
     public function update(Request $request, GuestList $guest): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $this->authorizeGuest($guest);
 
         $data = $request->validate([
@@ -218,6 +235,7 @@ class GuestListController extends Controller
 
     public function destroy(GuestList $guest): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $this->authorizeGuest($guest);
         $guest->delete();
 
@@ -228,6 +246,7 @@ class GuestListController extends Controller
 
     public function bulkDestroy(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $data = $request->validate([
             'ids'   => 'required|array|min:1',
             'ids.*' => 'integer',
@@ -246,6 +265,7 @@ class GuestListController extends Controller
 
     public function bulkUpdateCategory(Request $request): JsonResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $data = $request->validate([
             'ids'      => 'required|array|min:1',
             'ids.*'    => 'integer',
@@ -265,6 +285,7 @@ class GuestListController extends Controller
 
     public function export(Request $request): BinaryFileResponse
     {
+        if (! SectionAccess::isPremium(Auth::user())) abort(403);
         $userId = Auth::id();
 
         $query = GuestList::with('invitation:id,title')

@@ -410,6 +410,75 @@ async function saveForm() {
     }
 }
 
+// ── Date picker modal ──────────────────────────────────────────────────────
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+const showDatePicker = ref(false);
+const datePickerMode = ref(''); // 'event' | 'due'
+const calToday       = new Date();
+const calYear        = ref(calToday.getFullYear());
+const calMonth       = ref(calToday.getMonth());
+
+function openDatePicker(mode) {
+    datePickerMode.value = mode;
+    const val = mode === 'event' ? eventDate.value : form.value.due_date;
+    if (val) {
+        const [y, m] = val.split('-').map(Number);
+        calYear.value  = y;
+        calMonth.value = m - 1;
+    } else {
+        calYear.value  = calToday.getFullYear();
+        calMonth.value = calToday.getMonth();
+    }
+    showDatePicker.value = true;
+}
+function closeDatePicker() { showDatePicker.value = false; }
+function prevCalMonth() {
+    if (calMonth.value === 0) { calMonth.value = 11; calYear.value--; }
+    else calMonth.value--;
+}
+function nextCalMonth() {
+    if (calMonth.value === 11) { calMonth.value = 0; calYear.value++; }
+    else calMonth.value++;
+}
+const calDays = computed(() => {
+    const first = new Date(calYear.value, calMonth.value, 1).getDay();
+    const total = new Date(calYear.value, calMonth.value + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push(null);
+    for (let d = 1; d <= total; d++) cells.push(d);
+    return cells;
+});
+function pickDay(day) {
+    if (!day) return;
+    const m = String(calMonth.value + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    const val = `${calYear.value}-${m}-${d}`;
+    if (datePickerMode.value === 'event') eventDate.value = val;
+    else form.value.due_date = val;
+}
+function isPickedDay(day) {
+    if (!day) return false;
+    const val = datePickerMode.value === 'event' ? eventDate.value : form.value.due_date;
+    if (!val) return false;
+    const [y, m, d] = val.split('-').map(Number);
+    return y === calYear.value && m === calMonth.value + 1 && d === day;
+}
+function isCalPastDay(day) {
+    if (!day || datePickerMode.value !== 'event') return false;
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    return new Date(calYear.value, calMonth.value, day) < t;
+}
+function calDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+const currentPickerDate = computed(() =>
+    datePickerMode.value === 'event' ? eventDate.value : form.value.due_date
+);
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(d) {
     if (!d) return null;
@@ -429,7 +498,7 @@ function isOverdue(d) {
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800">Checklist Pernikahan</h1>
+            <h1 class="text-base font-semibold text-stone-800">Wedding Planner</h1>
         </template>
 
         <!-- Toast -->
@@ -541,9 +610,12 @@ function isOverdue(d) {
                     <span>Isi tanggal acara agar tenggat task dihitung otomatis.</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <input v-model="eventDate" type="date"
-                           class="flex-1 border rounded-lg px-3 py-1.5 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50"
-                           :class="eventDateError ? 'border-red-300' : 'border-[#B8C7BF]'"/>
+                    <button type="button" @click="openDatePicker('event')"
+                            class="flex-1 border rounded-lg px-3 py-1.5 text-sm text-left bg-white transition-colors hover:border-[#92A89C]/60"
+                            :class="eventDateError ? 'border-red-300' : 'border-[#B8C7BF]'">
+                        <span v-if="eventDate" class="text-stone-800">{{ calDisplayDate(eventDate) }}</span>
+                        <span v-else class="text-stone-400">Pilih tanggal acara</span>
+                    </button>
                     <button @click="saveEventDate" :disabled="!eventDate || savingDate"
                             class="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                             style="background-color: #92A89C">
@@ -930,8 +1002,20 @@ function isOverdue(d) {
                         <!-- Due date -->
                         <div>
                             <label class="text-xs text-stone-500 mb-1 block">Tenggat (opsional)</label>
-                            <input v-model="form.due_date" type="date"
-                                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" @click="openDatePicker('due')"
+                                        class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm text-left transition-colors hover:border-[#92A89C]/50">
+                                    <span v-if="form.due_date" class="text-stone-800">{{ calDisplayDate(form.due_date) }}</span>
+                                    <span v-else class="text-stone-400">Pilih tanggal</span>
+                                </button>
+                                <button v-if="form.due_date" type="button" @click="form.due_date = ''"
+                                        class="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0"
+                                        title="Hapus tanggal">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Description -->
@@ -956,6 +1040,88 @@ function isOverdue(d) {
                 </div>
             </div>
         </Transition>
+        <!-- ── Date Picker Modal ──────────────────────────────────── -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showDatePicker" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+                    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDatePicker"/>
+                    <div class="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                         style="max-height: 92dvh; overflow-y: auto">
+
+                        <div class="sm:hidden flex justify-center pt-3 pb-1">
+                            <div class="w-10 h-1 rounded-full bg-stone-200"/>
+                        </div>
+
+                        <div class="flex items-center justify-between px-5 py-4">
+                            <div>
+                                <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                                <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">
+                                    {{ calDisplayDate(currentPickerDate) }}
+                                </p>
+                            </div>
+                            <button type="button" @click="closeDatePicker"
+                                    class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                                <svg class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between px-5 pb-2">
+                            <button type="button" @click="prevCalMonth"
+                                    class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                            <button type="button" @click="nextCalMonth"
+                                    class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-7 px-4 pb-1">
+                            <div v-for="d in DAYS_ID" :key="d"
+                                 class="text-center text-xs font-semibold py-1"
+                                 :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                        </div>
+
+                        <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
+                            <div v-for="(day, i) in calDays" :key="i"
+                                 class="flex items-center justify-center aspect-square">
+                                <button v-if="day" type="button" @click="pickDay(day)"
+                                        :disabled="isCalPastDay(day)"
+                                        class="w-9 h-9 rounded-full text-sm font-medium transition-all"
+                                        :class="[
+                                            isPickedDay(day)
+                                                ? 'text-white font-bold shadow-sm'
+                                                : isCalPastDay(day)
+                                                    ? 'text-stone-200 cursor-not-allowed'
+                                                    : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20',
+                                        ]"
+                                        :style="isPickedDay(day) ? 'background-color:#92A89C' : ''">
+                                    {{ day }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="px-5 pb-6 pt-2">
+                            <button type="button" @click="closeDatePicker"
+                                    :disabled="!currentPickerDate"
+                                    class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                                    style="background-color:#92A89C">
+                                <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
+                                <span v-else>Pilih tanggal dulu</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
     </DashboardLayout>
 </template>
 
@@ -964,6 +1130,8 @@ function isOverdue(d) {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-8px); }
+.modal-enter-active, .modal-leave-active { transition: opacity 0.2s; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
 .line-clamp-2 {
     overflow: hidden;
     display: -webkit-box;
