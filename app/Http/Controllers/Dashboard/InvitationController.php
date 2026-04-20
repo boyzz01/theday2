@@ -10,7 +10,6 @@ use App\Actions\ChangeTemplateAction;
 use App\Actions\DuplicateInvitationAction;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
-use App\Models\Plan;
 use App\Models\InvitationSection;
 use App\Models\Template;
 use App\Support\SectionAccess;
@@ -194,13 +193,14 @@ class InvitationController extends Controller
             'template_id' => 'required|uuid|exists:templates,id',
         ]);
 
-        $user  = Auth::user();
-        $limit = $user->currentPlan()?->max_invitations
-            ?? Plan::where('slug', 'free')->value('max_invitations')
-            ?? 1;
-        if ($user->invitations()->whereIn('status', ['draft', 'published'])->count() >= $limit) {
-            return redirect()->route('dashboard.invitations.index')
-                ->with('error', 'Batas undangan paketmu sudah tercapai. Upgrade untuk membuat undangan baru.');
+        $user = Auth::user();
+
+        if ($user->isFree()) {
+            $activeCount = $user->invitations()->whereIn('status', ['draft', 'published'])->count();
+            if ($activeCount >= 1) {
+                return redirect()->route('dashboard.invitations.index')
+                    ->with('error', 'Kamu sudah mencapai batas undangan gratis. Upgrade ke Premium untuk membuat lebih banyak undangan.');
+            }
         }
 
         $template  = Template::findOrFail($data['template_id']);
@@ -589,9 +589,20 @@ class InvitationController extends Controller
         }
 
         if ($data['action'] === 'publish') {
+            $user = $request->user();
+
+            // Quota check — only when transitioning from non-published to published
+            if ($invitation->status->value !== 'published' && ! $user->canPublishInvitation()) {
+                $message = $user->isFree()
+                    ? 'Kamu sudah mencapai batas undangan gratis. Upgrade ke Premium untuk membuat lebih banyak undangan.'
+                    : 'Kuota undangan kamu penuh. Tambah 1 undangan hanya Rp 15.000.';
+
+                return response()->json(['error' => $message], 403);
+            }
+
             // Block free users from publishing with a premium template
             $invitation->loadMissing('template');
-            if ($invitation->template?->isPremium() && ! SectionAccess::isPremium($request->user())) {
+            if ($invitation->template?->isPremium() && ! SectionAccess::isPremium($user)) {
                 return response()->json([
                     'error' => 'Template Premium hanya bisa dipublikasikan dengan paket Premium. Silakan upgrade atau pilih template gratis.',
                 ], 403);
@@ -702,14 +713,11 @@ class InvitationController extends Controller
     {
         $this->authorizeOwner($invitation);
 
-        // Check plan invitation limit
-        $user  = $request->user();
-        $plan  = $user->currentPlan();
-        $limit = $plan?->max_invitations;
+        $user = $request->user();
 
-        if ($limit !== null) {
-            $count = $user->invitations()->whereIn('status', ['draft', 'published'])->count();
-            if ($count >= $limit) {
+        if ($user->isFree()) {
+            $activeCount = $user->invitations()->whereIn('status', ['draft', 'published'])->count();
+            if ($activeCount >= 1) {
                 return response()->json(['error' => 'invitation_limit_reached'], 422);
             }
         }

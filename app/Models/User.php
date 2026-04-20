@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
@@ -98,6 +99,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
 
+    public function invitationAddons(): HasMany
+    {
+        return $this->hasMany(InvitationAddon::class);
+    }
+
     // ─── Business Logic ───────────────────────────────────────────
 
     public function activeSubscription(): HasOne
@@ -136,5 +142,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function invitationQuota(): int
+    {
+        $subscription = $this->activeSubscription;
+
+        if (! $subscription || ! $subscription->isPremium()) {
+            return 1;
+        }
+
+        return $subscription->invitationQuota();
+    }
+
+    public function canPublishInvitation(): bool
+    {
+        $quota = $this->invitationQuota();
+
+        if ($quota === 0) {
+            return false;
+        }
+
+        $published = $this->invitations()->where('status', 'published')->count();
+
+        return $published < $quota;
     }
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
+use App\Http\Controllers\Dashboard\AddonController;
 use App\Http\Controllers\Dashboard\SubscriptionController;
 use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\WebhookController;
@@ -202,6 +203,7 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     // ── Paket & Langganan ────────────────────────────────────────────────
     Route::get( '/paket',                                [SubscriptionController::class, 'index'])->name('paket');
     Route::post('/subscriptions/checkout',               [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+    Route::post('/addons/checkout',                      [AddonController::class, 'checkout'])->name('addons.checkout');
     Route::get( '/transactions/{transaction}/invoice',   [SubscriptionController::class, 'invoice'])->name('transactions.invoice');
 
     // ── Checklist ────────────────────────────────────────────────────────

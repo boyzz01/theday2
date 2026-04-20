@@ -8,6 +8,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Mail\PaymentSuccessMail;
+use App\Models\InvitationAddon;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
@@ -69,7 +70,11 @@ class WebhookController extends Controller
             ]);
 
             if ($status === PaymentStatus::Paid) {
-                $this->activatePremium($transaction);
+                if ($transaction->isAddonPurchase()) {
+                    $this->activateAddon($transaction);
+                } else {
+                    $this->activatePremium($transaction);
+                }
             }
         });
 
@@ -113,6 +118,39 @@ class WebhookController extends Controller
             'user_id'         => $user->id,
             'subscription_id' => $subscription->id,
             'expires_at'      => $subscription->expires_at->toDateString(),
+        ]);
+    }
+
+    private function activateAddon(Transaction $transaction): void
+    {
+        $user         = $transaction->user;
+        $subscription = $transaction->subscription;
+
+        if (! $subscription || ! $subscription->isActive()) {
+            Log::warning('Addon payment received but subscription not active', [
+                'transaction_id'  => $transaction->id,
+                'user_id'         => $user->id,
+                'subscription_id' => $transaction->subscription_id,
+            ]);
+            return;
+        }
+
+        $addon = InvitationAddon::create([
+            'user_id'         => $user->id,
+            'subscription_id' => $subscription->id,
+            'quantity'        => $transaction->addon_quantity,
+            'price_per_unit'  => 15000,
+            'total_price'     => (int) $transaction->amount,
+            'paid_at'         => now(),
+            'expires_at'      => $subscription->expires_at,
+        ]);
+
+        Log::info('Invitation addon activated', [
+            'user_id'         => $user->id,
+            'subscription_id' => $subscription->id,
+            'addon_id'        => $addon->id,
+            'quantity'        => $addon->quantity,
+            'expires_at'      => $addon->expires_at?->toDateString(),
         ]);
     }
 }

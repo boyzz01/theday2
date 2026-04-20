@@ -1122,9 +1122,19 @@ async function archiveCategory(cat) {
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-stone-600 mb-1">Tanggal Pembayaran</label>
-                                <input v-model="itemForm.payment_date" type="date"
-                                    class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                    style="--tw-ring-color: #92A89C" />
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" @click="openDatePicker('payment_date')"
+                                            class="flex-1 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-left transition-colors hover:border-[#92A89C]/50">
+                                        <span v-if="itemForm.payment_date" class="text-stone-800">{{ calDisplayDate(itemForm.payment_date) }}</span>
+                                        <span v-else class="text-stone-400">Pilih tanggal</span>
+                                    </button>
+                                    <button v-if="itemForm.payment_date" type="button" @click="itemForm.payment_date = ''"
+                                            class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </template>
 
@@ -1181,9 +1191,19 @@ async function archiveCategory(cat) {
                         <!-- Jatuh tempo -->
                         <div>
                             <label class="block text-xs font-medium text-stone-600 mb-1">Jatuh Tempo (opsional)</label>
-                            <input v-model="itemForm.due_date" type="date"
-                                class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                                style="--tw-ring-color: #92A89C" />
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" @click="openDatePicker('due_date')"
+                                        class="flex-1 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-left transition-colors hover:border-[#92A89C]/50">
+                                    <span v-if="itemForm.due_date" class="text-stone-800">{{ calDisplayDate(itemForm.due_date) }}</span>
+                                    <span v-else class="text-stone-400">Pilih tanggal</span>
+                                </button>
+                                <button v-if="itemForm.due_date" type="button" @click="itemForm.due_date = ''"
+                                        class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Vendor -->
@@ -1332,6 +1352,71 @@ async function archiveCategory(cat) {
                 </div>
             </div>
         </Transition>
+        <!-- ── Date Picker Modal ──────────────────────────────────────────── -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showDatePicker" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+                    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeDatePicker"/>
+                    <div class="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                         style="max-height: 92dvh; overflow-y: auto">
+                        <div class="sm:hidden flex justify-center pt-3 pb-1">
+                            <div class="w-10 h-1 rounded-full bg-stone-200"/>
+                        </div>
+                        <div class="flex items-center justify-between px-5 py-4">
+                            <div>
+                                <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                                <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
+                            </div>
+                            <button type="button" @click="closeDatePicker"
+                                    class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                                <svg class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between px-5 pb-2">
+                            <button type="button" @click="prevCalMonth"
+                                    class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                            <button type="button" @click="nextCalMonth"
+                                    class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 px-4 pb-1">
+                            <div v-for="d in DAYS_ID" :key="d"
+                                 class="text-center text-xs font-semibold py-1"
+                                 :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                        </div>
+                        <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
+                            <div v-for="(day, i) in calDays" :key="i" class="flex items-center justify-center aspect-square">
+                                <button v-if="day" type="button" @click="pickDay(day)"
+                                        class="w-9 h-9 rounded-full text-sm font-medium transition-all"
+                                        :class="isPickedDay(day) ? 'text-white font-bold shadow-sm' : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20'"
+                                        :style="isPickedDay(day) ? 'background-color:#92A89C' : ''">
+                                    {{ day }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-5 pb-6 pt-2">
+                            <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
+                                    class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
+                                    style="background-color:#92A89C">
+                                <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
+                                <span v-else>Pilih tanggal dulu</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
     </DashboardLayout>
 </template>
 

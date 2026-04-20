@@ -22,6 +22,7 @@ class Transaction extends Model
         'user_id',
         'plan_id',
         'subscription_id',
+        'addon_quantity',
         'invoice_number',
         'amount',
         'payment_method',
@@ -86,5 +87,10 @@ class Transaction extends Model
     public function isPending(): bool
     {
         return $this->status === PaymentStatus::Pending;
+    }
+
+    public function isAddonPurchase(): bool
+    {
+        return $this->addon_quantity !== null;
     }
 }

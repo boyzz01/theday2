@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Subscription extends Model
 {
@@ -43,6 +44,18 @@ class Subscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function addons(): HasMany
+    {
+        return $this->hasMany(InvitationAddon::class);
+    }
+
+    public function activeAddons(): HasMany
+    {
+        return $this->hasMany(InvitationAddon::class)
+            ->whereNotNull('paid_at')
+            ->where('expires_at', '>', now());
     }
 
     // ─── Scopes ───────────────────────────────────────────────────
@@ -115,6 +128,28 @@ class Subscription extends Model
         }
 
         return (int) now()->diffInDays($this->grace_until, absolute: false);
+    }
+
+    /** Kuota undangan published yang diperbolehkan */
+    public function invitationQuota(): int
+    {
+        if (! $this->isPremium()) {
+            return 1;
+        }
+
+        if (! $this->isActive()) {
+            return 0;
+        }
+
+        return 2 + (int) $this->activeAddons()->sum('quantity');
+    }
+
+    public function canPublishInvitation(): bool
+    {
+        $quota     = $this->invitationQuota();
+        $published = $this->user->invitations()->where('status', 'published')->count();
+
+        return $published < $quota;
     }
 
     /** Sisa hari sampai expires_at */
