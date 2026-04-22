@@ -2,13 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue';
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 import { useLocale } from '@/Composables/useLocale';
-
-// ── Premium template components ───────────────────────────────────────────────
-import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTemplate.vue';
-
-const PREMIUM_TEMPLATE_MAP = {
-    'nusantara': NusantaraTemplate,
-};
+import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 
 const { locale, t } = useLocale();
 
@@ -32,7 +26,7 @@ const fontBody  = computed(() => cfg.value.font_body       ?? 'sans-serif');
 
 // ── Premium template detection ────────────────────────────────────────────────
 const premiumComponent = computed(() =>
-    props.template ? (PREMIUM_TEMPLATE_MAP[props.template.slug] ?? null) : null
+    props.template ? (TEMPLATE_MAP[props.template.slug] ?? null) : null
 );
 
 // Build a proper invitation object from demo_data (mirrors what the controller does)
