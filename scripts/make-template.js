@@ -85,4 +85,11 @@ Checklist konversi HTML → Vue:
   ☐  Insert DB record + demo_data lengkap
   ☐  Test di http://127.0.0.1:8000/templates/${slug}/demo
   ☐  Screenshot → upload sebagai thumbnail_url
+
+📸  Foto demo (gunakan di demo_data):
+  Cover / couple : /image/demo-image/bride-groom.png
+  Foto bride     : /image/demo-image/bride.png
+  Foto groom     : /image/demo-image/groom.png
+  Gallery 1-4    : /demo/prewedding-1.svg  /demo/prewedding-2.svg
+                   /demo/prewedding-3.svg  /demo/prewedding-4.svg
 `)
