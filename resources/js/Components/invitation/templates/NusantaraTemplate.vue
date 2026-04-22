@@ -26,7 +26,7 @@ const {
     openingText, closingText,
     firstEvent, firstEventDate,
     countdown, targetDate, pad,
-    gateOpen, gateAnimating, triggerGate,
+    gateOpen, contentOpen, gateAnimating, triggerGate,
     audioEl, musicPlaying, toggleMusic,
     toastMsg, toastVisible,
     copiedAccount, copyToClipboard,
