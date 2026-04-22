@@ -90,6 +90,5 @@ Checklist konversi HTML → Vue:
   Cover / couple : /image/demo-image/bride-groom.png
   Foto bride     : /image/demo-image/bride.png
   Foto groom     : /image/demo-image/groom.png
-  Gallery 1-4    : /demo/prewedding-1.svg  /demo/prewedding-2.svg
-                   /demo/prewedding-3.svg  /demo/prewedding-4.svg
+  Gallery (x4)   : /image/demo-image/bride-groom.png
 `)
