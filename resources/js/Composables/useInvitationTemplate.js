@@ -90,6 +90,8 @@ export function useInvitationTemplate(props, defaults = {}) {
 
     const pad = n => String(n).padStart(2, '0')
 
+    let destroyed = false
+
     // ── Gate / opening animation ──────────────────────────────────────────
     const gateOpen      = ref(false)
     const contentOpen   = ref(false)
@@ -103,6 +105,7 @@ export function useInvitationTemplate(props, defaults = {}) {
         if (gateAnimating.value || gateOpen.value) return
         gateAnimating.value = true
         await new Promise(r => setTimeout(r, 1400))
+        if (destroyed) return
         gateOpen.value      = true
         contentOpen.value   = true
         gateAnimating.value = false
@@ -243,12 +246,19 @@ export function useInvitationTemplate(props, defaults = {}) {
     }
 
     // ── Intersection reveal ───────────────────────────────────────────────
+    const revealObservers = new Set()
+
     function vReveal(el) {
         if (!el) return
         const obs = new IntersectionObserver(([e]) => {
-            if (e.isIntersecting) { el.classList.add(revealClass); obs.disconnect() }
+            if (e.isIntersecting) {
+                el.classList.add(revealClass)
+                obs.disconnect()
+                revealObservers.delete(obs)
+            }
         }, { threshold: 0.12 })
         obs.observe(el)
+        revealObservers.add(obs)
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -266,8 +276,11 @@ export function useInvitationTemplate(props, defaults = {}) {
     })
 
     onUnmounted(() => {
+        destroyed = true
         clearInterval(cdTimer)
         clearTimeout(toastTimer)
+        revealObservers.forEach(obs => obs.disconnect())
+        revealObservers.clear()
     })
 
     return {
