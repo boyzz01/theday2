@@ -9,13 +9,7 @@ import SectionRsvp     from '@/Pages/Invitation/Sections/SectionRsvp.vue';
 import SectionMessages from '@/Pages/Invitation/Sections/SectionMessages.vue';
 import SectionClosing  from '@/Pages/Invitation/Sections/SectionClosing.vue';
 
-// ── Premium template imports ───────────────────────────────────────────────
-import NusantaraTemplate from '@/Components/invitation/templates/NusantaraTemplate.vue';
-
-// Template routing map: slug → component
-const TEMPLATE_MAP = {
-    'nusantara': NusantaraTemplate,
-};
+import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 
 const props = defineProps({
     invitation: { type: Object,  required: true },
