@@ -75,6 +75,9 @@ export function useInvitationTemplate(props, defaults = {}) {
             backgroundPosition: 'center',
             opacity: String(bg.opacity ?? 0.7),
         }
+        if (bg.type === 'video') return {
+            opacity: String(bg.opacity ?? 0.7),
+        }
         return {}
     }
 

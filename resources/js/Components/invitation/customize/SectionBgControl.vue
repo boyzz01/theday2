@@ -27,6 +27,10 @@ function onFileInput(e) {
 }
 
 const inputClass = 'w-full px-3 py-2 rounded-lg border border-stone-200 text-sm text-stone-800 focus:outline-none focus:border-[#92A89C] transition-colors';
+
+const youtubeId = computed(() =>
+    bg.value.value?.match(/(?:v=|youtu\.be\/|shorts\/)([^&?/\s]+)/)?.[1] ?? null
+)
 </script>
 
 <template>
@@ -53,10 +57,10 @@ const inputClass = 'w-full px-3 py-2 rounded-lg border border-stone-200 text-sm 
         <template v-if="bg.type === 'image'">
             <div v-if="bg.value" class="relative rounded-lg overflow-hidden h-24">
                 <img :src="bg.value" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <div :class="['absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity', uploading ? 'opacity-60 pointer-events-none' : 'opacity-0 hover:opacity-100']">
                     <label class="cursor-pointer text-white text-xs font-medium">
-                        Ganti Foto
-                        <input type="file" class="sr-only" accept="image/jpeg,image/png,image/webp" @change="onFileInput" />
+                        {{ uploading ? 'Mengupload...' : 'Ganti Foto' }}
+                        <input type="file" class="sr-only" accept="image/jpeg,image/png,image/webp" @change="onFileInput" :disabled="uploading" />
                     </label>
                 </div>
             </div>
@@ -87,9 +91,9 @@ const inputClass = 'w-full px-3 py-2 rounded-lg border border-stone-200 text-sm 
                 placeholder="https://youtube.com/watch?v=..."
                 :class="inputClass"
             />
-            <div v-if="bg.value" class="rounded-lg overflow-hidden aspect-video">
+            <div v-if="youtubeId" class="rounded-lg overflow-hidden aspect-video">
                 <iframe
-                    :src="`https://www.youtube.com/embed/${bg.value.match(/(?:v=|youtu\.be\/)([^&?/\s]+)/)?.[1]}?autoplay=0&mute=1`"
+                    :src="`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1`"
                     class="w-full h-full"
                     frameborder="0"
                     allowfullscreen
