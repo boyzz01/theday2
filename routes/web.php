@@ -151,6 +151,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post('/invitations/{invitation}/upload', [InvitationController::class, 'upload'])->name('invitations.upload');
     Route::post('/invitations/{invitation}/upload-audio', [InvitationController::class, 'uploadAudio'])->name('invitations.upload-audio');
 
+    // Kustomisasi page (premium)
+    Route::get( '/invitations/{invitation}/customize',                 [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'show'])->name('invitations.customize');
+    Route::post('/invitations/{invitation}/customize',                 [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'update'])->name('invitations.customize.update');
+    Route::post('/invitations/{invitation}/sections/{key}/background', [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'uploadBackground'])->name('invitations.sections.background');
+
     // ── Buku Tamu (guest messages per invitation) ────────────────────────
     Route::get(   '/invitations/{invitation}/buku-tamu',            [DashboardGuestMessageController::class, 'index'])->name('buku-tamu.show');
     Route::get(   '/invitations/{invitation}/messages',             [DashboardGuestMessageController::class, 'messages'])->name('invitations.messages.list');
