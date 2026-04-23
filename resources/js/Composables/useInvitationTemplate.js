@@ -60,6 +60,24 @@ export function useInvitationTemplate(props, defaults = {}) {
         return s.data ?? {}
     }
 
+    function sectionBg(key) {
+        const userBg = cfg.value.section_backgrounds?.[key]
+        if (userBg?.type && userBg?.value) return userBg
+        return defaults.sectionBgDefaults?.[key] ?? null
+    }
+
+    function bgStyle(bg) {
+        if (!bg) return {}
+        if (bg.type === 'color') return { backgroundColor: bg.value }
+        if (bg.type === 'image') return {
+            backgroundImage: `url(${bg.value})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: String(bg.opacity ?? 0.7),
+        }
+        return {}
+    }
+
     // ── Events ────────────────────────────────────────────────────────────
     const firstEvent     = computed(() => events.value[0] ?? null)
     const firstEventDate = computed(() => firstEvent.value?.event_date_formatted ?? '')
@@ -295,7 +313,7 @@ export function useInvitationTemplate(props, defaults = {}) {
         openingText, closingText,
         firstEvent, firstEventDate,
         // Section
-        sectionEnabled, sectionData,
+        sectionEnabled, sectionData, sectionBg, bgStyle,
         // Countdown
         countdown, targetDate, pad,
         // Gate
