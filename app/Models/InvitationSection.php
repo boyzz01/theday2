@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Services\InvitationSectionSyncService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class InvitationSection extends Model
 {
@@ -59,6 +61,14 @@ class InvitationSection extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(SectionVariant::class, 'variant_id');
+    }
+
+    // ─── Static initializer ──────────────────────────────────────────
+
+    public static function initializeForInvitation(string $invitationId): Collection
+    {
+        $invitation = \App\Models\Invitation::findOrFail($invitationId);
+        return app(InvitationSectionSyncService::class)->syncForInvitation($invitation);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────
