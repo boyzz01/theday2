@@ -35,6 +35,7 @@ class Invitation extends Model
         'password',
         'view_count',
         'current_step',
+        'last_edited_at',
     ];
 
     protected $hidden = [
@@ -49,6 +50,7 @@ class Invitation extends Model
             'custom_config'        => 'array',
             'published_at'         => 'datetime',
             'expires_at'           => 'datetime',
+            'last_edited_at'       => 'datetime',
             'is_password_protected' => 'boolean',
             'view_count'           => 'integer',
             'current_step'         => 'integer',
