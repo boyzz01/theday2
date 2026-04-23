@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
@@ -94,6 +94,27 @@ function scheduleAutoSave() {
 }
 
 onUnmounted(() => clearTimeout(autoSaveTimer));
+
+// ── Preview scroll-to-section ─────────────────────────────────────────────
+const previewInner = ref(null);
+
+const SECTION_SELECTORS = {
+    cover:   '.pearl-gate, .n-cover',
+    opening: '.pearl-opening, .n-opening',
+    events:  '.pearl-events, .n-events',
+    gallery: '.pearl-gallery, .n-gallery',
+    closing: '.pearl-closing, .n-closing',
+    music:   null,
+};
+
+watch(activeKey, async (key) => {
+    if (!key || !previewInner.value) return;
+    await nextTick();
+    const selector = SECTION_SELECTORS[key];
+    if (!selector) return;
+    const el = previewInner.value.querySelector(selector);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 </script>
 
 <template>
@@ -193,17 +214,19 @@ onUnmounted(() => clearTimeout(autoSaveTimer));
             </div>
 
             <!-- ── Right: Live preview (desktop only) ────────────── -->
-            <div class="hidden lg:flex flex-1 bg-stone-100 overflow-y-auto">
-                <div class="preview-panel-wrapper">
-                    <component
-                        v-if="previewTemplate"
-                        :is="previewTemplate"
-                        :invitation="previewInvitation"
-                        :is-demo="true"
-                        :auto-open="true"
-                    />
-                    <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
-                        Template tidak ditemukan
+            <div class="hidden lg:flex flex-1 items-center justify-center bg-stone-100 p-8">
+                <div class="preview-phone-frame">
+                    <div ref="previewInner" class="preview-phone-inner">
+                        <component
+                            v-if="previewTemplate"
+                            :is="previewTemplate"
+                            :invitation="previewInvitation"
+                            :is-demo="true"
+                            :auto-open="true"
+                        />
+                        <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
+                            Template tidak ditemukan
+                        </div>
                     </div>
                 </div>
             </div>
@@ -222,12 +245,28 @@ onUnmounted(() => clearTimeout(autoSaveTimer));
 </template>
 
 <style scoped>
-.preview-panel-wrapper {
+.preview-phone-frame {
     width: 390px;
-    min-height: 100%;
-    transform-origin: top left;
-    margin: 0 auto;
+    height: 780px;
+    flex-shrink: 0;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 0 0 8px #1a1a1a, 0 30px 60px rgba(0,0,0,0.3);
     background: white;
-    box-shadow: 0 0 40px rgba(0,0,0,0.12);
+    position: relative;
+}
+
+.preview-phone-inner {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    /* hide scrollbar visually */
+    scrollbar-width: none;
+}
+
+.preview-phone-inner::-webkit-scrollbar {
+    display: none;
 }
 </style>
