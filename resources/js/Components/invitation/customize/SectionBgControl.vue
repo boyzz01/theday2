@@ -4,7 +4,7 @@ import { computed } from 'vue';
 const props = defineProps({
     modelValue: { type: Object, default: () => ({ type: 'color', value: '#ffffff', opacity: 0.7 }) },
     sectionKey: { type: String, required: true },
-    invitationId: { type: String, required: true },
+    invitationId: { type: String, default: null },
     uploading: { type: Boolean, default: false },
 });
 
@@ -38,15 +38,22 @@ const youtubeId = computed(() =>
         <!-- Type selector -->
         <div class="flex gap-1.5">
             <button
-                v-for="opt in [{ key: 'image', label: 'Foto' }, { key: 'video', label: 'Video' }, { key: 'color', label: 'Warna' }]"
+                v-for="opt in [
+                    { key: 'image', label: 'Foto', disabled: false },
+                    { key: 'video', label: 'Video (segera)', disabled: true },
+                    { key: 'color', label: 'Warna', disabled: false }
+                ]"
                 :key="opt.key"
                 type="button"
-                @click="setType(opt.key)"
+                @click="!opt.disabled && setType(opt.key)"
+                :disabled="opt.disabled"
                 :class="[
                     'flex-1 py-1.5 rounded-lg text-xs font-medium border transition-all',
-                    bg.type === opt.key
-                        ? 'bg-[#92A89C] text-white border-[#92A89C]'
-                        : 'text-stone-500 border-stone-200 hover:border-[#92A89C]/50'
+                    opt.disabled
+                        ? 'text-stone-300 border-stone-100 cursor-not-allowed'
+                        : bg.type === opt.key
+                            ? 'bg-[#92A89C] text-white border-[#92A89C]'
+                            : 'text-stone-500 border-stone-200 hover:border-[#92A89C]/50'
                 ]"
             >
                 {{ opt.label }}

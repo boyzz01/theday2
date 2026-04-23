@@ -167,7 +167,7 @@ onUnmounted(() => clearTimeout(autoSaveTimer));
                             <template v-if="section.key === 'music'">
                                 <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
                                 <Link
-                                    :href="route('invitations.edit', invitation.id)"
+                                    :href="route('dashboard.invitations.edit', invitation.id)"
                                     class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
                                 >
                                     Buka Editor Musik →

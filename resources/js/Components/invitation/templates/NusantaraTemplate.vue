@@ -328,6 +328,12 @@ onMounted(() => {
 
             <!-- ── Section 2: Opening / Sambutan ───────────────────── -->
             <section class="n-section n-section-light" :style="{ background: bgColor }">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('opening')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('opening'))"
+                />
                 <BatikKawung :color="primary" :opacity="0.03"/>
 
                 <!-- Corner sulur ornaments -->
@@ -453,6 +459,12 @@ onMounted(() => {
                 class="n-section n-section-dark"
                 :style="{ background: darkBg }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('events')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('events'))"
+                />
                 <!-- Mandala background -->
                 <div class="n-mandala-bg">
                     <MandalaBg :color="primaryLight" :opacity="0.05" size="600px"/>
@@ -641,6 +653,12 @@ onMounted(() => {
                 class="n-section n-section-light n-gallery-section"
                 :style="{ background: bgColor }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('gallery')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('gallery'))"
+                />
                 <!-- WayangBorder frame around the content -->
                 <div class="n-wayang-frame">
                     <WayangBorder :primary-color="primary" :light-color="primaryLight"/>
@@ -1048,6 +1066,12 @@ onMounted(() => {
                 class="n-section n-section-dark n-closing"
                 :style="{ background: darkBg }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('closing')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('closing'))"
+                />
                 <!-- Full mandala behind content -->
                 <div class="n-closing-mandala">
                     <MandalaBg :color="primaryLight" :opacity="0.06" size="500px"/>

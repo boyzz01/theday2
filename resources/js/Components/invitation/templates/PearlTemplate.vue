@@ -146,7 +146,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Opening / Pasangan ── -->
-            <section v-if="sectionEnabled('opening')" class="pearl-opening" :ref="vReveal">
+            <section v-if="sectionEnabled('opening')" class="pearl-opening" style="position:relative" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('opening')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('opening'))"
+                />
                 <div class="pearl-divider-label" :style="{ fontFamily: fontBody, color: primary }">
                     <span class="pearl-line" :style="{ background: primary }"></span>
                     Wedding Ceremony
@@ -238,7 +244,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Events ── -->
-            <section v-if="sectionEnabled('events') && events.length" class="pearl-events" :style="{ background: darkBg }" :ref="vReveal">
+            <section v-if="sectionEnabled('events') && events.length" class="pearl-events" :style="{ background: darkBg, position: 'relative' }" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('events')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('events'))"
+                />
                 <div class="pearl-section-title" :style="{ fontFamily: fontTitle, color: '#fff' }">Tanggal Pernikahan</div>
                 <div class="pearl-events__grid">
                     <div
@@ -332,7 +344,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Gallery ── -->
-            <section v-if="sectionEnabled('gallery') && galleries.length" class="pearl-gallery" :ref="vReveal">
+            <section v-if="sectionEnabled('gallery') && galleries.length" class="pearl-gallery" style="position:relative" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('gallery')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('gallery'))"
+                />
                 <div class="pearl-divider-label" :style="{ fontFamily: fontBody, color: primary }">
                     <span class="pearl-line" :style="{ background: primary }"></span>
                     Gallery
