@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, computed, onUnmounted } from 'vue';
+import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import SectionBgControl from '@/Components/invitation/customize/SectionBgControl.vue';
@@ -53,8 +53,10 @@ async function uploadBg(sectionKey, file) {
             type:  'image',
             value: res.data.url,
         });
+        return true;
     } catch {
         alert('Upload gagal. Coba lagi.');
+        return false;
     } finally {
         uploadingKey.value = null;
     }
@@ -79,10 +81,13 @@ function scheduleAutoSave() {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(save, 1500);
 }
+
+onUnmounted(() => clearTimeout(autoSaveTimer));
 </script>
 
 <template>
-    <DashboardLayout title="Kustomisasi Undangan">
+    <Head title="Kustomisasi Undangan" />
+    <DashboardLayout>
         <!-- Premium lock overlay -->
         <div v-if="!canUsePremium" class="min-h-screen flex items-center justify-center p-8">
             <div class="max-w-sm text-center space-y-4">
@@ -143,7 +148,7 @@ function scheduleAutoSave() {
                                     :invitation-id="invitation.id"
                                     :uploading="uploadingKey === section.key"
                                     @update:model-value="(bg) => { onBgChange(section.key, bg); scheduleAutoSave(); }"
-                                    @upload="(file) => uploadBg(section.key, file).then(scheduleAutoSave)"
+                                    @upload="(file) => uploadBg(section.key, file).then(ok => ok && scheduleAutoSave())"
                                 />
                             </template>
 
