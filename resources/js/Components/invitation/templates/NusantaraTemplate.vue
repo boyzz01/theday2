@@ -8,6 +8,14 @@ import JavaneseGate   from '@/Components/invitation/ornaments/JavaneseGate.vue';
 import WayangBorder   from '@/Components/invitation/ornaments/WayangBorder.vue';
 import SectionGallery from '@/Pages/Invitation/Sections/SectionGallery.vue';
 
+const SECTION_BG_DEFAULTS = {
+    cover:   { type: 'color', value: '#2C1810' },
+    opening: { type: 'color', value: '#1a1008' },
+    events:  { type: 'color', value: '#f5efe8' },
+    gallery: { type: 'color', value: '#f5efe8' },
+    closing: { type: 'color', value: '#2C1810' },
+}
+
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
@@ -33,10 +41,12 @@ const {
     localMessages, msgForm, msgSubmitting, msgSuccess, msgError, submitMessage,
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
     videoEmbedUrl, vReveal,
+    sectionBg, bgStyle,
 } = useInvitationTemplate(props, {
-    galleryLayout: 'grid',
-    openingStyle:  'gate',
-    revealClass:   'n-visible',
+    galleryLayout:     'grid',
+    openingStyle:      'gate',
+    revealClass:       'n-visible',
+    sectionBgDefaults: SECTION_BG_DEFAULTS,
 });
 
 // Nusantara-specific: inject Google Fonts
@@ -237,6 +247,13 @@ onMounted(() => {
                     ? { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center top' }
                     : { background: bgColor }"
             >
+                <!-- Section background overlay (color or image from editor / defaults) -->
+                <div
+                    v-if="sectionBg('cover')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('cover'))"
+                />
+
                 <!-- Dark overlay when photo present for readability -->
                 <div v-if="coverPhotoUrl" class="n-cover-photo-overlay" :style="{ background: darkBg }"/>
 

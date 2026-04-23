@@ -2,6 +2,14 @@
 import { computed, onMounted } from 'vue';
 import { useInvitationTemplate } from '@/Composables/useInvitationTemplate';
 
+const SECTION_BG_DEFAULTS = {
+    cover:   { type: 'image', value: '/image/demo-image/bride-groom.png', opacity: 0.75 },
+    opening: { type: 'color', value: '#0f0e0c' },
+    events:  { type: 'color', value: '#faf9f7' },
+    gallery: { type: 'color', value: '#f5f0e8' },
+    closing: { type: 'image', value: '/image/demo-image/bride-groom.png', opacity: 0.6 },
+}
+
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
@@ -27,10 +35,12 @@ const {
     localMessages, msgForm, msgSubmitting, msgSuccess, msgError, submitMessage,
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
     videoEmbedUrl, vReveal,
+    sectionBg, bgStyle,
 } = useInvitationTemplate(props, {
-    galleryLayout: 'grid',
-    openingStyle:  'fade',
-    revealClass:   'p-visible',
+    galleryLayout:     'grid',
+    openingStyle:      'fade',
+    revealClass:       'p-visible',
+    sectionBgDefaults: SECTION_BG_DEFAULTS,
 });
 
 const guestDisplayName = computed(() =>
@@ -73,9 +83,11 @@ onMounted(() => {
             @click="triggerGate"
         >
             <div
-                v-if="coverPhotoUrl"
+                v-if="sectionBg('cover') || coverPhotoUrl"
                 class="pearl-gate__bg"
-                :style="{ backgroundImage: `url(${coverPhotoUrl})` }"
+                :style="sectionBg('cover')
+                    ? bgStyle(sectionBg('cover'))
+                    : { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
             />
             <div class="pearl-gate__overlay" />
 
