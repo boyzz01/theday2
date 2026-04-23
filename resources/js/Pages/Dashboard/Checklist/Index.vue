@@ -187,9 +187,6 @@ function closeSwipe(id) {
     if (sw) { sw.offsetX = 0; sw.open = false; }
 }
 
-function closeAllSwipes() {
-    Object.values(swipeMap).forEach(sw => { sw.offsetX = 0; sw.open = false; });
-}
 
 // ── Form ───────────────────────────────────────────────────────────────────
 const ASSIGNEE_OPTIONS = [
@@ -425,16 +422,21 @@ const allDone = computed(() =>
     summary.value.total > 0 && summary.value.todo === 0
 );
 
-// ── Swipe hint (one-time peek animation) ──────────────────────────────────
-const SWIPE_HINT_KEY = 'checklist_swipe_hinted_v1';
-const swipeHintId    = ref(null);
+// ── Swipe hint (peek animation on load) ───────────────────────────────────
+const swipeHintId = ref(null);
 
 async function playSwipeHint() {
-    if (localStorage.getItem(SWIPE_HINT_KEY)) return;
-    const firstTask = tasks.value.find(t => t.status !== 'archived');
+    const firstTask = tasks.value.find(t => t.status === 'todo');
     if (!firstTask) return;
-    localStorage.setItem(SWIPE_HINT_KEY, '1');
-    await new Promise(r => setTimeout(r, 700));
+
+    // Expand the group containing this task so the animation is visible
+    const firstGroup = groups.value.find(g => g.tasks.some(t => t.id === firstTask.id));
+    if (firstGroup && !expandedGroups.value.has(firstGroup.cat)) {
+        toggleGroup(firstGroup.cat);
+        await new Promise(r => setTimeout(r, 300));
+    }
+
+    await new Promise(r => setTimeout(r, 500));
     swipeHintId.value = firstTask.id;
     const sw = getSwipe(firstTask.id);
     sw.offsetX = -72;
@@ -690,11 +692,7 @@ const currentPickerDate = computed(() =>
     datePickerMode.value === 'event' ? eventDate.value : form.value.due_date
 );
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function formatDate(d) {
-    if (!d) return null;
-    return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+
 </script>
 
 <template>
@@ -892,6 +890,17 @@ function formatDate(d) {
                         </div>
                         Selesai ke bawah
                     </label>
+                          <div class="group relative flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-stone-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-lg bg-stone-800 text-white text-xs leading-relaxed
+                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
+                                Task yang sudah selesai otomatis dipindah ke bagian bawah grup, agar task yang belum selesai lebih mudah dilihat.
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800"/>
+                            </div>
+                        </div>
 
                     <button @click="openCreate"
                             class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"

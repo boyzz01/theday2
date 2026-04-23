@@ -263,7 +263,7 @@ export function useInvitationTemplate(props, defaults = {}) {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
     onMounted(() => {
-        if (props.autoOpen || props.isDemo) {
+        if (props.autoOpen) {
             gateOpen.value    = true
             contentOpen.value = true
         }

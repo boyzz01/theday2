@@ -1,0 +1,95 @@
+<h2>HTML → Vue Conversion Workflow</h2>
+<p class="subtitle">Section 3 of 4 — Step-by-step untuk setiap template baru</p>
+
+<div class="section">
+  <div style="display:flex;flex-direction:column;gap:12px">
+
+    <div style="display:flex;gap:14px;align-items:flex-start;background:#1e1e2e;border-radius:10px;padding:16px">
+      <div style="background:#89b4fa;color:#1e1e2e;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div>
+      <div>
+        <strong style="color:#89b4fa">Prep HTML</strong>
+        <p style="color:#cdd6f4;margin:4px 0 0">Bersihkan file HTML dari sumber manapun:</p>
+        <ul style="color:#a6adc8;margin:6px 0 0;padding-left:18px;line-height:1.8">
+          <li>Hapus CDN script (analytics, tracking, jQuery)</li>
+          <li>Hapus competitor-specific JS/classes</li>
+          <li>Sisakan: struktur HTML + CSS visual saja</li>
+          <li>Catat: warna utama, font, section yang ada</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:flex-start;background:#1e1e2e;border-radius:10px;padding:16px">
+      <div style="background:#a6e3a1;color:#1e1e2e;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div>
+      <div>
+        <strong style="color:#a6e3a1">Scaffold template</strong>
+        <div style="background:#11111b;border-radius:6px;padding:10px;margin-top:8px;font-family:monospace;font-size:12px;color:#cdd6f4">
+          npm run make:template jasmine
+          <div style="color:#6c7086;margin-top:4px">→ buat JasmineTemplate.vue dari boilerplate</div>
+          <div style="color:#6c7086">→ auto-register di registry.js</div>
+          <div style="color:#6c7086">→ buka file, siap edit</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:flex-start;background:#1e1e2e;border-radius:10px;padding:16px">
+      <div style="background:#f9e2af;color:#1e1e2e;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div>
+      <div>
+        <strong style="color:#f9e2af">Map sections HTML → Vue</strong>
+        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#f38ba8">HTML section</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#a6e3a1">Vue / data</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">Hero / cover</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">groomName, brideName, coverPhotoUrl</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">Opening text</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">sectionEnabled('opening'), sectionData('opening')</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">Akad / Resepsi</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">events[] → event_date_formatted, location</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">Galeri foto</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">galleries[], galleryLayout (default)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">RSVP form</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">SectionRsvp component (reuse)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">Ucapan / guestbook</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#cdd6f4">SectionMessages component (reuse)</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:flex-start;background:#1e1e2e;border-radius:10px;padding:16px">
+      <div style="background:#cba6f7;color:#1e1e2e;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">4</div>
+      <div>
+        <strong style="color:#cba6f7">Replace hardcoded values</strong>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-family:monospace;font-size:11px">
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#f38ba8">#8B6914 (warna)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#a6e3a1">primary (dari composable)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#f38ba8">"Cinzel Decorative" (font)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#a6e3a1">fontTitle (dari composable)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#f38ba8">"Rizky & Sinta" (nama)</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#a6e3a1">groomName & brideName</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#f38ba8">"Sabtu, 12 Juli 2025"</div>
+          <div style="background:#11111b;border-radius:6px;padding:8px;color:#a6e3a1">events[0].event_date_formatted</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:flex-start;background:#1e1e2e;border-radius:10px;padding:16px">
+      <div style="background:#fab387;color:#1e1e2e;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">5</div>
+      <div>
+        <strong style="color:#fab387">Setup DB record + test</strong>
+        <ul style="color:#a6adc8;margin:6px 0 0;padding-left:18px;line-height:1.8">
+          <li>Insert ke tabel <code style="color:#cdd6f4">templates</code>: slug, name, tier=premium, default_config, demo_data, thumbnail_url</li>
+          <li>Test di TemplatePreviewModal dengan demo data</li>
+          <li>Cek semua section tampil benar</li>
+          <li>Cek kustomisasi warna/font bekerja</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="background:#f9e2af15;border:1px solid #f9e2af;border-radius:8px;padding:14px;margin-top:8px">
+  <strong style="color:#f9e2af">Catatan untuk HTML scraped dari kompetitor:</strong><br>
+  <span style="color:#cdd6f4">Fokus ambil CSS visual saja (animasi, layout, ornamen). Logic interaksi dibuang — diganti oleh composable. Hindari copy font/aset yang mungkin berlisensi.</span>
+</div>
+
+<p class="subtitle" style="margin-top:20px">Workflow ini sudah cukup jelas?</p>

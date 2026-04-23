@@ -1,0 +1,62 @@
+<h2>Template System Architecture</h2>
+<p class="subtitle">Section 1 of 4 — Registry & File Structure</p>
+
+<div class="section">
+  <h3>Sekarang (masalah: 2 file harus di-update manual)</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:20px;font-family:monospace;font-size:13px;color:#cdd6f4;line-height:1.8">
+    <div style="color:#f38ba8">❌ InvitationRenderer.vue</div>
+    <div style="padding-left:16px;color:#a6e3a1">import NusantaraTemplate from './templates/NusantaraTemplate.vue'</div>
+    <div style="padding-left:16px;color:#a6e3a1">const TEMPLATE_MAP = &#123; 'nusantara': NusantaraTemplate &#125;</div>
+    <br>
+    <div style="color:#f38ba8">❌ TemplatePreviewModal.vue</div>
+    <div style="padding-left:16px;color:#a6e3a1">import NusantaraTemplate from './templates/NusantaraTemplate.vue'</div>
+    <div style="padding-left:16px;color:#a6e3a1">const PREMIUM_TEMPLATE_MAP = &#123; 'nusantara': NusantaraTemplate &#125;</div>
+    <br>
+    <div style="color:#6c7086;font-style:italic">→ 25+ templates = update 2 file setiap kali tambah template</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Setelah refactor (satu source of truth)</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:20px;font-family:monospace;font-size:13px;color:#cdd6f4;line-height:1.8">
+    <div style="color:#89b4fa">📄 templates/registry.js  ← satu-satunya file yang di-update</div>
+    <div style="padding-left:16px;color:#a6e3a1">import NusantaraTemplate from './NusantaraTemplate.vue'</div>
+    <div style="padding-left:16px;color:#a6e3a1">import JasmineTemplate   from './JasmineTemplate.vue'</div>
+    <div style="padding-left:16px;color:#a6e3a1">import SakuraTemplate    from './SakuraTemplate.vue'</div>
+    <div style="padding-left:16px;color:#fab387">// ...</div>
+    <div style="padding-left:16px;color:#a6e3a1">export const TEMPLATE_MAP = &#123;</div>
+    <div style="padding-left:32px;color:#a6e3a1">'nusantara': NusantaraTemplate,</div>
+    <div style="padding-left:32px;color:#a6e3a1">'jasmine':   JasmineTemplate,</div>
+    <div style="padding-left:32px;color:#a6e3a1">'sakura':    SakuraTemplate,</div>
+    <div style="padding-left:32px;color:#fab387">// ...</div>
+    <div style="padding-left:16px;color:#a6e3a1">&#125;</div>
+    <br>
+    <div style="color:#6c7086">✅ InvitationRenderer.vue → import &#123; TEMPLATE_MAP &#125; from './templates/registry'</div>
+    <div style="color:#6c7086">✅ TemplatePreviewModal.vue → import &#123; TEMPLATE_MAP &#125; from './templates/registry'</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Struktur folder</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:20px;font-family:monospace;font-size:13px;color:#cdd6f4;line-height:1.6">
+    <div>resources/js/Components/invitation/templates/</div>
+    <div style="padding-left:16px;color:#89b4fa">registry.js</div>
+    <div style="padding-left:16px;color:#89b4fa">_template-boilerplate.vue  <span style="color:#6c7086">← scaffold base</span></div>
+    <div style="padding-left:16px;color:#a6e3a1">NusantaraTemplate.vue</div>
+    <div style="padding-left:16px;color:#a6e3a1">JasmineTemplate.vue</div>
+    <div style="padding-left:16px;color:#a6e3a1">SakuraTemplate.vue</div>
+    <div style="padding-left:16px;color:#6c7086">... (25+ template)</div>
+    <br>
+    <div>scripts/</div>
+    <div style="padding-left:16px;color:#f9e2af">make-template.js  <span style="color:#6c7086">← npm run make:template &lt;slug&gt;</span></div>
+  </div>
+</div>
+
+<div style="background:#a6e3a115;border:1px solid #a6e3a1;border-radius:8px;padding:14px;margin-top:8px">
+  <strong style="color:#a6e3a1">Tambah template baru = 3 langkah:</strong><br>
+  <span style="color:#cdd6f4">1. <code>npm run make:template jasmine</code> → generate JasmineTemplate.vue dari boilerplate<br>
+  2. Konversi HTML → Vue di file tersebut<br>
+  3. Registry.js sudah auto-update oleh script</span>
+</div>
+
+<p class="subtitle" style="margin-top:24px">Apakah struktur ini sudah sesuai harapan?</p>

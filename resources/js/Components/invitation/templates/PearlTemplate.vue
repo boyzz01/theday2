@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useInvitationTemplate } from '@/Composables/useInvitationTemplate';
 
 const props = defineProps({
@@ -33,6 +33,10 @@ const {
     revealClass:   'p-visible',
 });
 
+const guestDisplayName = computed(() =>
+    props.isDemo ? 'Bapak / Ibu Tamu Undangan' : (props.guest?.name ?? null)
+);
+
 onMounted(() => {
     const fontParam = [
         'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400',
@@ -65,7 +69,7 @@ onMounted(() => {
         <div
             v-if="!gateOpen"
             class="pearl-gate"
-            :style="{ background: darkBg }"
+            :class="{ 'pearl-gate--sliding': gateAnimating }"
             @click="triggerGate"
         >
             <div
@@ -73,38 +77,34 @@ onMounted(() => {
                 class="pearl-gate__bg"
                 :style="{ backgroundImage: `url(${coverPhotoUrl})` }"
             />
-            <div class="pearl-gate__overlay" :style="{ background: `${darkBg}cc` }" />
+            <div class="pearl-gate__overlay" />
 
             <div class="pearl-gate__content">
-                <p class="pearl-gate__sub" :style="{ fontFamily: fontBody, color: primaryLight, letterSpacing: '0.3em' }">
-                    THE WEDDING OF
-                </p>
-                <h1 class="pearl-gate__names" :style="{ fontFamily: fontTitle, color: '#fff' }">
-                    {{ groomNick }}<br>
-                    <span :style="{ color: primaryLight }">&amp;</span><br>
-                    {{ brideNick }}
-                </h1>
-                <p v-if="firstEventDate" class="pearl-gate__date" :style="{ fontFamily: fontHeading, color: '#fff', opacity: 0.8 }">
-                    {{ firstEventDate }}
-                </p>
-                <p v-if="guest?.name" class="pearl-gate__guest" :style="{ fontFamily: fontBody, color: primaryLight }">
-                    Kepada Yth. {{ guest.name }}
-                </p>
-                <button
-                    class="pearl-gate__btn"
-                    :style="{ borderColor: primaryLight, color: primaryLight, fontFamily: fontHeading }"
-                    :disabled="gateAnimating"
-                    @click.stop="triggerGate"
-                >
-                    {{ gateAnimating ? '...' : 'Buka Undangan' }}
-                </button>
+                <div class="pearl-gate__initials" :style="{ fontFamily: fontTitle }">
+                    <span>{{ brideNick?.[0]?.toUpperCase() }}</span>
+                    <span>{{ groomNick?.[0]?.toUpperCase() }}</span>
+                </div>
+                <div class="pearl-gate__bottom">
+                    <template v-if="guestDisplayName">
+                        <p class="pearl-gate__dear" :style="{ fontFamily: fontBody }">DEAR</p>
+                        <p class="pearl-gate__guest-name" :style="{ fontFamily: fontHeading }">{{ guestDisplayName }}</p>
+                    </template>
+                    <button
+                        class="pearl-gate__btn"
+                        :style="{ fontFamily: fontHeading }"
+                        :disabled="gateAnimating"
+                        @click.stop="triggerGate"
+                    >
+                        {{ gateAnimating ? '...' : 'OPEN INVITATION' }}
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- ══════════════════════════════════════════════════════ -->
         <!-- MAIN CONTENT                                           -->
         <!-- ══════════════════════════════════════════════════════ -->
-        <div v-if="contentOpen">
+        <div :style="contentOpen ? {} : { opacity: 0, pointerEvents: 'none' }">
 
             <!-- Music float button -->
             <button
@@ -523,41 +523,70 @@ onMounted(() => {
 /* ── Gate ── */
 .pearl-gate {
     position: fixed; inset: 0; z-index: 50;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column;
     cursor: pointer; overflow: hidden;
+    background: #000;
 }
 .pearl-gate__bg {
     position: absolute; inset: 0;
     background-size: cover; background-position: center;
+    opacity: 0.75;
 }
-.pearl-gate__overlay { position: absolute; inset: 0; }
+.pearl-gate__overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.75) 100%);
+}
 .pearl-gate__content {
     position: relative; z-index: 1;
-    text-align: center; padding: 32px 24px;
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    height: 100%; width: 100%;
 }
-.pearl-gate__sub {
-    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+.pearl-gate__initials {
+    flex: 1;
+    display: flex; justify-content: center; align-items: center;
+    gap: 0;
+    line-height: 1;
+    color: #fff;
+    font-size: clamp(28vw, 40vw, 320px);
+    letter-spacing: -0.02em;
+}
+.pearl-gate__bottom {
+    padding: 0 24px 48px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; text-align: center;
+}
+.pearl-gate__dear {
+    font-size: 0.75rem; letter-spacing: 0.35em;
+    text-transform: uppercase; color: rgba(255,255,255,0.7);
     margin: 0;
 }
-.pearl-gate__names {
-    font-size: clamp(2.5rem, 10vw, 5rem); line-height: 1.1;
-    margin: 0; text-align: center;
+.pearl-gate__guest-name {
+    font-size: 1.1rem; color: #fff;
+    margin: 0; letter-spacing: 0.05em;
 }
-.pearl-gate__date { font-size: 1rem; margin: 0; }
-.pearl-gate__guest { font-size: 0.85rem; margin: 0; }
 .pearl-gate__btn {
-    margin-top: 8px;
-    padding: 12px 40px;
-    background: transparent;
-    border: 1px solid;
+    margin-top: 16px;
+    padding: 14px 40px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.6);
+    color: #fff;
     cursor: pointer;
-    font-size: 0.85rem;
-    letter-spacing: 0.15em;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     transition: all 0.3s;
+    min-width: 220px;
+    border-radius: 2px;
 }
-.pearl-gate__btn:hover { opacity: 0.8; }
+.pearl-gate__btn:hover { background: rgba(255,255,255,0.15); }
+.pearl-gate--sliding {
+    animation: pearl-slide-up 1.3s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+@keyframes pearl-slide-up {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-100%); }
+}
 
 /* ── Cover ── */
 .pearl-cover {

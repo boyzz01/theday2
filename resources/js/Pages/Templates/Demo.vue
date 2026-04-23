@@ -22,7 +22,7 @@ function useTemplate() {
 
     <!-- ── Demo banner (sticky top, above everything) ───────────── -->
     <div
-        class="sticky top-0 z-50 w-full"
+        class="sticky top-0 z-[100] w-full"
         style="background: linear-gradient(90deg, #2C1A0E, #4A2C18)"
     >
         <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-3 flex-wrap sm:flex-nowrap">
@@ -60,12 +60,12 @@ function useTemplate() {
         </div>
     </div>
 
-    <!-- ── Full invitation renderer (demo mode, auto-opened) ─────── -->
+    <!-- ── Full invitation renderer (demo mode) ─────── -->
     <InvitationRenderer
         :invitation="invitation"
         :messages="messages"
         :is-demo="true"
-        :auto-open="true"
+        :auto-open="false"
     />
 
     <!-- ── Bottom CTA banner ─────────────────────────────────────── -->

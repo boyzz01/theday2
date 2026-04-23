@@ -1,0 +1,67 @@
+<h2>Base Template — 2 Pendekatan</h2>
+<p class="subtitle">Section 2 of 4 — Shared Logic Pattern</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Composable <code>useInvitationTemplate()</code></h3>
+      <p>Extract semua logic dari NusantaraTemplate ke sebuah composable. Tiap template baru tinggal panggil satu baris:</p>
+      <div style="background:#1e1e2e;border-radius:8px;padding:12px;margin-top:10px;font-family:monospace;font-size:12px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#89b4fa">// JasmineTemplate.vue</div>
+        <div>const &#123; groomName, brideName, primary,</div>
+        <div>&nbsp;&nbsp;sectionEnabled, events, galleries,</div>
+        <div>&nbsp;&nbsp;opened, openInvitation, showToast</div>
+        <div>&#125; = <span style="color:#a6e3a1">useInvitationTemplate</span>(props)</div>
+        <br>
+        <div style="color:#6c7086">// &lt;template&gt; 100% custom visual HTML</div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Logic 1 tempat, 25+ template shared</li>
+          <li>Bug fix logic = fix semua template sekaligus</li>
+          <li>Template file = visual only, ringan</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Perlu refactor NusantaraTemplate dulu</li>
+          <li>~30-60 menit setup awal</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Scaffold copy NusantaraTemplate</h3>
+      <p>Script copy NusantaraTemplate.vue → NewTemplate.vue. Konverter edit bagian visual, logic sudah ada.</p>
+      <div style="background:#1e1e2e;border-radius:8px;padding:12px;margin-top:10px;font-family:monospace;font-size:12px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#f9e2af">$ npm run make:template jasmine</div>
+        <div style="color:#6c7086">→ copy NusantaraTemplate.vue</div>
+        <div style="color:#6c7086">→ rename ke JasmineTemplate.vue</div>
+        <div style="color:#6c7086">→ register di registry.js</div>
+        <br>
+        <div style="color:#cdd6f4">Developer tinggal edit bagian &lt;template&gt;</div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Zero setup — langsung kerja</li>
+          <li>Setiap template self-contained</li>
+          <li>Konverter lihat contoh nyata di file yang sama</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Logic terduplikasi di 25+ file</li>
+          <li>Bug fix harus update semua template</li>
+          <li>File besar per template</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="background:#89b4fa15;border:1px solid #89b4fa;border-radius:8px;padding:14px;margin-top:16px">
+  <strong style="color:#89b4fa">Rekomendasi: A (Composable)</strong><br>
+  <span style="color:#cdd6f4">Untuk 25+ template, logic terduplikasi = masalah jangka panjang. Composable = satu bug fix, semua template fixed. NusantaraTemplate tetap jadi referensi/contoh terbaik.</span>
+</div>
+
+<p class="subtitle" style="margin-top:20px">Pilih A atau B?</p>

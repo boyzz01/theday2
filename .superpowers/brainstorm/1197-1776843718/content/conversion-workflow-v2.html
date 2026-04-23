@@ -1,0 +1,114 @@
+<h2>HTML → Vue Conversion Workflow</h2>
+<p class="subtitle">Section 3 of 4 — Section map lengkap dari NusantaraTemplate</p>
+
+<div class="section">
+  <h3>Step 3: Map sections HTML → data (lengkap)</h3>
+  <p style="color:#a6adc8;margin-bottom:12px">Semua section key dari NusantaraTemplate (base template):</p>
+
+  <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-family:monospace">
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#313244;border-radius:6px;padding:8px;color:#89b4fa;font-weight:700">Section Key</div>
+      <div style="background:#313244;border-radius:6px;padding:8px;color:#89b4fa;font-weight:700">Data yang dipakai</div>
+      <div style="background:#313244;border-radius:6px;padding:8px;color:#89b4fa;font-weight:700">Catatan</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">cover</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">groomNick, brideNick, firstEventDate, coverPhotoUrl, guest.name</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Opening gate screen</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">opening</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">groomName, brideName (full), openingText, details.religion</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Sambutan + foto couple</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">quote</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('quote').text</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Ayat/kutipan, opsional</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">events</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">events[] → event_name, event_date_formatted, start_time, location, maps_url</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Akad + Resepsi</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">countdown</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">countdown.days/hours/minutes/seconds (computed)</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Auto hitung dari event pertama</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">live_streaming</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('live_streaming').url</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Link YouTube/Zoom</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">additional_info</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('additional_info').text</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Info dress code dll</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">gallery</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">galleries[] → file_url, caption</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086"><strong style="color:#a6e3a1">galleryLayout</strong> = default template</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">love_story</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('love_story').stories[] → date, title, description</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Timeline kisah cinta</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">video</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('video').url → videoEmbedUrl()</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">YouTube/Vimeo embed</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">rsvp</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">rsvpForm, submitRsvp(), isDemo</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Form konfirmasi hadir</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">gift</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">sectionData('gift').accounts[] → bank, account_number, account_name</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Nomor rekening + copy</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">wishes</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">localMessages[], msgForm, submitMessage(), isDemo</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Buku tamu / ucapan</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">closing</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">closingText, groomName, brideName</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Penutup + footer</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px">
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#f9e2af">music</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#cdd6f4">invitation.music.file_url, musicPlaying, toggleMusic()</div>
+      <div style="background:#1e1e2e;border-radius:6px;padding:8px;color:#6c7086">Float button + audio</div>
+    </div>
+
+  </div>
+</div>
+
+<div style="background:#a6e3a115;border:1px solid #a6e3a1;border-radius:8px;padding:14px;margin-top:12px">
+  <strong style="color:#a6e3a1">Semua ini dari composable — tiap template dapat akses penuh.</strong><br>
+  <span style="color:#cdd6f4">Template HTML hanya perlu: ambil data dari composable, render sesuka hati. Section yang tidak dipakai cukup tidak di-render (tidak perlu hapus dari composable).</span>
+</div>
+
+<p class="subtitle" style="margin-top:20px">Section map sudah lengkap? Ada yang kurang?</p>

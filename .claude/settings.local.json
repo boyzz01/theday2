@@ -65,7 +65,9 @@
       "Bash(curl -s http://127.0.0.1:8000/sitemap.xml)",
       "Bash(php -r 'require '\\\\''c:/laragon/www/theday/vendor/autoload.php'\\\\''; $app = require '\\\\''c:/laragon/www/theday/bootstrap/app.php'\\\\''; $app->boot\\(\\);')",
       "Bash(mysql -u root theday -e \"DESCRIBE subscriptions;\")",
-      "Bash(grep -E \"\\\\.\\(php|js|vue\\)$\")"
+      "Bash(grep -E \"\\\\.\\(php|js|vue\\)$\")",
+      "Bash(bash \"C:/Users/Ardi/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"c:/laragon/www/theday\")",
+      "Bash(awk '/<script setup>/,/<\\\\/script>/' \"c:/laragon/www/theday/resources/js/Components/invitation/templates/NusantaraTemplate.vue\")"
     ]
   }
 }

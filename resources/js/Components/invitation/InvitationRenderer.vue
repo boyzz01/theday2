@@ -103,7 +103,7 @@ onUnmounted(() => observer?.disconnect());
         :messages="messages"
         :guest="guest"
         :is-demo="isDemo"
-        :auto-open="autoOpen || isDemo"
+        :auto-open="autoOpen"
     />
 
     <!-- ── Default renderer (for free / basic templates) ───────────────────── -->
