@@ -16,6 +16,7 @@ use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
+use App\Http\Controllers\Dashboard\InvitationCustomizeController;
 use App\Http\Controllers\Dashboard\AddonController;
 use App\Http\Controllers\Dashboard\SubscriptionController;
 use App\Http\Controllers\Dashboard\TemplateController;
@@ -152,9 +153,9 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post('/invitations/{invitation}/upload-audio', [InvitationController::class, 'uploadAudio'])->name('invitations.upload-audio');
 
     // Kustomisasi page (premium)
-    Route::get( '/invitations/{invitation}/customize',                 [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'show'])->name('invitations.customize');
-    Route::post('/invitations/{invitation}/customize',                 [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'update'])->name('invitations.customize.update');
-    Route::post('/invitations/{invitation}/sections/{key}/background', [\App\Http\Controllers\Dashboard\InvitationCustomizeController::class, 'uploadBackground'])->name('invitations.sections.background');
+    Route::get( '/invitations/{invitation}/customize',                 [InvitationCustomizeController::class, 'show'])->name('invitations.customize');
+    Route::post('/invitations/{invitation}/customize',                 [InvitationCustomizeController::class, 'update'])->name('invitations.customize.update');
+    Route::post('/invitations/{invitation}/sections/{key}/background', [InvitationCustomizeController::class, 'uploadBackground'])->name('invitations.sections.background');
 
     // ── Buku Tamu (guest messages per invitation) ────────────────────────
     Route::get(   '/invitations/{invitation}/buku-tamu',            [DashboardGuestMessageController::class, 'index'])->name('buku-tamu.show');

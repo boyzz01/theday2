@@ -67,7 +67,6 @@ class InvitationCustomizeController extends Controller
                 'music' => $invitation->music->first() ? [
                     'file_url' => $invitation->music->first()->file_url,
                 ] : null,
-                'sections' => null,
             ],
             'canUsePremium' => SectionAccess::isPremium($request->user()),
         ]);
@@ -98,6 +97,9 @@ class InvitationCustomizeController extends Controller
 
     public function uploadBackground(Request $request, Invitation $invitation, string $key): JsonResponse
     {
+        $allowedKeys = ['cover', 'opening', 'events', 'gallery', 'closing'];
+        abort_unless(in_array($key, $allowedKeys, true), 422);
+
         abort_unless($invitation->user_id === $request->user()->id, 403);
 
         if (! SectionAccess::isPremium($request->user())) {
