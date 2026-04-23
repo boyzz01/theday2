@@ -49,7 +49,7 @@ User klik Bayar
 | `app/Enums/PaymentMethod.php` | Tambah `Mayar`, keep `Midtrans` (historis) |
 | `resources/js/Pages/Dashboard/Paket.vue` | Hapus Snap.js, ganti redirect |
 | `resources/js/Pages/PaymentReturn.vue` | **Baru** — return page dengan polling |
-| `routes/web.php` | Ganti webhook route, tambah return route |
+| `routes/web.php` | Ganti webhook route, tambah return route + polling status route |
 | `bootstrap/app.php` | Ganti CSRF exclusion Midtrans → Mayar |
 | `composer.json` | Hapus `midtrans/midtrans-php` |
 
@@ -96,8 +96,8 @@ Dua method publik:
     "expiredAt": "{now + 24 jam ISO8601 UTC}",
     "items": [
       {
-        "quantity": 1,
-        "rate": {transaction->amount},
+        "quantity": "{transaction->addon_quantity ?? 1}",
+        "rate": "{transaction->addon_quantity ? 15000 : transaction->amount}",
         "description": "{itemName}"
       }
     ]
@@ -193,7 +193,7 @@ Perubahan identik dengan SubscriptionController. Item name: `"Tambah {$quantity}
 - Setelah max poll: tampilkan tombol "Cek Ulang" manual
 - Tombol "Kembali ke Dashboard" selalu tersedia
 
-**Route API polling:** `GET /api/transactions/{transaction}/status` — return `{ status: '...' }`, lightweight, authenticated.
+**Route polling (web, authenticated):** `GET /payment/transactions/{transaction}/status` — return `{ status: '...' }`, lightweight. Masuk di `routes/web.php` dalam group middleware `auth`.
 
 ---
 
