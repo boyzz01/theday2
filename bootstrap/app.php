@@ -21,9 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Exclude Midtrans webhook from CSRF verification
+        // Exclude Mayar webhook from CSRF verification
         $middleware->validateCsrfTokens(except: [
-            'webhooks/midtrans',
+            'webhooks/mayar',
             'logout',
         ]);
 
