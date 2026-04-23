@@ -114,14 +114,49 @@ Controller: `InvitationCustomizeController`
 
 ### Frontend: `Pages/Dashboard/Invitations/Customize.vue`
 
-Layout: same dashboard layout as other pages.
+**Layout — Desktop (≥ lg):** Split panel, side by side.
+- Left (40%): editor panels — header + scrollable section cards + save footer
+- Right (60%): live preview — template component rendered at scale inside a fixed container, scrollable independently
 
-Structure:
-- Header: "Kustomisasi Undangan — {groom} & {bride}" + "Lihat Preview" button (opens `/undangan/{slug}` in new tab)
-- Section panels: one expandable card per section, ordered as they appear in the invitation
-- Footer: "Simpan Semua" button + auto-save indicator
+**Layout — Mobile (< lg):** Editor only.
+- Floating "Lihat Preview" button (bottom right) → opens `/undangan/{slug}` in new tab
 
-**Section panels:**
+**Live Preview (desktop):**
+
+The right panel renders the actual template Vue component directly (not iframe), using a reactive `previewInvitation` computed object. This object is a deep merge of:
+1. The saved `invitation` from server (baseline)
+2. Current unsaved form state (overrides)
+
+```js
+const previewInvitation = computed(() => deepMerge(invitation, localForm))
+```
+
+The template component is imported dynamically via `TEMPLATE_MAP` (same registry used by `InvitationRenderer`). It is rendered at 0.45× scale via CSS transform to fit the preview panel:
+
+```html
+<div class="preview-scaler">
+  <component :is="previewTemplate" :invitation="previewInvitation" :is-demo="true" :auto-open="true" />
+</div>
+```
+
+```css
+.preview-scaler {
+  transform: scale(0.45);
+  transform-origin: top center;
+  width: 222%;   /* compensate scale: 1/0.45 * 100% */
+  pointer-events: none;
+}
+```
+
+`auto-open="true"` skips the gate so preview always shows content. `is-demo="true"` disables form submissions.
+
+**Editor panels (left side):**
+
+- Header: "Kustomisasi — {groom} & {bride}"
+- Section cards: one expandable accordion per section, ordered as in invitation
+- Footer: "Simpan" button + "Tersimpan ✓" indicator (auto-save on blur/upload)
+
+**Section panel controls:**
 
 | Section | Controls |
 |---------|----------|
@@ -134,13 +169,13 @@ Structure:
 
 Background type selector = 3 radio buttons: Foto | Video | Warna
 
-Photo upload: direct upload → `POST .../background`, replace existing, show thumbnail preview.
+Photo upload: direct upload → `POST .../background`, replace existing, show thumbnail. Preview panel updates immediately after upload response returns new URL.
 
-Video: input URL field (YouTube only), show embed preview.
+Video: YouTube URL input. Preview panel updates reactively as user types (debounced 500ms).
 
-Color: color picker input (`<input type="color">` + hex text field).
+Color: `<input type="color">` + hex text field. Preview updates on every color change.
 
-Opacity: range slider `0.1–1.0`, shown only for image/video type.
+Opacity: range slider `0.1–1.0`, shown only for image/video type. Preview updates in real-time.
 
 Sections that are disabled (`enabled: false`) are shown grayed out with a toggle to re-enable.
 
