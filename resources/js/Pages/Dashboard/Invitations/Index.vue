@@ -192,6 +192,13 @@ async function doDuplicate() {
                         >
                             Edit
                         </Link>
+                        <Link
+                            :href="route('dashboard.invitations.customize', inv.id)"
+                            class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-[#92A89C]/50 text-[#73877C] hover:bg-[#92A89C]/10 transition-colors"
+                            title="Kustomisasi tampilan"
+                        >
+                            Kustomisasi
+                        </Link>
                         <button
                             @click="openPicker(inv)"
                             class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-[#B8C7BF] text-[#73877C] hover:bg-[#92A89C]/10 transition-colors"
