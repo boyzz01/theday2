@@ -4,6 +4,7 @@ import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import SectionBgControl from '@/Components/invitation/customize/SectionBgControl.vue';
+import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -21,6 +22,16 @@ const activeKey    = ref('cover');
 
 const groomName = computed(() => props.invitation.details?.groom_name ?? '—');
 const brideName = computed(() => props.invitation.details?.bride_name ?? '—');
+
+const previewTemplate = computed(() => TEMPLATE_MAP[props.invitation.template_slug] ?? null);
+
+const previewInvitation = computed(() => ({
+    ...props.invitation,
+    config: {
+        ...props.invitation.config,
+        section_backgrounds: form.value,
+    },
+}));
 
 // ── Sections config ───────────────────────────────────────────────────────
 const SECTIONS = [
@@ -181,9 +192,20 @@ onUnmounted(() => clearTimeout(autoSaveTimer));
                 </div>
             </div>
 
-            <!-- ── Right: Preview (desktop only, added in Task 6) ── -->
-            <div class="hidden lg:flex flex-1 items-start justify-center bg-stone-100 overflow-hidden p-8">
-                <p class="text-stone-400 text-sm">Preview akan tampil di sini</p>
+            <!-- ── Right: Live preview (desktop only) ────────────── -->
+            <div class="hidden lg:flex flex-1 bg-stone-100 overflow-y-auto">
+                <div class="preview-panel-wrapper">
+                    <component
+                        v-if="previewTemplate"
+                        :is="previewTemplate"
+                        :invitation="previewInvitation"
+                        :is-demo="true"
+                        :auto-open="true"
+                    />
+                    <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
+                        Template tidak ditemukan
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -198,3 +220,14 @@ onUnmounted(() => clearTimeout(autoSaveTimer));
         </a>
     </DashboardLayout>
 </template>
+
+<style scoped>
+.preview-panel-wrapper {
+    width: 390px;
+    min-height: 100%;
+    transform-origin: top left;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 0 40px rgba(0,0,0,0.12);
+}
+</style>
