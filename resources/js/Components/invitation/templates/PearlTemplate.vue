@@ -490,9 +490,11 @@ onMounted(() => {
                 :style="{ background: darkBg }"
             >
                 <div
-                    v-if="coverPhotoUrl"
+                    v-if="sectionBg('closing') || coverPhotoUrl"
                     class="pearl-closing__bg"
-                    :style="{ backgroundImage: `url(${coverPhotoUrl})` }"
+                    :style="sectionBg('closing')
+                        ? bgStyle(sectionBg('closing'))
+                        : { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
                 />
                 <div class="pearl-closing__overlay" :style="{ background: `${darkBg}cc` }" />
                 <div class="pearl-closing__content">
