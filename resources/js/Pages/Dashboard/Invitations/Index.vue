@@ -187,7 +187,7 @@ async function doDuplicate() {
                     <!-- Actions -->
                     <div class="flex gap-2">
                         <Link
-                            :href="route('editor.invitations.show', inv.id)"
+                            :href="route('dashboard.invitations.edit', inv.id)"
                             class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
                         >
                             Edit
