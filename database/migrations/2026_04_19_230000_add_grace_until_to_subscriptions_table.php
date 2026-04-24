@@ -15,8 +15,10 @@ return new class extends Migration
             $table->timestamp('grace_until')->nullable()->after('expires_at');
         });
 
-        // Add 'grace' to status ENUM
-        DB::statement("ALTER TABLE subscriptions MODIFY COLUMN status ENUM('active', 'grace', 'expired') NOT NULL DEFAULT 'active'");
+        // Add 'grace' to status ENUM — MySQL only (SQLite stores enums as strings)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE subscriptions MODIFY COLUMN status ENUM('active', 'grace', 'expired') NOT NULL DEFAULT 'active'");
+        }
     }
 
     public function down(): void
@@ -25,6 +27,8 @@ return new class extends Migration
             $table->dropColumn('grace_until');
         });
 
-        DB::statement("ALTER TABLE subscriptions MODIFY COLUMN status ENUM('active', 'expired') NOT NULL DEFAULT 'active'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE subscriptions MODIFY COLUMN status ENUM('active', 'expired') NOT NULL DEFAULT 'active'");
+        }
     }
 };

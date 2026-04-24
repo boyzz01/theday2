@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('invitation_details', function (Blueprint $table) {
-            $table->dropColumn(['birthday_person_name', 'birthday_photo_url', 'birthday_age']);
-        });
+        if (Schema::hasColumn('invitation_details', 'birthday_person_name')) {
+            Schema::table('invitation_details', function (Blueprint $table) {
+                $table->dropColumn(['birthday_person_name', 'birthday_photo_url', 'birthday_age']);
+            });
+        }
     }
 
     public function down(): void
