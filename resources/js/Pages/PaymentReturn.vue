@@ -45,7 +45,12 @@ onUnmounted(() => {
 });
 
 const goToDashboard = () => router.visit(route('dashboard.subscriptions.index'));
-const retryPoll     = () => { maxed.value = false; pollCount.value = 0; pollTimer = setInterval(poll, 3000); };
+const retryPoll = () => {
+    if (pollTimer) clearInterval(pollTimer);
+    maxed.value = false;
+    pollCount.value = 0;
+    pollTimer = setInterval(poll, 3000);
+};
 </script>
 
 <template>
@@ -60,6 +65,7 @@ const retryPoll     = () => { maxed.value = false; pollCount.value = 0; pollTime
                      'bg-emerald-50 border-emerald-100': currentStatus === 'paid',
                      'bg-white border-stone-100':        currentStatus === 'pending',
                      'bg-red-50 border-red-100':         currentStatus === 'failed',
+                     'bg-stone-50 border-stone-100':     !['paid','pending','failed'].includes(currentStatus),
                  }">
 
                 <!-- Paid -->
@@ -96,7 +102,7 @@ const retryPoll     = () => { maxed.value = false; pollCount.value = 0; pollTime
                 </template>
 
                 <!-- Failed -->
-                <template v-else>
+                <template v-else-if="currentStatus === 'failed'">
                     <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -104,6 +110,17 @@ const retryPoll     = () => { maxed.value = false; pollCount.value = 0; pollTime
                     </div>
                     <h2 class="text-xl font-bold text-red-800 mb-2">Pembayaran Gagal</h2>
                     <p class="text-sm text-red-600 mb-6">Terjadi masalah saat memproses pembayaran. Silakan coba lagi.</p>
+                </template>
+
+                <!-- Refunded / unknown -->
+                <template v-else>
+                    <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-stone-800 mb-2">Status Pembayaran</h2>
+                    <p class="text-sm text-stone-500 mb-6">Silakan cek riwayat pembayaran di dashboard untuk detail transaksi.</p>
                 </template>
 
                 <button @click="goToDashboard"

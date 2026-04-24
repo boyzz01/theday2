@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 
@@ -102,7 +101,7 @@ const features = [
                             Paket Aktif
                         </p>
                         <h2 class="text-2xl font-bold text-[#2C2417]">
-                            {{ isPremium ? 'Premium ' : 'Gratis' }}
+                            {{ isPremium ? 'Premium' : 'Gratis' }}
                         </h2>
 
                         <!-- Premium: expiry info -->
@@ -139,7 +138,7 @@ const features = [
                             :class="premiumCtaDisabled
                                 ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
                                 : 'bg-brand-primary hover:bg-brand-primary-hover text-white'">
-                        {{ isCheckingOut ? 'Mengarahkan ke pembayaran...' : (isPremium ? 'Perpanjang Premium →' : 'Upgrade ke Premium →') }}
+                        {{ isCheckingOut ? 'Mengarahkan ke pembayaran...' : premiumCtaLabel }}
                     </button>
                 </div>
             </div>
