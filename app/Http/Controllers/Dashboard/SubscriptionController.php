@@ -9,16 +9,12 @@ namespace App\Http\Controllers\Dashboard;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
-use App\Mail\PaymentSuccessMail;
 use App\Models\Plan;
-use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Services\MayarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
