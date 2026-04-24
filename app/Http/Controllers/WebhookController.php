@@ -132,7 +132,7 @@ class WebhookController extends Controller
                 'user_id'         => $user->id,
                 'subscription_id' => $transaction->subscription_id,
             ]);
-            return;
+            throw new \RuntimeException('Cannot activate addon: subscription is not active.');
         }
 
         $addon = InvitationAddon::create([
