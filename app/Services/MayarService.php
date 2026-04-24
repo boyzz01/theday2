@@ -39,6 +39,10 @@ class MayarService
 
         $data = $response->json('data');
 
+        if (! is_array($data) || empty($data['link']) || empty($data['id'])) {
+            throw new \RuntimeException('Mayar API returned unexpected response: ' . $response->body());
+        }
+
         return [
             'payment_url'      => $data['link'],
             'mayar_invoice_id' => $data['id'],
