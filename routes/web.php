@@ -20,6 +20,7 @@ use App\Http\Controllers\Dashboard\InvitationCustomizeController;
 use App\Http\Controllers\Dashboard\AddonController;
 use App\Http\Controllers\Dashboard\SubscriptionController;
 use App\Http\Controllers\Dashboard\TemplateController;
+use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\ArticleController;
@@ -229,6 +230,12 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post(  '/checklist/tasks/{taskId}/subtasks',              [ChecklistController::class, 'storeSubtask'])->name('checklist.tasks.subtasks.store');
     Route::patch( '/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'updateSubtask'])->name('checklist.tasks.subtasks.update');
     Route::delete('/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'destroySubtask'])->name('checklist.tasks.subtasks.destroy');
+});
+
+// ── Payment return & status polling (no onboarding guard) ───────────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/payment/return',                            [PaymentReturnController::class, 'show']  )->name('payment.return');
+    Route::get('/payment/transactions/{transaction}/status', [PaymentReturnController::class, 'status'])->name('payment.status');
 });
 
 // Keep legacy route alias so Breeze redirects still work
