@@ -259,7 +259,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // ── Webhooks (no auth) ──────────────────────────────────────────────────
-Route::post('/webhooks/midtrans', [WebhookController::class, 'midtrans'])->name('webhooks.midtrans');
+Route::post('/webhooks/mayar', [WebhookController::class, 'mayar'])->name('webhooks.mayar');
 
 // ── Contact page ────────────────────────────────────────────────────────
 Route::get( '/kontak', [ContactController::class, 'index'])->name('contact');

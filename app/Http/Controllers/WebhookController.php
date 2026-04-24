@@ -11,6 +11,7 @@ use App\Mail\PaymentSuccessMail;
 use App\Models\InvitationAddon;
 use App\Models\Subscription;
 use App\Models\Transaction;
+use App\Services\MayarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,62 +20,65 @@ use Illuminate\Support\Facades\Mail;
 
 class WebhookController extends Controller
 {
-    public function midtrans(Request $request): JsonResponse
+    public function __construct(private readonly MayarService $mayarService) {}
+
+    public function mayar(Request $request): JsonResponse
     {
-        $data = $request->all();
+        $payload = $request->all();
+        $event   = $payload['event'] ?? '';
+        $data    = $payload['data']  ?? [];
 
-        Log::info('Midtrans webhook received', ['order_id' => $data['order_id'] ?? null, 'status' => $data['transaction_status'] ?? null]);
+        Log::info('Mayar webhook received', ['event' => $event, 'id' => $data['id'] ?? null]);
 
-        // ── Verify signature ─────────────────────────────────────────────────
-        $serverKey         = config('midtrans.server_key');
-        $expectedSignature = hash('sha512',
-            ($data['order_id']      ?? '') .
-            ($data['status_code']   ?? '') .
-            ($data['gross_amount']  ?? '') .
-            $serverKey
-        );
-
-        if ($expectedSignature !== ($data['signature_key'] ?? '')) {
-            Log::warning('Midtrans webhook: invalid signature', ['order_id' => $data['order_id'] ?? null]);
-            return response()->json(['error' => 'Invalid signature'], 403);
+        if ($event !== 'payment.received') {
+            return response()->json(['status' => 'ignored']);
         }
 
-        // ── Find transaction ──────────────────────────────────────────────────
-        $transaction = Transaction::with('plan', 'user')->find($data['order_id'] ?? null);
+        $mayarInvoiceId = $data['id'] ?? null;
+
+        $transaction = Transaction::with('plan', 'user')
+            ->where('payment_gateway_id', $mayarInvoiceId)
+            ->first();
 
         if (! $transaction) {
-            Log::warning('Midtrans webhook: transaction not found', ['order_id' => $data['order_id'] ?? null]);
+            Log::warning('Mayar webhook: transaction not found', ['mayar_invoice_id' => $mayarInvoiceId]);
             return response()->json(['error' => 'Transaction not found'], 404);
         }
 
-        // ── Handle status ─────────────────────────────────────────────────────
-        $transactionStatus = $data['transaction_status'] ?? '';
-        $fraudStatus       = $data['fraud_status']       ?? 'accept';
+        if ($transaction->isPaid()) {
+            return response()->json(['status' => 'already_paid']);
+        }
 
-        DB::transaction(function () use ($transaction, $transactionStatus, $fraudStatus, $data) {
-            if ($transactionStatus === 'capture') {
-                $status = $fraudStatus === 'challenge' ? PaymentStatus::Pending : PaymentStatus::Paid;
-            } elseif ($transactionStatus === 'settlement') {
-                $status = PaymentStatus::Paid;
-            } elseif (in_array($transactionStatus, ['pending'])) {
-                $status = PaymentStatus::Pending;
-            } else {
-                // deny, cancel, expire, failure
-                $status = PaymentStatus::Failed;
-            }
+        try {
+            $invoice       = $this->mayarService->getInvoice($mayarInvoiceId);
+            $invoiceStatus = $invoice['transactionStatus'] ?? $invoice['status'] ?? '';
+        } catch (\Exception $e) {
+            Log::error('Mayar webhook: verification failed', [
+                'error'            => $e->getMessage(),
+                'mayar_invoice_id' => $mayarInvoiceId,
+            ]);
+            return response()->json(['status' => 'verification_failed']);
+        }
 
+        if ($invoiceStatus !== 'paid') {
+            Log::info('Mayar webhook: invoice not paid', [
+                'status'           => $invoiceStatus,
+                'mayar_invoice_id' => $mayarInvoiceId,
+            ]);
+            return response()->json(['status' => 'not_paid']);
+        }
+
+        DB::transaction(function () use ($transaction, $payload) {
             $transaction->update([
-                'status'           => $status,
-                'gateway_response' => $data,
-                'paid_at'          => $status === PaymentStatus::Paid ? now() : null,
+                'status'           => PaymentStatus::Paid,
+                'gateway_response' => $payload,
+                'paid_at'          => now(),
             ]);
 
-            if ($status === PaymentStatus::Paid) {
-                if ($transaction->isAddonPurchase()) {
-                    $this->activateAddon($transaction);
-                } else {
-                    $this->activatePremium($transaction);
-                }
+            if ($transaction->isAddonPurchase()) {
+                $this->activateAddon($transaction);
+            } else {
+                $this->activatePremium($transaction);
             }
         });
 
@@ -86,7 +90,6 @@ class WebhookController extends Controller
         $user = $transaction->user;
         $plan = $transaction->plan;
 
-        // Extend if already on premium with future expiry; else create new
         $existingSub = $user->activeSubscription;
 
         if ($existingSub && $existingSub->plan->slug === 'premium' && $existingSub->expires_at?->isFuture()) {
@@ -94,7 +97,6 @@ class WebhookController extends Controller
             $existingSub->update(['expires_at' => $newExpiry]);
             $subscription = $existingSub;
         } else {
-            // Expire any active subscriptions first
             Subscription::where('user_id', $user->id)
                 ->where('status', 'active')
                 ->update(['status' => 'expired']);
@@ -108,10 +110,8 @@ class WebhookController extends Controller
             ]);
         }
 
-        // Link transaction → subscription
         $transaction->update(['subscription_id' => $subscription->id]);
 
-        // Send confirmation email (queued)
         Mail::to($user->email)->queue(new PaymentSuccessMail($user, $transaction, $subscription));
 
         Log::info('Premium activated', [
@@ -150,7 +150,6 @@ class WebhookController extends Controller
             'subscription_id' => $subscription->id,
             'addon_id'        => $addon->id,
             'quantity'        => $addon->quantity,
-            'expires_at'      => $addon->expires_at?->toDateString(),
         ]);
     }
 }
