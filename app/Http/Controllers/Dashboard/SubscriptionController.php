@@ -13,6 +13,7 @@ use App\Mail\PaymentSuccessMail;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Transaction;
+use App\Services\MayarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,16 +21,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
-use Midtrans\Config as MidtransConfig;
-use Midtrans\Snap;
 
 class SubscriptionController extends Controller
 {
+    public function __construct(private readonly MayarService $mayarService) {}
+
     public function index(Request $request): Response
     {
-        $user    = $request->user();
-        $sub     = $user->activeSubscription;
-        $plan    = $sub?->plan;
+        $user = $request->user();
+        $sub  = $user->activeSubscription;
+        $plan = $sub?->plan;
 
         $transactions = Transaction::where('user_id', $user->id)
             ->with('plan')
@@ -38,7 +39,7 @@ class SubscriptionController extends Controller
             ->map(fn ($t) => [
                 'id'             => $t->id,
                 'invoice_number' => $t->invoice_number,
-                'plan_name'      => $t->plan->name,
+                'plan_name'      => $t->plan?->name ?? 'Add-on',
                 'amount'         => (int) $t->amount,
                 'amount_fmt'     => 'Rp ' . number_format((int) $t->amount, 0, ',', '.'),
                 'payment_method' => $t->payment_method instanceof PaymentMethod
@@ -56,21 +57,19 @@ class SubscriptionController extends Controller
 
         return Inertia::render('Dashboard/Paket', [
             'currentPlan' => $plan ? [
-                'name'          => $plan->name,
-                'slug'          => $plan->slug,
-                'is_premium'    => $plan->slug === 'premium',
-                'expires_at'    => $sub?->expires_at?->format('d M Y'),
+                'name'           => $plan->name,
+                'slug'           => $plan->slug,
+                'is_premium'     => $plan->slug === 'premium',
+                'expires_at'     => $sub?->expires_at?->format('d M Y'),
                 'days_remaining' => $sub ? $sub->daysRemaining() : null,
             ] : [
-                'name'          => 'Gratis',
-                'slug'          => 'free',
-                'is_premium'    => false,
-                'expires_at'    => null,
+                'name'           => 'Gratis',
+                'slug'           => 'free',
+                'is_premium'     => false,
+                'expires_at'     => null,
                 'days_remaining' => null,
             ],
-            'transactions'        => $transactions,
-            'midtransClientKey'   => config('midtrans.client_key'),
-            'snapUrl'             => config('midtrans.snap_url'),
+            'transactions' => $transactions,
         ]);
     }
 
@@ -79,13 +78,11 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $plan = Plan::where('slug', 'premium')->firstOrFail();
 
-        // Block if already has active premium with > 14 days left
         $sub = $user->activeSubscription;
         if ($sub && $sub->plan->slug === 'premium' && $sub->daysRemaining() > 14) {
             return response()->json(['error' => 'Paket kamu masih aktif lebih dari 14 hari.'], 422);
         }
 
-        // Check for an existing pending transaction in the last 24 hours (prevent double order)
         $existing = Transaction::where('user_id', $user->id)
             ->where('status', PaymentStatus::Pending)
             ->where('plan_id', $plan->id)
@@ -95,47 +92,23 @@ class SubscriptionController extends Controller
         if ($existing) {
             $transaction = $existing;
         } else {
-            $invoiceNumber = $this->generateInvoiceNumber();
-
             $transaction = Transaction::create([
                 'user_id'        => $user->id,
                 'plan_id'        => $plan->id,
-                'invoice_number' => $invoiceNumber,
+                'invoice_number' => $this->generateInvoiceNumber(),
                 'amount'         => $plan->price,
-                'payment_method' => PaymentMethod::Midtrans,
+                'payment_method' => PaymentMethod::Mayar,
                 'status'         => PaymentStatus::Pending,
             ]);
         }
 
         try {
-            $this->configureMidtrans();
+            $result = $this->mayarService->createInvoice($transaction, $user, 'Paket Premium TheDay (90 hari)');
+            $transaction->update(['payment_gateway_id' => $result['mayar_invoice_id']]);
 
-            $snapToken = Snap::getSnapToken([
-                'transaction_details' => [
-                    'order_id'    => $transaction->id,
-                    'gross_amount' => (int) $transaction->amount,
-                ],
-                'customer_details' => [
-                    'first_name' => $user->name,
-                    'email'      => $user->email,
-                    'phone'      => $user->phone ?? '',
-                ],
-                'item_details' => [
-                    [
-                        'id'       => $plan->slug,
-                        'price'    => (int) $plan->price,
-                        'quantity' => 1,
-                        'name'     => 'Paket Premium TheDay (30 hari)',
-                    ],
-                ],
-            ]);
-
-            // Store order_id reference
-            $transaction->update(['payment_gateway_id' => $transaction->id]);
-
-            return response()->json(['snap_token' => $snapToken]);
+            return response()->json(['payment_url' => $result['payment_url']]);
         } catch (\Exception $e) {
-            Log::error('Midtrans checkout failed', [
+            Log::error('Mayar checkout failed', [
                 'error'          => $e->getMessage(),
                 'transaction_id' => $transaction->id,
                 'user_id'        => $user->id,
@@ -147,7 +120,6 @@ class SubscriptionController extends Controller
 
     public function invoice(Transaction $transaction): \Illuminate\Http\Response
     {
-        // Ensure owner
         if ($transaction->user_id !== auth()->id()) {
             abort(403);
         }
@@ -155,16 +127,6 @@ class SubscriptionController extends Controller
         return response()->view('invoices.show', [
             'transaction' => $transaction->load('plan', 'user'),
         ]);
-    }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
-
-    private function configureMidtrans(): void
-    {
-        MidtransConfig::$serverKey    = config('midtrans.server_key');
-        MidtransConfig::$isProduction = config('midtrans.is_production');
-        MidtransConfig::$isSanitized  = true;
-        MidtransConfig::$is3ds        = true;
     }
 
     private function generateInvoiceNumber(): string
