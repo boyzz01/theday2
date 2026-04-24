@@ -1,21 +1,17 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 
 const props = defineProps({
-    currentPlan:        { type: Object, required: true },
-    transactions:       { type: Array,  default: () => [] },
-    midtransClientKey:  { type: String, default: '' },
-    snapUrl:            { type: String, default: '' },
+    currentPlan:  { type: Object, required: true },
+    transactions: { type: Array,  default: () => [] },
 });
 
 // ── Checkout state ────────────────────────────────────────────────────────────
-const isCheckingOut  = ref(false);
-const snapReady      = ref(false);
-const checkoutState  = ref('idle'); // idle | loading | pending | success | error
-const checkoutError  = ref('');
+const isCheckingOut = ref(false);
+const checkoutError = ref('');
 
 // ── FAQ accordion ─────────────────────────────────────────────────────────────
 const openFaq = ref(null);
@@ -26,7 +22,7 @@ const faqs = [
     },
     {
         q: 'Bagaimana cara pembayaran?',
-        a: 'Kamu bisa bayar via GoPay, OVO, Dana, QRIS, transfer bank virtual, atau kartu kredit melalui Midtrans — aman dan terenkripsi.',
+        a: 'Kamu bisa bayar via GoPay, OVO, Dana, QRIS, transfer bank virtual, atau kartu kredit melalui Mayar — aman dan terenkripsi.',
     },
     {
         q: 'Ada garansi uang kembali?',
@@ -55,58 +51,19 @@ const premiumCtaLabel = computed(() => {
 });
 const premiumCtaDisabled = computed(() => isPremium.value && daysLeft.value !== null && daysLeft.value > 14);
 
-// ── Midtrans Snap ─────────────────────────────────────────────────────────────
-let snapScript = null;
-
-onMounted(() => {
-    if (props.snapUrl && props.midtransClientKey) {
-        snapScript = document.createElement('script');
-        snapScript.src = props.snapUrl;
-        snapScript.setAttribute('data-client-key', props.midtransClientKey);
-        snapScript.onload = () => { snapReady.value = true; };
-        document.body.appendChild(snapScript);
-    }
-});
-
-onBeforeUnmount(() => {
-    if (snapScript) snapScript.remove();
-});
-
+// ── Checkout ──────────────────────────────────────────────────────────────────
 const startCheckout = async () => {
     if (isCheckingOut.value || premiumCtaDisabled.value) return;
 
     isCheckingOut.value = true;
-    checkoutState.value  = 'loading';
-    checkoutError.value  = '';
+    checkoutError.value = '';
 
     try {
         const { data } = await axios.post(route('dashboard.subscriptions.checkout'));
-
-        window.snap.pay(data.snap_token, {
-            onSuccess: () => {
-                checkoutState.value  = 'success';
-                isCheckingOut.value  = false;
-                router.reload({ only: ['currentPlan', 'transactions'] });
-            },
-            onPending: () => {
-                checkoutState.value  = 'pending';
-                isCheckingOut.value  = false;
-                router.reload({ only: ['currentPlan', 'transactions'] });
-            },
-            onError: () => {
-                checkoutState.value  = 'error';
-                checkoutError.value  = 'Pembayaran gagal. Silakan coba lagi.';
-                isCheckingOut.value  = false;
-            },
-            onClose: () => {
-                if (checkoutState.value === 'loading') checkoutState.value = 'idle';
-                isCheckingOut.value = false;
-            },
-        });
+        window.location.href = data.payment_url;
     } catch (err) {
-        checkoutState.value  = 'error';
-        checkoutError.value  = err?.response?.data?.error ?? 'Terjadi kesalahan. Silakan coba lagi.';
-        isCheckingOut.value  = false;
+        checkoutError.value = err?.response?.data?.error ?? 'Terjadi kesalahan. Silakan coba lagi.';
+        isCheckingOut.value = false;
     }
 };
 
@@ -182,21 +139,13 @@ const features = [
                             :class="premiumCtaDisabled
                                 ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
                                 : 'bg-brand-primary hover:bg-brand-primary-hover text-white'">
-                        {{ isCheckingOut ? 'Memproses...' : (isPremium ? 'Perpanjang Premium →' : 'Upgrade ke Premium →') }}
+                        {{ isCheckingOut ? 'Mengarahkan ke pembayaran...' : (isPremium ? 'Perpanjang Premium →' : 'Upgrade ke Premium →') }}
                     </button>
                 </div>
             </div>
 
-            <!-- Checkout state notices -->
-            <div v-if="checkoutState === 'success'"
-                 class="rounded-xl p-4 text-sm font-medium bg-emerald-50 text-emerald-800 border border-emerald-100">
-                ✓ Pembayaran berhasil! Paket Premium kamu sudah aktif.
-            </div>
-            <div v-if="checkoutState === 'pending'"
-                 class="rounded-xl p-4 text-sm bg-[#92A89C]/10 text-[#2C2417] border border-[#B8C7BF]/50">
-                ⏳ Pembayaran sedang diproses. Halaman akan diperbarui otomatis.
-            </div>
-            <div v-if="checkoutState === 'error'"
+            <!-- Checkout error notice -->
+            <div v-if="checkoutError"
                  class="rounded-xl p-4 text-sm bg-red-50 text-red-700 border border-red-100">
                 {{ checkoutError }}
             </div>
@@ -285,7 +234,7 @@ const features = [
                             :class="premiumCtaDisabled
                                 ? 'cursor-not-allowed bg-stone-100 text-stone-400'
                                 : 'bg-brand-primary hover:bg-brand-primary-hover text-white'">
-                        {{ isCheckingOut ? 'Memproses...' : premiumCtaLabel }}
+                        {{ isCheckingOut ? 'Mengarahkan...' : premiumCtaLabel }}
                     </button>
 
                     <p class="text-center text-xs mt-3 text-stone-400">
