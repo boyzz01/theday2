@@ -29,6 +29,14 @@ class InvitationCustomizeController extends Controller
             'template.category:id,slug',
         ]);
 
+        $isStorybook = $invitation->template?->category?->slug === 'storybook';
+
+        if ($isStorybook) {
+            $invitation->load([
+                'sections' => fn ($q) => $q->whereIn('section_key', ['love_story', 'gift', 'rsvp']),
+            ]);
+        }
+
         $config = array_merge(
             $invitation->template->default_config ?? [],
             $invitation->custom_config             ?? []
@@ -59,13 +67,20 @@ class InvitationCustomizeController extends Controller
                         : null,
                     'start_time'  => $e->start_time ? substr($e->start_time, 0, 5) : null,
                     'end_time'    => $e->end_time   ? substr($e->end_time, 0, 5)   : null,
-                    'venue_name'  => $e->venue_name,
-                    'maps_url'    => $e->maps_url,
+                    'venue_name'    => $e->venue_name,
+                    'venue_address' => $e->venue_address,
+                    'maps_url'      => $e->maps_url,
                 ])->values(),
                 'galleries' => $invitation->galleries->map(fn ($g) => [
                     'id'        => $g->id,
                     'image_url' => $g->image_url,
                 ])->values(),
+                'sections' => $isStorybook
+                    ? $invitation->sections->keyBy('section_key')->map(fn ($s) => [
+                        'data'       => $s->data_json ?? [],
+                        'is_enabled' => $s->is_enabled,
+                    ])
+                    : null,
                 'music' => $invitation->music->first() ? [
                     'file_url' => $invitation->music->first()->file_url,
                 ] : null,
