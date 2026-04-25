@@ -98,8 +98,7 @@ const visibleHotspots = computed(() =>
             v-if="!gateOpen"
             class="scene-cover"
             :style="{
-                backgroundImage: `url(${sceneConfig.background})`,
-                background:      sceneConfig.fallbackBg,
+                backgroundImage: `url(${sceneConfig.background}), ${sceneConfig.fallbackBg}`,
             }"
             @click="triggerGate"
         >
