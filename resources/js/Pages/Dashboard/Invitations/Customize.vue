@@ -10,6 +10,7 @@ import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 import ContentModal from '@/Components/invitation/customize/ContentModal.vue';
 import SectionGalleryPhotos from '@/Components/invitation/customize/SectionGalleryPhotos.vue';
 import SectionEventsEditor from '@/Components/invitation/customize/SectionEventsEditor.vue';
+import SectionLoveStoryEditor from '@/Components/invitation/customize/SectionLoveStoryEditor.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -390,6 +391,12 @@ watch(activeKey, async (key) => {
                         :invitation-id="invitation.id"
                         :model-value="events"
                         @update:model-value="events = $event"
+                    />
+                    <SectionLoveStoryEditor
+                        v-else-if="modalSection === 'love_story'"
+                        :invitation-id="invitation.id"
+                        :model-value="sectionsData.love_story?.data ?? { stories: [] }"
+                        @update:model-value="sectionsData = { ...sectionsData, love_story: { ...sectionsData.love_story, data: $event } }"
                     />
                     <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
                 </ContentModal>
