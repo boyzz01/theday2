@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
                     return [
                         'plan_name'           => $sub->plan->name,
                         'plan_slug'           => $sub->plan->slug,
+                        'max_invitations'     => $sub->plan->max_invitations,
                         'status'              => $sub->status,
                         'remove_watermark'    => $sub->plan->remove_watermark,
                         'analytics_access'    => $sub->plan->analytics_access,

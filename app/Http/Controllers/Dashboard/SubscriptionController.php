@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\Transaction;
 use App\Services\MayarService;
+use App\Services\PaymentActivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,12 +21,23 @@ use Inertia\Response;
 
 class SubscriptionController extends Controller
 {
-    public function __construct(private readonly MayarService $mayarService) {}
+    public function __construct(
+        private readonly MayarService $mayarService,
+        private readonly PaymentActivationService $activationService,
+    ) {}
 
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $sub  = $user->activeSubscription;
+
+        Transaction::with('plan', 'user')
+            ->where('user_id', $user->id)
+            ->where('status', PaymentStatus::Pending)
+            ->whereNotNull('payment_gateway_id')
+            ->where('created_at', '>=', now()->subHours(24))
+            ->each(fn ($t) => $this->activationService->verifyAndActivate($t));
+
+        $sub  = $user->fresh()->activeSubscription;
         $plan = $sub?->plan;
 
         $transactions = Transaction::where('user_id', $user->id)

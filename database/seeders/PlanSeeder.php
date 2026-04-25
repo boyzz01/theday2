@@ -39,7 +39,7 @@ class PlanSeeder extends Seeder
                 'slug'                => 'premium',
                 'price'               => 35000,
                 'duration_days'       => 90,
-                'max_invitations'     => 9999,
+                'max_invitations'     => 2,
                 'max_gallery_photos'  => 9999,
                 'custom_music'        => true,
                 'remove_watermark'    => true,

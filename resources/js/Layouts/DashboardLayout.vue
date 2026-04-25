@@ -500,8 +500,14 @@ const handleClickOutsideAvatar = (e) => {
                         Batas Undangan Tercapai
                     </h3>
                     <p class="text-sm text-stone-500 text-center mb-6 leading-relaxed">
-                        Paket aktifmu sudah mencapai batas jumlah undangan.
-                        Upgrade paket untuk membuat undangan baru.
+                        <template v-if="plan?.plan_slug === 'premium'">
+                            Kamu sudah mencapai batas {{ plan?.max_invitations ?? 2 }} undangan di paket Premium.
+                            Hapus undangan lama untuk membuat yang baru.
+                        </template>
+                        <template v-else>
+                            Paket aktifmu sudah mencapai batas jumlah undangan.
+                            Upgrade ke Premium untuk membuat lebih banyak undangan.
+                        </template>
                     </p>
                     <div class="flex gap-3">
                         <button
@@ -511,6 +517,7 @@ const handleClickOutsideAvatar = (e) => {
                             Tutup
                         </button>
                         <Link
+                            v-if="plan?.plan_slug !== 'premium'"
                             :href="route('dashboard.paket')"
                             class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white text-center transition-all hover:opacity-90 cursor-pointer"
                             style="background-color: #C8A26B"
