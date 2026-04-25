@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\InvitationCustomizeController;
 use App\Http\Controllers\Dashboard\AddonController;
 use App\Http\Controllers\Dashboard\SubscriptionController;
+use App\Http\Controllers\Dashboard\TransactionController;
 use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\WebhookController;
@@ -211,6 +212,7 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::get( '/paket',                                [SubscriptionController::class, 'index'])->name('paket');
     Route::post('/subscriptions/checkout',               [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
     Route::post('/addons/checkout',                      [AddonController::class, 'checkout'])->name('addons.checkout');
+    Route::get( '/transactions',                         [TransactionController::class, 'index'])->name('transactions.index');
     Route::get( '/transactions/{transaction}/invoice',   [SubscriptionController::class, 'invoice'])->name('transactions.invoice');
 
     // ── Checklist ────────────────────────────────────────────────────────

@@ -40,29 +40,6 @@ class SubscriptionController extends Controller
         $sub  = $user->fresh()->activeSubscription;
         $plan = $sub?->plan;
 
-        $transactions = Transaction::where('user_id', $user->id)
-            ->with('plan')
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(fn ($t) => [
-                'id'             => $t->id,
-                'invoice_number' => $t->invoice_number,
-                'plan_name'      => $t->plan?->name ?? 'Add-on',
-                'amount'         => (int) $t->amount,
-                'amount_fmt'     => 'Rp ' . number_format((int) $t->amount, 0, ',', '.'),
-                'payment_method' => $t->payment_method instanceof PaymentMethod
-                    ? $t->payment_method->label()
-                    : ucfirst($t->payment_method ?? ''),
-                'status'         => $t->status instanceof PaymentStatus
-                    ? $t->status->value
-                    : ($t->status ?? 'pending'),
-                'status_label'   => $t->status instanceof PaymentStatus
-                    ? $t->status->label()
-                    : ucfirst($t->status ?? ''),
-                'paid_at'        => $t->paid_at?->format('d M Y'),
-                'created_at'     => $t->created_at->format('d M Y'),
-            ]);
-
         return Inertia::render('Dashboard/Paket', [
             'currentPlan' => $plan ? [
                 'name'           => $plan->name,
@@ -77,7 +54,6 @@ class SubscriptionController extends Controller
                 'expires_at'     => null,
                 'days_remaining' => null,
             ],
-            'transactions' => $transactions,
         ]);
     }
 

@@ -75,6 +75,12 @@ const navItems = [
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
     },
     {
+        label: 'Riwayat Pembayaran',
+        route: 'dashboard.transactions.index',
+        icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>`,
+    },
+    {
         label: 'Pengaturan Akun',
         route: 'profile.edit',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -174,7 +180,7 @@ const handleClickOutsideAvatar = (e) => {
                 'fixed top-0 left-0 h-full z-30 flex flex-col transition-all duration-300',
                 'bg-white border-r border-stone-100 shadow-sm',
                 sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-                'lg:translate-x-0 lg:static lg:z-auto',
+                'lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:z-auto',
                 sidebarCollapsed ? 'lg:w-16' : 'w-64',
             ]"
         >
@@ -346,7 +352,7 @@ const handleClickOutsideAvatar = (e) => {
         <div class="flex-1 flex flex-col min-w-0">
 
             <!-- Top bar -->
-            <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-100 px-4 lg:px-6 h-14 flex items-center gap-4">
+            <header class="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 lg:px-6 h-14 flex items-center gap-4">
                 <!-- Mobile hamburger -->
                 <button
                     class="lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors cursor-pointer"
