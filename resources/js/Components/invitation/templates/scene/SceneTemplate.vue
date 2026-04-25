@@ -26,6 +26,7 @@ const {
     fontTitle, fontHeading,
     groomName, brideName, groomNick, brideNick,
     details, events, galleries,
+    galleryLayout,
     sectionEnabled, sectionData,
     firstEventDate,
     gateOpen, contentOpen, triggerGate,
@@ -36,7 +37,7 @@ const {
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
 } = useInvitationTemplate(props, {
     openingStyle:  'fade',
-    galleryLayout: 'grid',
+    galleryLayout: 'polaroid',
 })
 
 // Modal state
@@ -174,11 +175,13 @@ const visibleHotspots = computed(() =>
         <SceneModal
             :modelValue="modalOpen"
             :title="modalTitle"
+            :theme="sceneConfig.modalTheme ?? 'parchment'"
             @update:modelValue="closeModal"
         >
             <SceneContentGallery
                 v-if="activeSection === 'gallery'"
                 :galleries="galleries"
+                :layout="galleryLayout"
             />
             <SceneContentEvents
                 v-else-if="activeSection === 'events'"

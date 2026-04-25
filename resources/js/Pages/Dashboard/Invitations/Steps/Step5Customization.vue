@@ -48,6 +48,13 @@ const fontsByCategory = computed(() => {
 });
 
 const fontCategories = computed(() => Object.keys(fontsByCategory.value));
+
+const galleryLayouts = [
+    { value: 'polaroid', icon: '🖼️', label: 'Polaroid',          desc: 'Foto tersebar seperti polaroid' },
+    { value: 'masonry',  icon: '🧱', label: 'Masonry',            desc: 'Grid dinamis berbeda ukuran' },
+    { value: 'grid',     icon: '⊞',  label: 'Grid Seragam',       desc: 'Kotak rapi dan bersih' },
+    { value: 'scroll',   icon: '↔️', label: 'Horizontal Scroll',  desc: 'Geser foto satu per satu' },
+];
 </script>
 
 <template>
@@ -166,6 +173,28 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
                 <p :style="{ fontFamily: customConfig.font }" class="text-sm text-stone-500 mt-1">
                     Ahmad Budi & Siti Ani
                 </p>
+            </div>
+        </div>
+
+        <!-- ── Gallery Layout ────────────────────────────── -->
+        <div class="space-y-3">
+            <label class="block text-sm font-medium text-stone-700">Tampilan Galeri</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button
+                    v-for="opt in galleryLayouts"
+                    :key="opt.value"
+                    @click="customConfig.gallery_layout = opt.value"
+                    :class="[
+                        'flex flex-col items-start gap-1 px-3 py-3 rounded-xl border text-left transition-all',
+                        customConfig.gallery_layout === opt.value
+                            ? 'border-[#92A89C] bg-[#92A89C]/10'
+                            : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
+                    ]"
+                >
+                    <span class="text-lg">{{ opt.icon }}</span>
+                    <span class="text-xs font-semibold text-stone-700">{{ opt.label }}</span>
+                    <span class="text-xs text-stone-400 leading-tight">{{ opt.desc }}</span>
+                </button>
             </div>
         </div>
 

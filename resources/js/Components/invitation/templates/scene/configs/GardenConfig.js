@@ -1,7 +1,8 @@
 // resources/js/Components/invitation/templates/scene/configs/GardenConfig.js
 export default {
-    background: '/images/templates/garden/scene.webp',
-    fallbackBg: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 40%, #A5D6A7 100%)',
+    background:  '/images/templates/garden/scene.webp',
+    fallbackBg:  'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 40%, #A5D6A7 100%)',
+    modalTheme:  'parchment',
     hotspots: [
         {
             id:           'gallery',

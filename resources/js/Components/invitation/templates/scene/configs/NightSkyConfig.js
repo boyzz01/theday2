@@ -1,7 +1,8 @@
 // resources/js/Components/invitation/templates/scene/configs/NightSkyConfig.js
 export default {
-    background: '/images/templates/night-sky/scene.webp',
-    fallbackBg: 'linear-gradient(180deg, #0D1B2A 0%, #1B2A4A 50%, #2E3F6F 100%)',
+    background:  '/images/templates/night-sky/scene.webp',
+    fallbackBg:  'linear-gradient(180deg, #0D1B2A 0%, #1B2A4A 50%, #2E3F6F 100%)',
+    modalTheme:  'night',
     hotspots: [
         { id: 'gallery',    x: 22, y: 18, label: 'Gallery',      section: 'gallery' },
         { id: 'date_venue', x: 58, y: 14, label: 'Date & Venue', section: 'events' },
