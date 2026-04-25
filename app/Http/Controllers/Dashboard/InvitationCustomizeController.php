@@ -25,7 +25,8 @@ class InvitationCustomizeController extends Controller
             'events'    => fn ($q) => $q->orderBy('sort_order')->orderBy('event_date'),
             'galleries' => fn ($q) => $q->orderBy('sort_order'),
             'music'     => fn ($q) => $q->where('is_default', true)->limit(1),
-            'template:id,name,slug,default_config',
+            'template:id,name,slug,default_config,category_id',
+            'template.category:id,slug',
         ]);
 
         $config = array_merge(
@@ -35,10 +36,11 @@ class InvitationCustomizeController extends Controller
 
         return Inertia::render('Dashboard/Invitations/Customize', [
             'invitation'    => [
-                'id'            => $invitation->id,
-                'slug'          => $invitation->slug,
-                'template_slug' => $invitation->template?->slug,
-                'config'        => $config,
+                'id'                      => $invitation->id,
+                'slug'                    => $invitation->slug,
+                'template_slug'           => $invitation->template?->slug,
+                'template_category_slug'  => $invitation->template?->category?->slug,
+                'config'                  => $config,
                 'details'       => $invitation->details ? [
                     'groom_name'      => $invitation->details->groom_name,
                     'groom_nickname'  => $invitation->details->groom_nickname,
@@ -81,14 +83,21 @@ class InvitationCustomizeController extends Controller
         }
 
         $request->validate([
-            'section_backgrounds'           => 'required|array',
+            'section_backgrounds'           => 'nullable|array',
             'section_backgrounds.*.type'    => 'nullable|in:image,video,color',
             'section_backgrounds.*.value'   => 'nullable|string|max:1000',
             'section_backgrounds.*.opacity' => 'nullable|numeric|min:0|max:1',
+            'gallery_layout'                => 'nullable|string|in:polaroid,masonry,grid,scroll',
         ]);
 
-        $config                        = $invitation->custom_config ?? [];
-        $config['section_backgrounds'] = $request->input('section_backgrounds');
+        $config = $invitation->custom_config ?? [];
+
+        if ($request->has('section_backgrounds')) {
+            $config['section_backgrounds'] = $request->input('section_backgrounds');
+        }
+        if ($request->has('gallery_layout')) {
+            $config['gallery_layout'] = $request->input('gallery_layout');
+        }
 
         $invitation->update(['custom_config' => $config]);
 
