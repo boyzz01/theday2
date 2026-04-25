@@ -33,7 +33,10 @@ async function save() {
             fd,
             { headers: { 'Content-Type': 'multipart/form-data' } }
         )
-        emit('update:modelValue', { ...form.value, ...res.data.data })
+        form.value = { ...form.value, ...res.data.data }
+        groomPhotoFile.value = null
+        bridePhotoFile.value = null
+        emit('update:modelValue', { ...form.value })
     } catch {
         error.value = 'Gagal menyimpan. Coba lagi.'
     } finally {
