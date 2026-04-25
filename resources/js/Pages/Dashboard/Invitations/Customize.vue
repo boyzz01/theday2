@@ -8,6 +8,7 @@ import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 import GalleryLayoutPicker from '@/Components/invitation/customize/GalleryLayoutPicker.vue';
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 import ContentModal from '@/Components/invitation/customize/ContentModal.vue';
+import SectionGalleryPhotos from '@/Components/invitation/customize/SectionGalleryPhotos.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -377,7 +378,13 @@ watch(activeKey, async (key) => {
                     :title="sections.find(s => s.key === modalSection)?.label ?? ''"
                     @close="closeModal"
                 >
-                    <div class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
+                    <SectionGalleryPhotos
+                        v-if="modalSection === 'gallery'"
+                        :invitation-id="invitation.id"
+                        :model-value="galleries"
+                        @update:model-value="galleries = $event"
+                    />
+                    <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
                 </ContentModal>
 
                 <!-- Footer: Save -->
