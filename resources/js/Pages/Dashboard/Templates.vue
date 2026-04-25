@@ -2,6 +2,7 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     categories:    Array,
@@ -27,8 +28,24 @@ watch([activeCategory, activeTier], ([cat, tier]) => {
 const creatingId = ref(null);
 const canCreateInvitation = computed(() => usePage().props.can_create_invitation ?? true);
 
+const isPremium = computed(() => usePage().props.auth?.subscription?.plan_slug === 'premium');
+
 // ── Limit modal (invitation quota reached) ────────────────────────
-const showLimitModal = ref(false);
+const showLimitModal    = ref(false);
+const addonLoading      = ref(false);
+const addonError        = ref('');
+
+const buyAddon = async () => {
+    addonLoading.value = true;
+    addonError.value   = '';
+    try {
+        const { data } = await axios.post(route('dashboard.addons.checkout'), { quantity: 1 });
+        window.location.href = data.payment_url;
+    } catch (err) {
+        addonError.value = err?.response?.data?.error ?? 'Gagal memproses. Coba lagi.';
+        addonLoading.value = false;
+    }
+};
 
 // ── Upgrade modal (premium template clicked by free user) ─────────
 const upgradeTemplate = ref(null); // template that triggered the modal
@@ -681,40 +698,61 @@ const filteredCount = computed(() => props.templates.length);
                         <h3 class="text-base font-semibold text-stone-800 mb-1">
                             Batas undangan tercapai
                         </h3>
-                        <p class="text-sm text-stone-500 leading-relaxed mb-5">
-                            Paket gratis hanya mendukung 1 undangan. Upgrade ke Premium untuk membuat undangan tanpa batas dan akses semua fitur lanjutan.
-                        </p>
 
-                        <!-- Benefit pills -->
-                        <div class="flex flex-wrap gap-2 mb-5">
-                            <span v-for="feat in ['Undangan tak terbatas', 'Semua template', 'Live streaming', 'Amplop digital', 'Upload musik']"
-                                  :key="feat"
-                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
-                                <svg class="w-3 h-3 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                {{ feat }}
-                            </span>
-                        </div>
+                        <!-- Premium user: offer addon -->
+                        <template v-if="isPremium">
+                            <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                                Kamu sudah mencapai batas undangan di paket Premium. Tambah slot undangan dengan harga <strong>Rp 15.000 / undangan</strong>.
+                            </p>
+                            <p v-if="addonError" class="text-xs text-red-500 mb-3">{{ addonError }}</p>
+                            <div class="flex flex-col gap-2">
+                                <button
+                                    @click="buyAddon"
+                                    :disabled="addonLoading"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors disabled:opacity-60"
+                                >
+                                    {{ addonLoading ? 'Memproses...' : '+ Tambah 1 Slot Undangan — Rp 15.000' }}
+                                </button>
+                                <button @click="showLimitModal = false"
+                                        class="w-full py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">
+                                    Tutup
+                                </button>
+                            </div>
+                        </template>
 
-                        <!-- Actions -->
-                        <div class="flex flex-col gap-2">
-                            <a
-                                href="/upgrade"
-                                class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
-                            >
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
-                                </svg>
-                                Upgrade ke Premium
-                            </a>
-                            <button
-                                @click="showLimitModal = false"
-                                class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
-                            >
-                                Tutup
-                            </button>
-                        </div>
+                        <!-- Free user: offer upgrade -->
+                        <template v-else>
+                            <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                                Paket gratis hanya mendukung 1 undangan. Upgrade ke Premium untuk membuat lebih banyak undangan dan akses semua fitur.
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-5">
+                                <span v-for="feat in ['Undangan tak terbatas', 'Semua template', 'Live streaming', 'Amplop digital', 'Upload musik']"
+                                      :key="feat"
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
+                                    <svg class="w-3 h-3 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    {{ feat }}
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <a
+                                    href="/upgrade"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
+                                    </svg>
+                                    Upgrade ke Premium
+                                </a>
+                                <button
+                                    @click="showLimitModal = false"
+                                    class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
