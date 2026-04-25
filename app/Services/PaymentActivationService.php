@@ -65,9 +65,14 @@ class PaymentActivationService
         $existingSub = $user->activeSubscription;
 
         if ($existingSub && $existingSub->plan->slug === 'premium' && $existingSub->expires_at?->isFuture()) {
-            $newExpiry = $existingSub->expires_at->addDays($plan->duration_days);
+            $oldExpiry = $existingSub->expires_at;
+            $newExpiry = $oldExpiry->addDays($plan->duration_days);
             $existingSub->update(['expires_at' => $newExpiry]);
             $subscription = $existingSub;
+
+            $user->invitationAddons()
+                ->where('expires_at', $oldExpiry)
+                ->update(['expires_at' => $newExpiry]);
         } else {
             Subscription::where('user_id', $user->id)
                 ->where('status', 'active')
