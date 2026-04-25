@@ -7,6 +7,7 @@ import SectionBgControl from '@/Components/invitation/customize/SectionBgControl
 import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 import GalleryLayoutPicker from '@/Components/invitation/customize/GalleryLayoutPicker.vue';
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
+import ContentModal from '@/Components/invitation/customize/ContentModal.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -40,6 +41,14 @@ const galleryLayout = ref(
     props.invitation.config?.gallery_layout ?? 'polaroid'
 )
 
+const galleries    = ref([...(props.invitation.galleries ?? [])])
+const events       = ref([...(props.invitation.events     ?? [])])
+const details      = ref({ ...(props.invitation.details   ?? {}) })
+const sectionsData = ref(
+    JSON.parse(JSON.stringify(props.invitation.sections ?? {}))
+)
+const modalSection = ref(null)
+
 const previewInvitation = computed(() => ({
     ...props.invitation,
     config: {
@@ -47,21 +56,30 @@ const previewInvitation = computed(() => ({
         section_backgrounds: form.value,
         gallery_layout:      galleryLayout.value,
     },
+    galleries:    galleries.value,
+    events:       events.value,
+    details:      details.value,
+    sections:     sectionsData.value,
 }));
 
 // ── Sections config ───────────────────────────────────────────────────────
 const SECTIONS_REGULAR = [
-    { key: 'cover',   label: 'Cover',   icon: '🖼️' },
-    { key: 'opening', label: 'Opening', icon: '✉️' },
-    { key: 'events',  label: 'Acara',   icon: '📅' },
-    { key: 'gallery', label: 'Galeri',  icon: '🖼️' },
-    { key: 'music',   label: 'Musik',   icon: '🎵' },
-    { key: 'closing', label: 'Penutup', icon: '💌' },
+    { key: 'cover',   label: 'Cover'   },
+    { key: 'opening', label: 'Opening' },
+    { key: 'events',  label: 'Acara'   },
+    { key: 'gallery', label: 'Galeri'  },
+    { key: 'music',   label: 'Musik'   },
+    { key: 'closing', label: 'Penutup' },
 ]
 
 const SECTIONS_STORYBOOK = [
-    { key: 'gallery', label: 'Galeri', icon: '🖼️' },
-    { key: 'music',   label: 'Musik',  icon: '🎵' },
+    { key: 'gallery',    label: 'Galeri'       },
+    { key: 'events',     label: 'Date & Venue' },
+    { key: 'love_story', label: 'Love Story'   },
+    { key: 'couple',     label: 'Tentang Kami' },
+    { key: 'rsvp',       label: 'RSVP'         },
+    { key: 'gift',       label: 'Hadiah'       },
+    { key: 'music',      label: 'Musik'        },
 ]
 
 const sections = computed(() =>
@@ -110,6 +128,39 @@ async function save() {
         saveStatus.value = 'saved';
     } catch {
         saveStatus.value = 'error';
+    }
+}
+
+function openModal(key)   { modalSection.value = key }
+function closeModal()     { modalSection.value = null }
+
+function sectionBadge(key) {
+    switch (key) {
+        case 'gallery':    return galleries.value.length ? `${galleries.value.length} foto` : null
+        case 'events':     return events.value.length    ? `${events.value.length} acara`   : null
+        case 'love_story': {
+            const count = sectionsData.value.love_story?.data?.stories?.length ?? 0
+            return count ? `${count} chapter` : null
+        }
+        case 'couple':
+            return (details.value.groom_name || details.value.bride_name) ? 'terisi' : null
+        case 'gift': {
+            const count = sectionsData.value.gift?.data?.accounts?.length ?? 0
+            return count ? `${count} rekening` : null
+        }
+        default: return null
+    }
+}
+
+async function toggleRsvp() {
+    try {
+        const res = await axios.patch(
+            `/api/invitations/${props.invitation.id}/sections/rsvp/toggle`
+        )
+        if (!sectionsData.value.rsvp) sectionsData.value.rsvp = {}
+        sectionsData.value.rsvp.is_enabled = res.data.is_enabled
+    } catch {
+        alert('Gagal mengubah RSVP.')
     }
 }
 
@@ -203,31 +254,98 @@ watch(activeKey, async (key) => {
                 <!-- Section accordion -->
                 <div :class="['flex-1 overflow-y-auto divide-y divide-stone-50', activeTab === 'preview' ? 'hidden lg:block' : '']">
                     <div v-for="section in sections" :key="section.key">
+
+                        <!-- Row button -->
                         <button
                             type="button"
                             @click="activeKey = activeKey === section.key ? null : section.key"
                             class="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-stone-50 transition-colors"
                         >
                             <span class="text-sm font-medium text-stone-700">{{ section.label }}</span>
-                            <svg
-                                :class="['w-4 h-4 text-stone-400 transition-transform', activeKey === section.key ? 'rotate-180' : '']"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
+                            <div class="flex items-center gap-2">
+                                <span
+                                    v-if="isStorybook && sectionBadge(section.key)"
+                                    class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500"
+                                >{{ sectionBadge(section.key) }}</span>
+                                <svg
+                                    :class="['w-4 h-4 text-stone-400 transition-transform', activeKey === section.key ? 'rotate-180' : '']"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
                         </button>
 
-                        <div v-if="activeKey === section.key" class="px-5 pb-5 space-y-4 bg-stone-50/50">
-                            <!-- Background control (all sections except music) -->
-                            <template v-if="section.key !== 'music'">
-                                <!-- Storybook: gallery layout picker -->
-                                <GalleryLayoutPicker
-                                    v-if="isStorybook && section.key === 'gallery'"
-                                    :model-value="galleryLayout"
-                                    @update:model-value="galleryLayout = $event"
-                                />
-                                <!-- Regular: background control -->
-                                <template v-else-if="!isStorybook">
+                        <!-- Expanded content -->
+                        <div v-if="activeKey === section.key" class="px-5 pb-5 space-y-3 bg-stone-50/50">
+
+                            <!-- ── Storybook sections ─────────────────────── -->
+                            <template v-if="isStorybook">
+
+                                <!-- Gallery: layout picker + edit photos button -->
+                                <template v-if="section.key === 'gallery'">
+                                    <GalleryLayoutPicker
+                                        :model-value="galleryLayout"
+                                        @update:model-value="galleryLayout = $event"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="openModal('gallery')"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <span>Edit Foto</span>
+                                        <span class="text-stone-400">→</span>
+                                    </button>
+                                </template>
+
+                                <!-- RSVP: inline toggle -->
+                                <template v-else-if="section.key === 'rsvp'">
+                                    <div class="flex items-center justify-between pt-1">
+                                        <span class="text-sm text-stone-600">Aktifkan RSVP</span>
+                                        <button
+                                            type="button"
+                                            @click="toggleRsvp"
+                                            :class="[
+                                                'w-10 h-6 rounded-full transition-colors relative',
+                                                sectionsData.rsvp?.is_enabled ? 'bg-[#92A89C]' : 'bg-stone-200'
+                                            ]"
+                                        >
+                                            <span :class="[
+                                                'block w-4 h-4 bg-white rounded-full absolute top-1 transition-transform',
+                                                sectionsData.rsvp?.is_enabled ? 'translate-x-5' : 'translate-x-1'
+                                            ]" />
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- Music: link to edit page -->
+                                <template v-else-if="section.key === 'music'">
+                                    <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
+                                    <Link
+                                        :href="route('dashboard.invitations.edit', invitation.id)"
+                                        class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
+                                    >
+                                        Buka Editor Musik →
+                                    </Link>
+                                </template>
+
+                                <!-- Other sections: edit button -->
+                                <template v-else>
+                                    <button
+                                        type="button"
+                                        @click="openModal(section.key)"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <span>Edit {{ section.label }}</span>
+                                        <span class="text-stone-400">→</span>
+                                    </button>
+                                </template>
+
+                            </template>
+
+                            <!-- ── Regular template sections ─────────────── -->
+                            <template v-else>
+                                <template v-if="section.key !== 'music'">
                                     <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
                                     <SectionBgControl
                                         :model-value="form[section.key]"
@@ -238,21 +356,29 @@ watch(activeKey, async (key) => {
                                         @upload="(file) => uploadBg(section.key, file).then(ok => ok && scheduleAutoSave())"
                                     />
                                 </template>
+                                <template v-if="section.key === 'music'">
+                                    <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
+                                    <Link
+                                        :href="route('dashboard.invitations.edit', invitation.id)"
+                                        class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
+                                    >
+                                        Buka Editor Musik →
+                                    </Link>
+                                </template>
                             </template>
 
-                            <!-- Music upload -->
-                            <template v-if="section.key === 'music'">
-                                <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
-                                <Link
-                                    :href="route('dashboard.invitations.edit', invitation.id)"
-                                    class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
-                                >
-                                    Buka Editor Musik →
-                                </Link>
-                            </template>
                         </div>
                     </div>
                 </div>
+
+                <!-- Content modals (editors wired in Tasks 4–8) -->
+                <ContentModal
+                    :open="modalSection !== null"
+                    :title="sections.find(s => s.key === modalSection)?.label ?? ''"
+                    @close="closeModal"
+                >
+                    <div class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
+                </ContentModal>
 
                 <!-- Footer: Save -->
                 <div :class="['px-5 py-4 border-t border-stone-100 flex items-center gap-3', activeTab === 'preview' ? 'hidden lg:flex' : '']">
