@@ -15,6 +15,7 @@ class TemplateSeeder extends Seeder
     public function run(): void
     {
         $pernikahan = TemplateCategory::where('slug', 'pernikahan')->firstOrFail();
+        $storybook  = TemplateCategory::where('slug', 'storybook')->firstOrFail();
 
         $weddingDemo = [
             'details' => [
@@ -134,6 +135,44 @@ class TemplateSeeder extends Seeder
                 'tier'           => 'premium',
                 'is_active'      => true,
                 'sort_order'     => 3,
+            ],
+
+            // ── Storybook (scene/illustrated templates) ────────────
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Beach',
+                'slug'           => 'beach',
+                'thumbnail_url'  => '/images/templates/beach/scene.webp',
+                'description'    => 'Template pernikahan interaktif bergaya pantai tropis — jelajahi setiap bagian undangan layaknya petualangan seru di tepi laut.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 5,
+            ],
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Garden',
+                'slug'           => 'garden',
+                'thumbnail_url'  => '/images/templates/garden/scene.webp',
+                'description'    => 'Template pernikahan interaktif bergaya taman bunga yang hidup — temukan setiap detail undangan di antara hamparan bunga dan pepohonan yang rimbun.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 6,
+            ],
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Night Sky',
+                'slug'           => 'night-sky',
+                'thumbnail_url'  => '/images/templates/nightsky/scene.webp',
+                'description'    => 'Template pernikahan interaktif bergaya langit malam berbintang — rayakan cinta di bawah ribuan bintang yang berkelip memukau.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 7,
             ],
 
             // ── Nusantara (Premium, dedicated renderer) ───────────

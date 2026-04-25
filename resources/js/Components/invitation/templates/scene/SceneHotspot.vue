@@ -84,19 +84,19 @@ const emit = defineEmits(['click'])
 
 /* ── Fallback pill (tanpa ilustrasi) ── */
 .hotspot-pill {
-    background:       rgba(255, 255, 255, 0.15);
-    border:           1.5px solid rgba(255, 255, 255, 0.65);
-    border-radius:    999px;
-    padding:          4px 12px;
-    font-size:        11px;
-    font-weight:      600;
-    color:            #fff;
-    letter-spacing:   0.04em;
-    backdrop-filter:  blur(4px);
+    background:      rgba(255, 255, 255, 0.15);
+    border:          1.5px solid rgba(255, 255, 255, 0.65);
+    border-radius:   999px;
+    padding:         4px 12px;
+    font-size:       11px;
+    font-weight:     600;
+    color:           #fff;
+    letter-spacing:  0.04em;
+    backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    white-space:      nowrap;
+    white-space:     nowrap;
     box-shadow:
-        0 0 8px  rgba(255, 255, 255, 0.55),
+        0 0 8px rgba(255, 255, 255, 0.55),
         0 0 20px rgba(100, 220, 255, 0.4);
 }
 

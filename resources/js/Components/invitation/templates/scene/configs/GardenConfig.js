@@ -41,7 +41,7 @@ export default {
         },
         {
             id:           'rsvp',
-            x: 70, y: 52,
+            x: 80, y: 62,
             label:        'RSVP',
             section:      'rsvp',
             illustration: '/images/templates/garden/objects/birdbath.png',

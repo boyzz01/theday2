@@ -70,14 +70,26 @@ const tierBadge = {
     premium: { bg: 'rgba(200,162,107,0.15)', color: '#C8A26B' },
 };
 
-const features = computed(() => [
-    { label: t('Animasi scroll halus',     'Smooth scroll animation')   },
-    { label: t('Formulir RSVP interaktif', 'Interactive RSVP form')     },
-    { label: t('Gallery foto lightbox',    'Lightbox photo gallery')    },
-    { label: t('Hitung mundur acara',      'Event countdown timer')     },
-    { label: t('Ucapan & doa tamu',        'Guest wishes & prayers')    },
-    { label: t('Berbagi via WhatsApp',     'Share via WhatsApp')        },
-]);
+const isStorybook = computed(() => props.template?.category?.slug === 'storybook');
+
+const features = computed(() => isStorybook.value
+    ? [
+        { label: t('Dunia ilustrasi interaktif',          'Interactive illustrated world')   },
+        { label: t('Hotspot animasi CSS',                 'CSS animated hotspots')           },
+        { label: t('Formulir RSVP interaktif',            'Interactive RSVP form')           },
+        { label: t('Buku tamu & ucapan',                  'Guestbook & wishes')              },
+        { label: t('Gallery foto lightbox',               'Lightbox photo gallery')          },
+        { label: t('Berbagi via WhatsApp',                'Share via WhatsApp')              },
+    ]
+    : [
+        { label: t('Animasi scroll halus',     'Smooth scroll animation')   },
+        { label: t('Formulir RSVP interaktif', 'Interactive RSVP form')     },
+        { label: t('Gallery foto lightbox',    'Lightbox photo gallery')    },
+        { label: t('Hitung mundur acara',      'Event countdown timer')     },
+        { label: t('Ucapan & doa tamu',        'Guest wishes & prayers')    },
+        { label: t('Berbagi via WhatsApp',     'Share via WhatsApp')        },
+    ]
+);
 
 const tName = computed(() =>
     locale.value === 'en' ? (props.template?.name_en || props.template?.name) : props.template?.name
@@ -259,7 +271,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     </div>
 
                                     <!-- Color palette -->
-                                    <div>
+                                    <div v-if="!isStorybook">
                                         <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('Palet Warna', 'Color Palette') }}</p>
                                         <div class="flex items-center gap-2">
                                             <div v-for="([label, color]) in [[t('Primer','Primary'), primary], [t('Sekunder','Secondary'), secondary], [t('Aksen','Accent'), accent]]"
