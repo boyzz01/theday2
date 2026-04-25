@@ -12,6 +12,8 @@ const local   = ref(JSON.parse(JSON.stringify(props.modelValue?.stories ?? [])))
 const saving  = ref(false)
 const editing = ref(null)  // index of story being edited, or null
 const photoUploading = ref(false)
+const photoError = ref(null)
+const saveError  = ref(null)
 
 const editForm = ref({ date: '', title: '', description: '', photo_url: '' })
 
@@ -37,6 +39,7 @@ function removeStory(index) {
 async function uploadPhoto(event) {
     const file = event.target.files[0]
     if (!file) return
+    photoError.value = null
     photoUploading.value = true
     try {
         const fd = new FormData()
@@ -48,7 +51,7 @@ async function uploadPhoto(event) {
         )
         editForm.value.photo_url = res.data.data.image_url
     } catch {
-        alert('Upload foto gagal.')
+        photoError.value = 'Upload foto gagal. Coba lagi.'
     } finally {
         photoUploading.value   = false
         event.target.value     = ''
@@ -74,7 +77,7 @@ async function saveAll() {
         })
         emit('update:modelValue', { stories: [...local.value] })
     } catch {
-        alert('Gagal menyimpan love story.')
+        saveError.value = 'Gagal menyimpan. Coba lagi.'
     } finally {
         saving.value = false
     }
@@ -130,12 +133,16 @@ async function saveAll() {
                 </label>
             </div>
 
+            <p v-if="photoError" class="text-xs text-red-400">{{ photoError }}</p>
+
             <div class="flex gap-2">
                 <button type="button" @click="cancelEdit" class="flex-1 py-2 rounded-xl text-xs font-medium border border-stone-200 text-stone-600 hover:bg-stone-50">Batal</button>
                 <button type="button" @click="confirmEdit" :disabled="saving" class="flex-1 py-2 rounded-xl text-xs font-bold text-white bg-[#92A89C] hover:opacity-90 disabled:opacity-60">
                     {{ saving ? 'Menyimpan...' : 'Simpan' }}
                 </button>
             </div>
+
+            <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
         </div>
 
         <!-- Add button -->
