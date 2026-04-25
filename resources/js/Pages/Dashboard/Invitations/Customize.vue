@@ -9,6 +9,7 @@ import GalleryLayoutPicker from '@/Components/invitation/customize/GalleryLayout
 import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 import ContentModal from '@/Components/invitation/customize/ContentModal.vue';
 import SectionGalleryPhotos from '@/Components/invitation/customize/SectionGalleryPhotos.vue';
+import SectionEventsEditor from '@/Components/invitation/customize/SectionEventsEditor.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -383,6 +384,12 @@ watch(activeKey, async (key) => {
                         :invitation-id="invitation.id"
                         :model-value="galleries"
                         @update:model-value="galleries = $event"
+                    />
+                    <SectionEventsEditor
+                        v-else-if="modalSection === 'events'"
+                        :invitation-id="invitation.id"
+                        :model-value="events"
+                        @update:model-value="events = $event"
                     />
                     <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
                 </ContentModal>
