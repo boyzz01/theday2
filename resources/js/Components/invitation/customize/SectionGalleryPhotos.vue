@@ -38,7 +38,7 @@ async function remove(gallery) {
         await axios.delete(`/api/invitations/${props.invitationId}/galleries/${gallery.id}`)
         emit('update:modelValue', props.modelValue.filter(g => g.id !== gallery.id))
     } catch {
-        alert('Gagal menghapus foto.')
+        error.value = 'Gagal menghapus foto. Coba lagi.'
     }
 }
 
@@ -48,9 +48,14 @@ async function move(index, direction) {
     if (target < 0 || target >= list.length) return
     ;[list[index], list[target]] = [list[target], list[index]]
     emit('update:modelValue', list)
-    await axios.put(`/api/invitations/${props.invitationId}/galleries/reorder`, {
-        ids: list.map(g => g.id),
-    })
+    try {
+        await axios.put(`/api/invitations/${props.invitationId}/galleries/reorder`, {
+            ids: list.map(g => g.id),
+        })
+    } catch {
+        error.value = 'Gagal menata ulang foto.'
+        emit('update:modelValue', props.modelValue)
+    }
 }
 </script>
 
