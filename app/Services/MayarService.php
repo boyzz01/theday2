@@ -14,6 +14,11 @@ class MayarService
 {
     public function createInvoice(Transaction $transaction, User $user, string $itemName): array
     {
+        $phone = $user->phone ?? '';
+        if (strlen($phone) < 10) {
+            $phone = str_pad($phone, 10, '0', STR_PAD_RIGHT);
+        }
+
         $quantity = $transaction->addon_quantity ?? 1;
         $rate     = $transaction->addon_quantity ? 15000 : (int) $transaction->amount;
 
@@ -21,7 +26,8 @@ class MayarService
             ->post(config('mayar.base_url') . '/invoice/create', [
                 'name'        => $user->name,
                 'email'       => $user->email,
-                'mobile'      => $user->phone ?? '',
+                'mobile'      => $phone,
+                'description' => $itemName,
                 'redirectUrl' => url('/payment/return') . '?txn=' . $transaction->id,
                 'expiredAt'   => now()->addHours(24)->utc()->toIso8601String(),
                 'items'       => [
@@ -39,13 +45,16 @@ class MayarService
 
         $data = $response->json('data');
 
+        \Illuminate\Support\Facades\Log::info('Mayar createInvoice response', ['data' => $data]);
+
         if (! is_array($data) || empty($data['link']) || empty($data['id'])) {
             throw new \RuntimeException('Mayar API returned unexpected response: ' . $response->body());
         }
 
         return [
-            'payment_url'      => $data['link'],
-            'mayar_invoice_id' => $data['id'],
+            'payment_url'         => $data['link'],
+            'mayar_invoice_id'    => $data['id'],
+            'mayar_transaction_id' => $data['transactionId'] ?? null,
         ];
     }
 

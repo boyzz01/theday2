@@ -6,15 +6,57 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
 use App\Mail\PaymentSuccessMail;
 use App\Models\InvitationAddon;
 use App\Models\Subscription;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class PaymentActivationService
 {
+    public function __construct(private readonly MayarService $mayarService) {}
+
+    public function verifyAndActivate(Transaction $transaction): bool
+    {
+        if ($transaction->isPaid()) {
+            return true;
+        }
+
+        try {
+            $invoice       = $this->mayarService->getInvoice($transaction->payment_gateway_id);
+            $invoiceStatus = $invoice['transactionStatus'] ?? $invoice['status'] ?? '';
+        } catch (\Exception $e) {
+            Log::error('Payment verification failed', [
+                'transaction_id' => $transaction->id,
+                'error'          => $e->getMessage(),
+            ]);
+            return false;
+        }
+
+        if ($invoiceStatus !== 'paid') {
+            return false;
+        }
+
+        DB::transaction(function () use ($transaction, $invoice) {
+            $transaction->update([
+                'status'           => PaymentStatus::Paid,
+                'gateway_response' => $invoice,
+                'paid_at'          => now(),
+            ]);
+
+            if ($transaction->isAddonPurchase()) {
+                $this->activateAddon($transaction);
+            } else {
+                $this->activatePremium($transaction);
+            }
+        });
+
+        return true;
+    }
+
     public function activatePremium(Transaction $transaction): void
     {
         $user = $transaction->user;
