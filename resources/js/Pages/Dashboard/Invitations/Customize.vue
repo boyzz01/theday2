@@ -11,6 +11,7 @@ import ContentModal from '@/Components/invitation/customize/ContentModal.vue';
 import SectionGalleryPhotos from '@/Components/invitation/customize/SectionGalleryPhotos.vue';
 import SectionEventsEditor from '@/Components/invitation/customize/SectionEventsEditor.vue';
 import SectionLoveStoryEditor from '@/Components/invitation/customize/SectionLoveStoryEditor.vue';
+import SectionCoupleEditor from '@/Components/invitation/customize/SectionCoupleEditor.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -51,6 +52,7 @@ const sectionsData = ref(
     JSON.parse(JSON.stringify(props.invitation.sections ?? {}))
 )
 const modalSection = ref(null)
+const coupleEditorRef = ref(null)
 
 const previewInvitation = computed(() => ({
     ...props.invitation,
@@ -398,7 +400,24 @@ watch(activeKey, async (key) => {
                         :model-value="sectionsData.love_story?.data ?? { stories: [] }"
                         @update:model-value="sectionsData = { ...sectionsData, love_story: { ...sectionsData.love_story, data: $event } }"
                     />
+                    <SectionCoupleEditor
+                        v-else-if="modalSection === 'couple'"
+                        ref="coupleEditorRef"
+                        :invitation-id="invitation.id"
+                        :model-value="details"
+                        @update:model-value="details = $event"
+                    />
                     <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
+
+                    <template v-if="modalSection === 'couple'" #footer>
+                        <button
+                            type="button"
+                            @click="coupleEditorRef?.save()"
+                            class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-all"
+                        >
+                            Simpan
+                        </button>
+                    </template>
                 </ContentModal>
 
                 <!-- Footer: Save -->
