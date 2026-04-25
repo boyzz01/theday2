@@ -125,7 +125,8 @@ export function useInvitationTemplate(props, defaults = {}) {
     async function triggerGate() {
         if (gateAnimating.value || gateOpen.value) return
         gateAnimating.value = true
-        await new Promise(r => setTimeout(r, 1400))
+        const delay = defaults.gateDelay ?? 1400
+        if (delay > 0) await new Promise(r => setTimeout(r, delay))
         if (destroyed) return
         gateOpen.value      = true
         contentOpen.value   = true

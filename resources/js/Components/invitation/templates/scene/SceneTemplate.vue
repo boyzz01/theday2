@@ -38,6 +38,7 @@ const {
 } = useInvitationTemplate(props, {
     openingStyle:  'fade',
     galleryLayout: 'polaroid',
+    gateDelay:     0,
 })
 
 // Modal state
@@ -105,22 +106,28 @@ const visibleHotspots = computed(() =>
             @click="triggerGate"
         >
             <div class="cover-overlay">
-                <h1 class="cover-names" :style="{ fontFamily: fontTitle }">
-                    {{ groomNick }} &amp; {{ brideNick }}
-                </h1>
-                <p v-if="firstEventDate" class="cover-date" :style="{ fontFamily: fontHeading }">
-                    {{ firstEventDate }}
-                </p>
-                <p v-if="guest?.name" class="cover-guest" :style="{ fontFamily: fontHeading }">
-                    Kepada Yth. {{ guest.name }}
-                </p>
-                <button
-                    class="open-btn"
-                    :style="{ fontFamily: fontHeading }"
-                    @click.stop="triggerGate"
-                >
-                    Buka Undangan
-                </button>
+                <div class="cover-top">
+                    <div class="cover-names" :style="{ fontFamily: sceneConfig.fontTitle ?? fontTitle }">
+                        <span>{{ brideNick }}</span>
+                        <span class="cover-and">&amp;</span>
+                        <span>{{ groomNick }}</span>
+                    </div>
+                    <p v-if="firstEventDate" class="cover-date" :style="{ fontFamily: fontHeading }">
+                        {{ firstEventDate }}
+                    </p>
+                </div>
+                <div class="cover-bottom">
+                    <p v-if="guest?.name || isDemo" class="cover-guest" :style="{ fontFamily: fontHeading }">
+                        Kepada Yth. {{ guest?.name ?? 'Nama Tamu' }}
+                    </p>
+                    <button
+                        class="open-btn"
+                        :style="{ fontFamily: fontHeading }"
+                        @click.stop="triggerGate"
+                    >
+                        Buka Undangan
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -275,17 +282,43 @@ const visibleHotspots = computed(() =>
     display:         flex;
     flex-direction:  column;
     align-items:     center;
-    justify-content: center;
-    gap:             12px;
-    padding:         24px;
+    justify-content: space-between;
+    padding:         48px 24px 56px;
     text-align:      center;
 }
 
+.cover-top {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            12px;
+    flex:           1;
+    justify-content: center;
+}
+
+.cover-bottom {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            10px;
+}
+
 .cover-names {
-    font-size:   28px;
-    font-weight: 700;
-    color:       #fff;
-    line-height: 1.2;
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            4px;
+    font-size:      38px;
+    font-weight:    700;
+    color:          #fff;
+    line-height:    1.2;
+}
+
+.cover-and {
+    font-size:   20px;
+    font-weight: 400;
+    opacity:     0.8;
+    line-height: 1;
 }
 
 .cover-date {

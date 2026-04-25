@@ -3,6 +3,7 @@ export default {
     background:  '/images/templates/beach/scene.webp',
     fallbackBg:  'linear-gradient(180deg, #87CEEB 0%, #F0E68C 60%, #DEB887 100%)',
     modalTheme:  'beach',
+    fontTitle:   'Playfair Display',
     hotspots: [
         {
             id:           'gallery',
