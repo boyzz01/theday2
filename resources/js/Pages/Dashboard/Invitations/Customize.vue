@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
 import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
