@@ -5,6 +5,7 @@ import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import SectionBgControl from '@/Components/invitation/customize/SectionBgControl.vue';
 import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
+import GalleryLayoutPicker from '@/Components/invitation/customize/GalleryLayoutPicker.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -18,30 +19,50 @@ const form = ref(
 
 const uploadingKey = ref(null); // which section is currently uploading
 const saveStatus   = ref('saved'); // 'saved' | 'saving' | 'error'
-const activeKey    = ref('cover');
+const activeKey    = ref(
+    props.invitation.template_category_slug === 'storybook' ? 'gallery' : 'cover'
+);
 
 const groomName = computed(() => props.invitation.details?.groom_name ?? '—');
 const brideName = computed(() => props.invitation.details?.bride_name ?? '—');
 
 const previewTemplate = computed(() => TEMPLATE_MAP[props.invitation.template_slug] ?? null);
 
+const isStorybook = computed(() =>
+    props.invitation.template_category_slug === 'storybook'
+)
+
+const galleryLayout = ref(
+    props.invitation.config?.gallery_layout ?? 'polaroid'
+)
+
 const previewInvitation = computed(() => ({
     ...props.invitation,
     config: {
         ...props.invitation.config,
         section_backgrounds: form.value,
+        gallery_layout:      galleryLayout.value,
     },
 }));
 
 // ── Sections config ───────────────────────────────────────────────────────
-const SECTIONS = [
+const SECTIONS_REGULAR = [
     { key: 'cover',   label: 'Cover',   icon: '🖼️' },
     { key: 'opening', label: 'Opening', icon: '✉️' },
     { key: 'events',  label: 'Acara',   icon: '📅' },
     { key: 'gallery', label: 'Galeri',  icon: '🖼️' },
     { key: 'music',   label: 'Musik',   icon: '🎵' },
     { key: 'closing', label: 'Penutup', icon: '💌' },
-];
+]
+
+const SECTIONS_STORYBOOK = [
+    { key: 'gallery', label: 'Galeri', icon: '🖼️' },
+    { key: 'music',   label: 'Musik',  icon: '🎵' },
+]
+
+const sections = computed(() =>
+    isStorybook.value ? SECTIONS_STORYBOOK : SECTIONS_REGULAR
+)
 
 // ── Background change handler ─────────────────────────────────────────────
 function onBgChange(key, bg) {
@@ -77,9 +98,11 @@ async function uploadBg(sectionKey, file) {
 async function save() {
     saveStatus.value = 'saving';
     try {
-        await axios.post(`/dashboard/invitations/${props.invitation.id}/customize`, {
-            section_backgrounds: form.value,
-        });
+        const payload = isStorybook.value
+            ? { gallery_layout: galleryLayout.value }
+            : { section_backgrounds: form.value }
+
+        await axios.post(`/dashboard/invitations/${props.invitation.id}/customize`, payload);
         saveStatus.value = 'saved';
     } catch {
         saveStatus.value = 'error';
@@ -106,6 +129,8 @@ const SECTION_SELECTORS = {
     closing: '.pearl-closing, .n-closing',
     music:   null,
 };
+
+watch(galleryLayout, () => scheduleAutoSave())
 
 watch(activeKey, async (key) => {
     if (!key || !previewInner.value) return;
@@ -155,7 +180,7 @@ watch(activeKey, async (key) => {
 
                 <!-- Section accordion -->
                 <div class="flex-1 overflow-y-auto divide-y divide-stone-50">
-                    <div v-for="section in SECTIONS" :key="section.key">
+                    <div v-for="section in sections" :key="section.key">
                         <button
                             type="button"
                             @click="activeKey = activeKey === section.key ? null : section.key"
@@ -173,15 +198,24 @@ watch(activeKey, async (key) => {
                         <div v-if="activeKey === section.key" class="px-5 pb-5 space-y-4 bg-stone-50/50">
                             <!-- Background control (all sections except music) -->
                             <template v-if="section.key !== 'music'">
-                                <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
-                                <SectionBgControl
-                                    :model-value="form[section.key]"
-                                    :section-key="section.key"
-                                    :invitation-id="invitation.id"
-                                    :uploading="uploadingKey === section.key"
-                                    @update:model-value="(bg) => { onBgChange(section.key, bg); scheduleAutoSave(); }"
-                                    @upload="(file) => uploadBg(section.key, file).then(ok => ok && scheduleAutoSave())"
+                                <!-- Storybook: gallery layout picker -->
+                                <GalleryLayoutPicker
+                                    v-if="isStorybook && section.key === 'gallery'"
+                                    :model-value="galleryLayout"
+                                    @update:model-value="galleryLayout = $event"
                                 />
+                                <!-- Regular: background control -->
+                                <template v-else-if="!isStorybook">
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
+                                    <SectionBgControl
+                                        :model-value="form[section.key]"
+                                        :section-key="section.key"
+                                        :invitation-id="invitation.id"
+                                        :uploading="uploadingKey === section.key"
+                                        @update:model-value="(bg) => { onBgChange(section.key, bg); scheduleAutoSave(); }"
+                                        @upload="(file) => uploadBg(section.key, file).then(ok => ok && scheduleAutoSave())"
+                                    />
+                                </template>
                             </template>
 
                             <!-- Music upload -->
