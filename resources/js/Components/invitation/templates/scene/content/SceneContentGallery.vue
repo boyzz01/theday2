@@ -13,7 +13,7 @@ defineProps({
         <div v-else class="grid grid-cols-2 gap-2">
             <div v-for="img in galleries" :key="img.id" class="rounded-lg overflow-hidden">
                 <img
-                    :src="img.file_url"
+                    :src="img.image_url ?? img.file_url"
                     :alt="img.caption ?? ''"
                     loading="lazy"
                     class="w-full h-40 object-cover"

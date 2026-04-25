@@ -23,13 +23,14 @@ const emit = defineEmits(['click'])
     >
         <!-- Mode ilustrasi -->
         <template v-if="hotspot.illustration">
+            <span v-if="hotspot.labelPosition === 'top'" class="hotspot-label">{{ hotspot.label }}</span>
             <img
                 :src="hotspot.illustration"
                 :alt="hotspot.label"
                 class="hotspot-img"
                 draggable="false"
             />
-            <span class="hotspot-label">{{ hotspot.label }}</span>
+            <span v-if="hotspot.labelPosition !== 'top'" class="hotspot-label">{{ hotspot.label }}</span>
         </template>
 
         <!-- Fallback: text pill (kalau belum ada ilustrasi) -->
@@ -56,14 +57,18 @@ const emit = defineEmits(['click'])
     width:      100%;
     height:     auto;
     object-fit: contain;
-    filter:     drop-shadow(0 0 6px rgba(100, 220, 255, 0.5));
-    transition: filter 0.2s ease, transform 0.2s ease;
+    animation:  img-glow 3s ease-in-out infinite;
+    transition: transform 0.2s ease;
     user-select: none;
     -webkit-user-drag: none;
 }
 
+@keyframes img-glow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 255, 220, 0.3)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(255, 255, 220, 0.65)); }
+}
+
 .hotspot-wrap:active .hotspot-img {
-    filter:    drop-shadow(0 0 12px rgba(100, 220, 255, 0.9));
     transform: scale(0.94);
 }
 
@@ -104,13 +109,13 @@ const emit = defineEmits(['click'])
    CSS Animations
    ═══════════════════════════════ */
 
-/* Float: naik-turun pelan (default karakter, objek melayang) */
+/* Float: breath scale pelan (default) */
 .anim-float {
     animation: anim-float 3.5s ease-in-out infinite;
 }
 @keyframes anim-float {
-    0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
-    50%       { transform: translate(-50%, -50%) translateY(-7px); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%       { transform: translate(-50%, -50%) scale(1.06); }
 }
 
 /* Sway: goyang kiri-kanan (objek menggantung, baju, papan) */
@@ -141,6 +146,25 @@ const emit = defineEmits(['click'])
 @keyframes anim-pulse {
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
     50%       { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* Swing: papan goyang atas-bawah, pivot dari atas */
+.anim-swing {
+    animation: anim-swing 2.5s ease-in-out infinite;
+    transform-origin: top center;
+}
+@keyframes anim-swing {
+    0%, 100% { transform: translate(-50%, -50%) perspective(300px) rotateX(-15deg); }
+    50%       { transform: translate(-50%, -50%) perspective(300px) rotateX(15deg); }
+}
+
+/* Pulse Strong: kembang-kempis lebih besar */
+.anim-pulse-strong {
+    animation: anim-pulse-strong 2s ease-in-out infinite;
+}
+@keyframes anim-pulse-strong {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%       { transform: translate(-50%, -50%) scale(1.18); }
 }
 
 /* Spin: rotasi pelan (dress code hanger, ornamen bulat) */
