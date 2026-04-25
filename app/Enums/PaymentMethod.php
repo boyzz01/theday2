@@ -8,16 +8,10 @@ namespace App\Enums;
 
 enum PaymentMethod: string
 {
-    case Mayar    = 'mayar';
-    case Midtrans = 'midtrans'; // keep for historical records
-    case Xendit   = 'xendit';
+    case Mayar = 'mayar';
 
     public function label(): string
     {
-        return match($this) {
-            self::Mayar    => 'Mayar',
-            self::Midtrans => 'Midtrans',
-            self::Xendit   => 'Xendit',
-        };
+        return 'Mayar';
     }
 }

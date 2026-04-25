@@ -44,7 +44,8 @@ onUnmounted(() => {
     if (pollTimer) clearInterval(pollTimer);
 });
 
-const goToDashboard = () => router.visit(route('dashboard.subscriptions.index'));
+const goToDashboard = () => router.visit(route('dashboard'));
+const goToTransactions = () => router.visit(route('dashboard.transactions.index'));
 const retryPoll = () => {
     if (pollTimer) clearInterval(pollTimer);
     maxed.value = false;
@@ -123,7 +124,11 @@ const retryPoll = () => {
                     <p class="text-sm text-stone-500 mb-6">Silakan cek riwayat pembayaran di dashboard untuk detail transaksi.</p>
                 </template>
 
-                <button @click="goToDashboard"
+                <button v-if="currentStatus === 'paid'" @click="goToTransactions"
+                        class="w-full py-3 rounded-xl text-sm font-semibold bg-brand-primary hover:bg-brand-primary-hover text-white transition-all">
+                    Lihat Riwayat Pembayaran
+                </button>
+                <button v-else @click="goToDashboard"
                         class="w-full py-3 rounded-xl text-sm font-semibold bg-brand-primary hover:bg-brand-primary-hover text-white transition-all">
                     Kembali ke Dashboard
                 </button>
