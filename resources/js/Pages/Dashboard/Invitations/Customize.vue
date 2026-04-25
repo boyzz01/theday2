@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import SectionBgControl from '@/Components/invitation/customize/SectionBgControl.vue';
 import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 import GalleryLayoutPicker from '@/Components/invitation/customize/GalleryLayoutPicker.vue';
+import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -21,6 +22,7 @@ const form = ref(
 
 const uploadingKey = ref(null); // which section is currently uploading
 const saveStatus   = ref('saved'); // 'saved' | 'saving' | 'error'
+const activeTab    = ref('edit');  // mobile only: 'edit' | 'preview'
 const activeKey    = ref(
     props.invitation.template_category_slug === STORYBOOK_SLUG ? 'gallery' : 'cover'
 );
@@ -121,8 +123,6 @@ function scheduleAutoSave() {
 onUnmounted(() => clearTimeout(autoSaveTimer));
 
 // ── Preview scroll-to-section ─────────────────────────────────────────────
-const previewInner = ref(null);
-
 const SECTION_SELECTORS = {
     cover:   '.pearl-gate, .n-cover',
     opening: '.pearl-opening, .n-opening',
@@ -135,12 +135,10 @@ const SECTION_SELECTORS = {
 watch(galleryLayout, () => scheduleAutoSave())
 
 watch(activeKey, async (key) => {
-    if (!key || !previewInner.value) return;
+    if (!key) return;
     await nextTick();
     const selector = SECTION_SELECTORS[key];
     if (!selector) return;
-    const el = previewInner.value.querySelector(selector);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 </script>
 
@@ -166,22 +164,44 @@ watch(activeKey, async (key) => {
             <div class="w-full lg:w-[420px] flex-shrink-0 flex flex-col border-r border-stone-100 bg-white">
 
                 <!-- Header -->
-                <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
+                <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between flex-shrink-0">
                     <div>
                         <h1 class="text-sm font-bold text-stone-800">Kustomisasi</h1>
                         <p class="text-xs text-stone-400 mt-0.5">{{ groomName }} & {{ brideName }}</p>
                     </div>
-                    <Link
-                        :href="`/${invitation.slug}`"
-                        target="_blank"
-                        class="text-xs px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 transition-colors lg:hidden"
-                    >
-                        Lihat Preview
-                    </Link>
+                    <!-- Mobile tab toggle -->
+                    <div class="flex lg:hidden bg-stone-100 rounded-lg p-0.5">
+                        <button
+                            type="button"
+                            @click="activeTab = 'edit'"
+                            :class="['text-xs px-3 py-1.5 rounded-md font-medium transition-all', activeTab === 'edit' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500']"
+                        >Edit</button>
+                        <button
+                            type="button"
+                            @click="activeTab = 'preview'"
+                            :class="['text-xs px-3 py-1.5 rounded-md font-medium transition-all', activeTab === 'preview' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500']"
+                        >Preview</button>
+                    </div>
+                </div>
+
+                <!-- Mobile preview panel -->
+                <div v-if="activeTab === 'preview'" class="lg:hidden flex-1 flex items-center justify-center bg-stone-100 p-6 overflow-y-auto">
+                    <PhoneMockup screen-bg="#111">
+                        <component
+                            v-if="previewTemplate"
+                            :is="previewTemplate"
+                            :invitation="previewInvitation"
+                            :is-demo="true"
+                            :auto-open="true"
+                        />
+                        <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
+                            Template tidak ditemukan
+                        </div>
+                    </PhoneMockup>
                 </div>
 
                 <!-- Section accordion -->
-                <div class="flex-1 overflow-y-auto divide-y divide-stone-50">
+                <div :class="['flex-1 overflow-y-auto divide-y divide-stone-50', activeTab === 'preview' ? 'hidden lg:block' : '']">
                     <div v-for="section in sections" :key="section.key">
                         <button
                             type="button"
@@ -235,7 +255,7 @@ watch(activeKey, async (key) => {
                 </div>
 
                 <!-- Footer: Save -->
-                <div class="px-5 py-4 border-t border-stone-100 flex items-center gap-3">
+                <div :class="['px-5 py-4 border-t border-stone-100 flex items-center gap-3', activeTab === 'preview' ? 'hidden lg:flex' : '']">
                     <button
                         type="button"
                         @click="save"
@@ -251,58 +271,22 @@ watch(activeKey, async (key) => {
 
             <!-- ── Right: Live preview (desktop only) ────────────── -->
             <div class="hidden lg:flex flex-1 items-center justify-center bg-stone-100 p-8">
-                <div class="preview-phone-frame">
-                    <div ref="previewInner" class="preview-phone-inner">
-                        <component
-                            v-if="previewTemplate"
-                            :is="previewTemplate"
-                            :invitation="previewInvitation"
-                            :is-demo="true"
-                            :auto-open="true"
-                        />
-                        <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
-                            Template tidak ditemukan
-                        </div>
+                <PhoneMockup screen-bg="#111">
+                    <component
+                        v-if="previewTemplate"
+                        :is="previewTemplate"
+                        :invitation="previewInvitation"
+                        :is-demo="true"
+                        :auto-open="true"
+                    />
+                    <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
+                        Template tidak ditemukan
                     </div>
-                </div>
+                </PhoneMockup>
             </div>
 
         </div>
 
-        <!-- Mobile: floating preview button -->
-        <a
-            :href="`/${invitation.slug}`"
-            target="_blank"
-            class="lg:hidden fixed bottom-6 right-4 z-50 px-4 py-2.5 rounded-full shadow-lg text-xs font-bold text-white bg-[#92A89C]"
-        >
-            Lihat Preview
-        </a>
     </DashboardLayout>
 </template>
 
-<style scoped>
-.preview-phone-frame {
-    width: 390px;
-    height: 780px;
-    flex-shrink: 0;
-    border-radius: 40px;
-    overflow: hidden;
-    box-shadow: 0 0 0 8px #1a1a1a, 0 30px 60px rgba(0,0,0,0.3);
-    background: white;
-    position: relative;
-}
-
-.preview-phone-inner {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    /* hide scrollbar visually */
-    scrollbar-width: none;
-}
-
-.preview-phone-inner::-webkit-scrollbar {
-    display: none;
-}
-</style>
