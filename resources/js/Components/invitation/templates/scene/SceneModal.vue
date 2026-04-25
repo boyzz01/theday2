@@ -10,15 +10,6 @@ function close() {
     emit('update:modelValue', false)
 }
 
-let touchStartY = 0
-
-function onTouchStart(e) {
-    touchStartY = e.touches[0].clientY
-}
-
-function onTouchEnd(e) {
-    if (e.changedTouches[0].clientY - touchStartY > 80) close()
-}
 </script>
 
 <template>
@@ -32,13 +23,11 @@ function onTouchEnd(e) {
             />
         </Transition>
 
-        <!-- Sheet -->
+        <!-- Modal -->
         <Transition name="slide-up">
             <div
                 v-if="modelValue"
                 class="modal-sheet"
-                @touchstart="onTouchStart"
-                @touchend="onTouchEnd"
             >
                 <!-- Browser chrome (dekoratif) -->
                 <div class="browser-chrome">
@@ -73,18 +62,19 @@ function onTouchEnd(e) {
 
 .modal-sheet {
     position:         fixed;
-    bottom:           0;
+    top:              50%;
     left:             50%;
-    transform:        translateX(-50%);
-    width:            100%;
-    max-width:        480px;
-    max-height:       82vh;
+    transform:        translate(-50%, -50%);
+    width:            calc(100% - 32px);
+    max-width:        420px;
+    max-height:       80vh;
     background:       #fff;
-    border-radius:    16px 16px 0 0;
+    border-radius:    16px;
     z-index:          50;
     display:          flex;
     flex-direction:   column;
     overflow:         hidden;
+    box-shadow:       0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .browser-chrome {
@@ -155,7 +145,7 @@ function onTouchEnd(e) {
 .backdrop-fade-leave-to     { opacity: 0; }
 
 .slide-up-enter-active,
-.slide-up-leave-active { transition: transform 0.3s ease; }
+.slide-up-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
 .slide-up-enter-from,
-.slide-up-leave-to     { transform: translateX(-50%) translateY(100%); }
+.slide-up-leave-to     { opacity: 0; transform: translate(-50%, -46%); }
 </style>
