@@ -42,6 +42,7 @@ const {
 
 // Modal state
 const activeSection  = ref(null)
+const clusterOpen    = ref(true)
 const guestbookOpen  = ref(true)
 const guestbookMode  = ref('list')
 
@@ -133,25 +134,6 @@ const visibleHotspots = computed(() =>
                 draggable="false"
             />
 
-            <!-- Top-left: Info -->
-            <button
-                class="fixed-btn fixed-top-left"
-                aria-label="Info undangan"
-                @click="openSection('couple')"
-            >
-                ⓘ
-            </button>
-
-            <!-- Top-right: Music -->
-            <button
-                v-if="sectionEnabled('music') && invitation.music?.file_url"
-                class="fixed-btn fixed-top-right"
-                :aria-label="musicPlaying ? 'Pause musik' : 'Play musik'"
-                @click="toggleMusic"
-            >
-                {{ musicPlaying ? '🎵' : '🎶' }}
-            </button>
-
             <!-- Hotspots -->
             <SceneHotspot
                 v-for="(hotspot, i) in visibleHotspots"
@@ -161,14 +143,33 @@ const visibleHotspots = computed(() =>
                 @click="openSection"
             />
 
-            <!-- Bottom guestbook bar -->
-            <SceneGuestbook
-                v-if="sectionEnabled('wishes')"
-                :open="guestbookOpen"
-                @open-form="openGuestbookForm"
-                @open-list="openGuestbookList"
-                @toggle="guestbookOpen = !guestbookOpen"
-            />
+            <!-- Bottom-left: FAB cluster -->
+            <div class="action-cluster">
+                <!-- Sub buttons -->
+                <Transition name="fab-items">
+                    <div v-if="clusterOpen" class="cluster-items">
+                        <button class="cluster-btn" aria-label="Info" @click="openSection('couple'); clusterOpen = false">ⓘ</button>
+                        <button
+                            v-if="sectionEnabled('music') && (invitation.music?.file_url || isDemo)"
+                            class="cluster-btn"
+                            :aria-label="musicPlaying ? 'Pause musik' : 'Play musik'"
+                            @click="toggleMusic"
+                        >{{ musicPlaying ? '🎵' : '🎶' }}</button>
+                        <template v-if="sectionEnabled('wishes')">
+                            <button class="cluster-btn" aria-label="Tulis ucapan" @click="openGuestbookForm(); clusterOpen = false">✍️</button>
+                            <button class="cluster-btn" aria-label="Lihat ucapan" @click="openGuestbookList(); clusterOpen = false">💬</button>
+                        </template>
+                    </div>
+                </Transition>
+
+                <!-- Main FAB toggle -->
+                <button
+                    class="cluster-btn cluster-fab"
+                    :class="{ 'is-open': clusterOpen }"
+                    @click="clusterOpen = !clusterOpen"
+                    aria-label="Menu"
+                >{{ clusterOpen ? '✕' : '✦' }}</button>
+            </div>
         </div>
 
         <!-- ── Modal ── -->
@@ -309,15 +310,31 @@ const visibleHotspots = computed(() =>
     backdrop-filter: blur(4px);
 }
 
-/* ── Fixed buttons ── */
-.fixed-btn {
-    position:        absolute;
-    z-index:         20;
-    background:      rgba(255, 255, 255, 0.2);
-    border:          1.5px solid rgba(255, 255, 255, 0.6);
-    border-radius:   50%;
+/* ── FAB Cluster ── */
+.action-cluster {
+    position:       absolute;
+    bottom:         16px;
+    left:           16px;
+    z-index:        20;
+    display:        flex;
+    flex-direction: column-reverse;
+    align-items:    center;
+    gap:            8px;
+}
+
+.cluster-items {
+    display:        flex;
+    flex-direction: column-reverse;
+    align-items:    center;
+    gap:            8px;
+}
+
+.cluster-btn {
     width:           40px;
     height:          40px;
+    border-radius:   50%;
+    background:      rgba(255, 255, 255, 0.2);
+    border:          1.5px solid rgba(255, 255, 255, 0.6);
     display:         flex;
     align-items:     center;
     justify-content: center;
@@ -325,10 +342,38 @@ const visibleHotspots = computed(() =>
     cursor:          pointer;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    transition:      background 0.2s ease, transform 0.15s ease;
 }
 
-.fixed-top-left  { top: 16px; left:  16px; }
-.fixed-top-right { top: 16px; right: 16px; }
+.cluster-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform:  scale(1.08);
+}
+
+.cluster-fab {
+    background: rgba(255, 255, 255, 0.3);
+    border:     2px solid rgba(255, 255, 255, 0.8);
+    font-size:  18px;
+    transition: background 0.2s ease, transform 0.3s ease;
+}
+
+.cluster-fab.is-open {
+    transform: rotate(45deg) scale(1.1);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* FAB items animation */
+.fab-items-enter-active {
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.fab-items-leave-active {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.fab-items-enter-from,
+.fab-items-leave-to {
+    opacity:   0;
+    transform: translateY(12px) scale(0.85);
+}
 
 /* ── Toast ── */
 .scene-toast {
