@@ -11,8 +11,10 @@ use App\Actions\BudgetPlanner\InitializeWeddingBudgetAction;
 use App\Enums\ChecklistTaskStatus;
 use App\Enums\InvitationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Template;
 use App\Models\WeddingPlan;
 use App\Services\ChecklistService;
+use App\Support\SectionAccess;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,6 +61,7 @@ class DashboardController extends Controller
                 'published_at' => $inv->published_at?->format('d M Y'),
                 'expires_at'  => $inv->expires_at?->format('d M Y'),
                 'template'    => $inv->template ? [
+                    'id'            => $inv->template->id,
                     'name'          => $inv->template->name,
                     'thumbnail_url' => $inv->template->thumbnail_url,
                     'default_config' => $inv->template->default_config,
@@ -92,9 +95,29 @@ class DashboardController extends Controller
                 'is_overdue' => $t->due_date?->isPast(),
             ]);
 
+        $canUsePremium = SectionAccess::isPremium($request->user());
+        $templates     = Template::active()
+            ->with('category:id,name,slug')
+            ->ordered()
+            ->get()
+            ->map(fn ($t) => [
+                'id'            => $t->id,
+                'name'          => $t->name,
+                'slug'          => $t->slug,
+                'thumbnail_url' => $t->thumbnail_url,
+                'tier'          => $t->tier->value,
+                'category'      => $t->category ? [
+                    'name' => $t->category->name,
+                    'slug' => $t->category->slug,
+                ] : null,
+            ])
+            ->toArray();
+
         return Inertia::render('Dashboard/Index', [
             'stats'             => $stats,
             'recentInvitations' => $recentInvitations,
+            'templates'         => $templates,
+            'canUsePremium'     => $canUsePremium,
             'activePlan'        => [
                 'slug'             => $activePlan?->slug ?? 'free',
                 'name'             => $activePlan?->name ?? 'Free',
