@@ -12,6 +12,8 @@ const props = defineProps({
     canUsePremium: { type: Boolean, default: false },
 });
 
+const STORYBOOK_SLUG = 'storybook';
+
 // ── Local form: mirrors config.section_backgrounds ────────────────────────
 const form = ref(
     JSON.parse(JSON.stringify(props.invitation.config?.section_backgrounds ?? {}))
@@ -20,7 +22,7 @@ const form = ref(
 const uploadingKey = ref(null); // which section is currently uploading
 const saveStatus   = ref('saved'); // 'saved' | 'saving' | 'error'
 const activeKey    = ref(
-    props.invitation.template_category_slug === 'storybook' ? 'gallery' : 'cover'
+    props.invitation.template_category_slug === STORYBOOK_SLUG ? 'gallery' : 'cover'
 );
 
 const groomName = computed(() => props.invitation.details?.groom_name ?? '—');
@@ -29,7 +31,7 @@ const brideName = computed(() => props.invitation.details?.bride_name ?? '—');
 const previewTemplate = computed(() => TEMPLATE_MAP[props.invitation.template_slug] ?? null);
 
 const isStorybook = computed(() =>
-    props.invitation.template_category_slug === 'storybook'
+    props.invitation.template_category_slug === STORYBOOK_SLUG
 )
 
 const galleryLayout = ref(
