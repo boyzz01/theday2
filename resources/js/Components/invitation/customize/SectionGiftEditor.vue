@@ -8,6 +8,7 @@ const props = defineProps({
 })
 const emit   = defineEmits(['update:modelValue'])
 const saving = ref(false)
+const error  = ref(null)
 const local  = ref(JSON.parse(JSON.stringify(props.modelValue?.accounts ?? [])))
 
 function addAccount() {
@@ -20,6 +21,7 @@ function removeAccount(index) {
 }
 
 async function saveAll() {
+    error.value = null
     saving.value = true
     try {
         await axios.patch(`/api/invitations/${props.invitationId}/sections/gift`, {
@@ -28,7 +30,7 @@ async function saveAll() {
         })
         emit('update:modelValue', { accounts: [...local.value] })
     } catch {
-        alert('Gagal menyimpan.')
+        error.value = 'Gagal menyimpan. Coba lagi.'
     } finally {
         saving.value = false
     }
@@ -58,5 +60,7 @@ defineExpose({ saveAll })
             class="w-full py-2.5 rounded-xl border-2 border-dashed border-stone-200 text-sm text-stone-500 hover:border-stone-300 hover:bg-stone-50 transition-colors">
             + Tambah Rekening
         </button>
+
+        <p v-if="error" class="text-xs text-red-400 text-center">{{ error }}</p>
     </div>
 </template>
