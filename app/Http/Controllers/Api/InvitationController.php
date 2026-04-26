@@ -179,6 +179,24 @@ class InvitationController extends Controller
             $payload
         );
 
+        $coupleFields = array_filter([
+            'groom_name'         => $validated['groom_name']         ?? null,
+            'groom_nickname'     => $validated['groom_nickname']     ?? null,
+            'groom_instagram'    => $validated['groom_instagram']    ?? null,
+            'groom_parent_names' => $validated['groom_parent_names'] ?? null,
+            'bride_name'         => $validated['bride_name']         ?? null,
+            'bride_nickname'     => $validated['bride_nickname']     ?? null,
+            'bride_instagram'    => $validated['bride_instagram']    ?? null,
+            'bride_parent_names' => $validated['bride_parent_names'] ?? null,
+        ], fn ($v) => $v !== null);
+
+        if (!empty($coupleFields)) {
+            Auth::user()->coupleProfile()->updateOrCreate(
+                ['user_id' => Auth::id()],
+                $coupleFields
+            );
+        }
+
         return response()->json(['data' => $details]);
     }
 

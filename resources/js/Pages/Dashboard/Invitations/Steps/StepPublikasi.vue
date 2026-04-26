@@ -1,5 +1,5 @@
 <script setup>
-// Step 6 — Publikasi
+// Step 3 — Publikasi
 // Sections: slug_settings (req), password_protection (opt), preview_and_publish (req)
 
 import { ref, computed, watch, onMounted } from 'vue';
@@ -13,12 +13,13 @@ const props = defineProps({
     invitationId:       { type: String,   default: null },
     invitationStatus:   { type: String,   default: 'draft' },
     isSaving:           { type: Boolean,  default: false },
-    saveStep6:          { type: Function, required: true },
+    saveStep3:          { type: Function, required: true },
     template:           { type: Object,   required: true },
     basic:              { type: Object,   required: true },
     details:            { type: Object,   default: null },
     onToggleSection:    { type: Function, required: true },
     canUsePremium:      { type: Boolean,  default: false },
+    isStorybook:        { type: Boolean,  default: false },
 });
 
 const expanded       = ref(new Set(['slug_settings', 'password_protection', 'preview_and_publish']));
@@ -116,7 +117,7 @@ async function handleAction(action) {
     }
 
     try {
-        await props.saveStep6(action);
+        await props.saveStep3(action);
         publishStatus.value = action === 'publish' ? 'published' : 'draft';
 
         if (action === 'draft') {
@@ -194,7 +195,13 @@ function goToDashboard() {
                         Salin
                     </button>
                 </div>
-                <button @click="goToDashboard"
+                <a v-if="isStorybook && invitationId"
+                   :href="route('dashboard.invitations.customize', { invitation: invitationId })"
+                   class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all inline-block text-center"
+                   style="background-color: #92A89C">
+                    Kustomisasi Undangan →
+                </a>
+                <button v-else @click="goToDashboard"
                         class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
                         style="background-color: #92A89C">
                     Kembali ke Dashboard
@@ -206,12 +213,11 @@ function goToDashboard() {
             <SectionAccordionCard
                 title="URL Undangan"
                 description="Alamat unik undangan yang akan dibagikan"
-                :is-required="sections.slug_settings?.is_required ?? true"
-                :is-enabled="sections.slug_settings?.is_enabled ?? true"
+                :is-required="true"
+                :is-enabled="canUsePremium"
                 :status="sections.slug_settings?.completion_status ?? 'empty'"
                 :expanded="expanded.has('slug_settings')"
                 @toggle-expand="toggle('slug_settings')"
-                @toggle-enabled="onToggleSection('slug_settings')"
             >
                 <!-- Free user: read-only slug display -->
                 <div v-if="!canUsePremium" class="space-y-3">
@@ -311,12 +317,11 @@ function goToDashboard() {
             <SectionAccordionCard
                 title="Preview & Publikasi"
                 description="Tinjau dan publikasikan undangan Anda"
-                :is-required="sections.preview_and_publish?.is_required ?? true"
-                :is-enabled="sections.preview_and_publish?.is_enabled ?? true"
+                :is-required="true"
+                :is-enabled="true"
                 :status="sections.preview_and_publish?.completion_status ?? 'empty'"
                 :expanded="expanded.has('preview_and_publish')"
                 @toggle-expand="toggle('preview_and_publish')"
-                @toggle-enabled="onToggleSection('preview_and_publish')"
             >
                 <div class="space-y-4">
                     <!-- Summary -->

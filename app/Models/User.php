@@ -89,6 +89,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(WeddingPlan::class);
     }
 
+    public function coupleProfile(): HasOne
+    {
+        return $this->hasOne(CoupleProfile::class);
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

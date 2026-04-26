@@ -60,8 +60,10 @@ function defaultDetails() {
     return {
         groom_name:          '',
         groom_nickname:      '',
+        groom_instagram:     '',
         bride_name:          '',
         bride_nickname:      '',
+        bride_instagram:     '',
         groom_parent_names:  '',
         bride_parent_names:  '',
         groom_photo_url:     '',
@@ -196,7 +198,7 @@ export function useInvitationEditor(template, invitation = null) {
         }
     }
 
-    // ── Pending photo queue (deferred until saveStep1) ────────────
+    // ── Pending photo queue (deferred until saveStep1) ─────────────────
     const pendingPhotoFiles = reactive({});
 
     // ── Upload helpers ────────────────────────────────────────────
@@ -333,12 +335,22 @@ export function useInvitationEditor(template, invitation = null) {
 
     // ── Save methods ──────────────────────────────────────────────
 
+    function resolvedTitle() {
+        const g = details.groom_name?.trim();
+        const b = details.bride_name?.trim();
+        if (g && b) return `${g} & ${b}`;
+        if (g)      return `Pernikahan ${g}`;
+        if (b)      return `Pernikahan ${b}`;
+        return 'Undangan Pernikahan';
+    }
+
     async function saveStep1() {
         return apiCall(async () => {
+            const title = resolvedTitle();
             if (!invitationId.value) {
                 const res = await axios.post(apiUrl('/invitations'), {
                     template_id: template.id,
-                    title:       basic.title,
+                    title,
                     event_type:  basic.event_type,
                 });
                 invitationId.value = res.data.data.id;
@@ -350,7 +362,7 @@ export function useInvitationEditor(template, invitation = null) {
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), { current_step: 1 });
             } else {
                 await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                    title:        basic.title,
+                    title,
                     event_type:   basic.event_type,
                     current_step: Math.max(lastSavedStep.value, 1),
                 });
@@ -374,9 +386,8 @@ export function useInvitationEditor(template, invitation = null) {
                 delete pendingPhotoFiles[field];
             }
 
-            // Save data_json for step 1 sections
             syncSectionStatuses();
-            await Promise.all(['cover', 'konten_utama', 'couple', 'quote'].map(saveSectionData));
+            await saveSectionData('couple');
 
             lastSavedStep.value = Math.max(lastSavedStep.value, 1);
         });
@@ -385,36 +396,6 @@ export function useInvitationEditor(template, invitation = null) {
     async function saveStep2() {
         if (!invitationId.value) return;
         return apiCall(async () => {
-            for (let i = 0; i < events.value.length; i++) {
-                const ev = events.value[i];
-                const payload = {
-                    event_name:    ev.event_name,
-                    event_date:    ev.event_date,
-                    start_time:    ev.start_time || null,
-                    end_time:      ev.end_time   || null,
-                    venue_name:    ev.venue_name,
-                    venue_address: ev.venue_address || null,
-                    maps_url:      ev.maps_url || null,
-                    sort_order:    i,
-                };
-
-                if (ev._serverId) {
-                    await axios.put(
-                        apiUrl(`/invitations/${invitationId.value}/events/${ev._serverId}`),
-                        payload
-                    );
-                } else {
-                    const res = await axios.post(
-                        apiUrl(`/invitations/${invitationId.value}/events`),
-                        payload
-                    );
-                    ev._serverId = res.data.data.id;
-                }
-            }
-
-            syncSectionStatuses();
-            await Promise.all(['events', 'countdown', 'live_streaming', 'additional_info'].map(saveSectionData));
-
             await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
                 current_step: Math.max(lastSavedStep.value, 2),
             });
@@ -422,70 +403,7 @@ export function useInvitationEditor(template, invitation = null) {
         });
     }
 
-    async function saveStep3() {
-        if (!invitationId.value) return;
-        return apiCall(async () => {
-            const serverIds = galleries.value
-                .filter(g => g._serverId)
-                .map(g => g._serverId);
-
-            if (serverIds.length > 0) {
-                await axios.put(
-                    apiUrl(`/invitations/${invitationId.value}/galleries/reorder`),
-                    { ids: serverIds }
-                );
-            }
-
-            syncSectionStatuses();
-            await Promise.all(['gallery', 'video', 'love_story'].map(saveSectionData));
-
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                current_step: Math.max(lastSavedStep.value, 3),
-            });
-            lastSavedStep.value = Math.max(lastSavedStep.value, 3);
-        });
-    }
-
-    async function saveStep4() {
-        if (!invitationId.value) return;
-        return apiCall(async () => {
-            syncSectionStatuses();
-            await Promise.all(['rsvp', 'wishes', 'gift'].map(saveSectionData));
-
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                current_step: Math.max(lastSavedStep.value, 4),
-            });
-            lastSavedStep.value = Math.max(lastSavedStep.value, 4);
-        });
-    }
-
-    async function saveStep5() {
-        if (!invitationId.value) return;
-        return apiCall(async () => {
-            if (selectedMusic.value) {
-                await axios.post(
-                    apiUrl(`/invitations/${invitationId.value}/music`),
-                    {
-                        type:     'default',
-                        title:    selectedMusic.value.title,
-                        file_url: selectedMusic.value.file_url ?? '',
-                    }
-                );
-            }
-
-            await axios.put(apiUrl(`/invitations/${invitationId.value}`), {
-                custom_config: { ...customConfig },
-                current_step:  Math.max(lastSavedStep.value, 5),
-            });
-
-            syncSectionStatuses();
-            await Promise.all(['music', 'theme_settings'].map(saveSectionData));
-
-            lastSavedStep.value = Math.max(lastSavedStep.value, 5);
-        });
-    }
-
-    async function saveStep6(action = 'draft') {
+    async function saveStep3(action = 'draft') {
         if (!invitationId.value) return;
         return apiCall(async () => {
             if (action === 'publish') {
@@ -593,8 +511,10 @@ export function useInvitationEditor(template, invitation = null) {
         return {
             groom_name:          details.groom_name          || null,
             groom_nickname:      details.groom_nickname      || null,
+            groom_instagram:     details.groom_instagram     || null,
             bride_name:          details.bride_name          || null,
             bride_nickname:      details.bride_nickname      || null,
+            bride_instagram:     details.bride_instagram     || null,
             groom_parent_names:  details.groom_parent_names  || null,
             bride_parent_names:  details.bride_parent_names  || null,
             opening_text:        details.opening_text        || null,
@@ -624,9 +544,6 @@ export function useInvitationEditor(template, invitation = null) {
         saveStep1,
         saveStep2,
         saveStep3,
-        saveStep4,
-        saveStep5,
-        saveStep6,
 
         // Helpers
         addEvent,

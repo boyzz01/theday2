@@ -20,8 +20,10 @@ class StoreDetailRequest extends FormRequest
         return [
             'groom_name'         => ['nullable', 'string', 'max:255'],
             'groom_nickname'     => ['nullable', 'string', 'max:50'],
+            'groom_instagram'    => ['nullable', 'string', 'max:100'],
             'bride_name'         => ['nullable', 'string', 'max:255'],
             'bride_nickname'     => ['nullable', 'string', 'max:50'],
+            'bride_instagram'    => ['nullable', 'string', 'max:100'],
             'groom_parent_names' => ['nullable', 'string', 'max:255'],
             'bride_parent_names' => ['nullable', 'string', 'max:255'],
             'groom_photo'        => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],

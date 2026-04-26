@@ -82,8 +82,10 @@ class PublicInvitationController extends Controller
                 'details'    => $invitation->details ? [
                     'groom_name'           => $invitation->details->groom_name,
                     'groom_nickname'       => $invitation->details->groom_nickname,
+                    'groom_instagram'      => $invitation->details->groom_instagram,
                     'bride_name'           => $invitation->details->bride_name,
                     'bride_nickname'       => $invitation->details->bride_nickname,
+                    'bride_instagram'      => $invitation->details->bride_instagram,
                     'groom_parent_names'   => $invitation->details->groom_parent_names,
                     'bride_parent_names'   => $invitation->details->bride_parent_names,
                     'groom_photo_url'      => $invitation->details->groom_photo_url,
