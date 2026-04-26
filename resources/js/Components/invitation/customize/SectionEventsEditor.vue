@@ -12,7 +12,8 @@ const errors = ref({})
 
 async function saveEvent(event) {
     saving.value = event.id
-    errors.value = {}
+    const { [event.id]: _, ...rest } = errors.value
+    errors.value = rest
     try {
         await axios.put(`/api/invitations/${props.invitationId}/events/${event.id}`, {
             event_name:    event.event_name,

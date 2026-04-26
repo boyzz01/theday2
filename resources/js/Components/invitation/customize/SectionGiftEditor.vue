@@ -12,7 +12,7 @@ const error  = ref(null)
 const local  = ref(JSON.parse(JSON.stringify(props.modelValue?.accounts ?? [])))
 
 function addAccount() {
-    local.value.push({ bank_name: '', account_number: '', account_name: '' })
+    local.value.push({ bank: '', account_number: '', account_name: '' })
 }
 
 function removeAccount(index) {
@@ -46,7 +46,7 @@ defineExpose({ saveAll })
                 <span class="text-xs font-semibold text-stone-500">Rekening {{ i + 1 }}</span>
                 <button type="button" @click="removeAccount(i)" class="text-xs text-red-400 hover:text-red-600">Hapus</button>
             </div>
-            <input v-model="account.bank_name" type="text" placeholder="Nama bank (mis. BCA)"
+            <input v-model="account.bank" type="text" placeholder="Nama bank (mis. BCA)"
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
             <input v-model="account.account_number" type="text" placeholder="Nomor rekening"
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />

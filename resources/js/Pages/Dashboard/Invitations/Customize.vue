@@ -33,9 +33,6 @@ const activeKey    = ref(
     props.invitation.template_category_slug === STORYBOOK_SLUG ? 'gallery' : 'cover'
 );
 
-const groomName = computed(() => props.invitation.details?.groom_name ?? '—');
-const brideName = computed(() => props.invitation.details?.bride_name ?? '—');
-
 const previewTemplate = computed(() => TEMPLATE_MAP[props.invitation.template_slug] ?? null);
 
 const isStorybook = computed(() =>
@@ -49,6 +46,10 @@ const galleryLayout = ref(
 const galleries    = ref([...(props.invitation.galleries ?? [])])
 const events       = ref([...(props.invitation.events     ?? [])])
 const details      = ref({ ...(props.invitation.details   ?? {}) })
+
+const groomName = computed(() => details.value.groom_name ?? '—');
+const brideName = computed(() => details.value.bride_name ?? '—');
+
 const sectionsData = ref(
     JSON.parse(JSON.stringify(props.invitation.sections ?? {}))
 )
@@ -167,7 +168,8 @@ async function toggleRsvp() {
         if (!sectionsData.value.rsvp) sectionsData.value.rsvp = {}
         sectionsData.value.rsvp.is_enabled = res.data.is_enabled
     } catch {
-        alert('Gagal mengubah RSVP.')
+        // Silently log — RSVP toggle errors are transient and recoverable on next interaction
+        console.error('Failed to toggle RSVP')
     }
 }
 
