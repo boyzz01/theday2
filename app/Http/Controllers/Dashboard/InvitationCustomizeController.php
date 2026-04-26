@@ -32,6 +32,20 @@ class InvitationCustomizeController extends Controller
         $isStorybook = $invitation->template?->category?->slug === 'storybook';
 
         if ($isStorybook) {
+            foreach (['love_story', 'gift', 'rsvp'] as $key) {
+                $invitation->sections()->firstOrCreate(
+                    ['section_key' => $key],
+                    [
+                        'section_type'      => $key,
+                        'label'             => $key,
+                        'is_enabled'        => true,
+                        'is_required'       => false,
+                        'sort_order'        => 0,
+                        'completion_status' => 'empty',
+                        'data_json'         => [],
+                    ]
+                );
+            }
             $invitation->load([
                 'sections' => fn ($q) => $q->whereIn('section_key', ['love_story', 'gift', 'rsvp']),
             ]);
@@ -82,10 +96,19 @@ class InvitationCustomizeController extends Controller
                     ])
                     : null,
                 'music' => $invitation->music->first() ? [
+                    'title'    => $invitation->music->first()->title,
                     'file_url' => $invitation->music->first()->file_url,
                 ] : null,
             ],
             'canUsePremium' => SectionAccess::isPremium($request->user()),
+            'defaultMusic'  => [
+                ['id' => 'canon-d',           'title' => 'Canon in D — Pachelbel',             'file_url' => '/music/Canon-in-D-Pachelbels-Canon-Cell.mp3'],
+                ['id' => 'thousand-years',    'title' => 'A Thousand Years — Christina Perri', 'file_url' => '/music/Brooklyn-Duo-A-Thousand-Years-WE.mp3'],
+                ['id' => 'perfect',           'title' => 'Perfect — Ed Sheeran',               'file_url' => '/music/Perfect-Ed-Sheeran-Wedding-Versi.mp3'],
+                ['id' => 'cant-help',         'title' => "Can't Help Falling in Love — Elvis", 'file_url' => '/music/Elvis-Presley-Cant-Help-Falling.mp3'],
+                ['id' => 'marry-you',         'title' => 'Marry You — Bruno Mars',             'file_url' => '/music/Bruno-Mars-Marry-You-Official-Ly.mp3'],
+                ['id' => 'beautiful-in-white','title' => 'Beautiful In White — Westlife',      'file_url' => '/music/Westlife-Beautiful-in-white-Lyri.mp3'],
+            ],
         ]);
     }
 

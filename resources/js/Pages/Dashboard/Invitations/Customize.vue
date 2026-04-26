@@ -17,6 +17,7 @@ import SectionGiftEditor from '@/Components/invitation/customize/SectionGiftEdit
 const props = defineProps({
     invitation:    { type: Object,  required: true },
     canUsePremium: { type: Boolean, default: false },
+    defaultMusic:  { type: Array,   default: () => [] },
 });
 
 const STORYBOOK_SLUG = 'storybook';
@@ -57,6 +58,65 @@ const modalSection = ref(null)
 const coupleEditorRef = ref(null)
 const giftEditorRef = ref(null)
 
+const music           = ref(props.invitation.music ?? null)
+const musicUploading  = ref(false)
+const musicError      = ref(null)
+const previewingId    = ref(null)
+const previewAudio    = ref(null)
+
+function togglePreview(preset) {
+    if (previewingId.value === preset.id) {
+        previewAudio.value?.pause()
+        previewAudio.value = null
+        previewingId.value = null
+        return
+    }
+    previewAudio.value?.pause()
+    const audio = new Audio(preset.file_url)
+    audio.addEventListener('ended', () => { previewingId.value = null; previewAudio.value = null })
+    audio.play().catch(() => {})
+    previewAudio.value = audio
+    previewingId.value = preset.id
+}
+
+async function uploadMusic(event) {
+    const file = event.target.files[0]
+    if (!file) return
+    musicError.value = null
+    musicUploading.value = true
+    try {
+        const fd = new FormData()
+        fd.append('type', 'upload')
+        fd.append('file', file)
+        const res = await axios.post(`/api/invitations/${props.invitation.id}/music`, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        music.value = { file_url: res.data.data.file_url, title: res.data.data.title }
+    } catch {
+        musicError.value = 'Upload gagal. Coba lagi.'
+    } finally {
+        musicUploading.value = false
+        event.target.value = ''
+    }
+}
+
+async function selectPresetMusic(preset) {
+    musicError.value = null
+    musicUploading.value = true
+    try {
+        const res = await axios.post(`/api/invitations/${props.invitation.id}/music`, {
+            type:     'default',
+            title:    preset.title,
+            file_url: preset.file_url,
+        })
+        music.value = { file_url: res.data.data.file_url, title: res.data.data.title }
+    } catch {
+        musicError.value = 'Gagal memilih musik. Coba lagi.'
+    } finally {
+        musicUploading.value = false
+    }
+}
+
 const previewInvitation = computed(() => ({
     ...props.invitation,
     config: {
@@ -68,6 +128,7 @@ const previewInvitation = computed(() => ({
     events:       events.value,
     details:      details.value,
     sections:     sectionsData.value,
+    music:        music.value,
 }));
 
 // ── Sections config ───────────────────────────────────────────────────────
@@ -85,7 +146,6 @@ const SECTIONS_STORYBOOK = [
     { key: 'events',     label: 'Date & Venue' },
     { key: 'love_story', label: 'Love Story'   },
     { key: 'couple',     label: 'Tentang Kami' },
-    { key: 'rsvp',       label: 'RSVP'         },
     { key: 'gift',       label: 'Hadiah'       },
     { key: 'music',      label: 'Musik'        },
 ]
@@ -180,7 +240,10 @@ function scheduleAutoSave() {
     autoSaveTimer = setTimeout(save, 1500);
 }
 
-onUnmounted(() => clearTimeout(autoSaveTimer));
+onUnmounted(() => {
+    clearTimeout(autoSaveTimer)
+    previewAudio.value?.pause()
+});
 
 // ── Preview scroll-to-section ─────────────────────────────────────────────
 const SECTION_SELECTORS = {
@@ -327,15 +390,55 @@ watch(activeKey, async (key) => {
                                     </div>
                                 </template>
 
-                                <!-- Music: link to edit page -->
+                                <!-- Music: preset picker + uploader -->
                                 <template v-else-if="section.key === 'music'">
-                                    <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
-                                    <Link
-                                        :href="route('dashboard.invitations.edit', invitation.id)"
-                                        class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
-                                    >
-                                        Buka Editor Musik →
-                                    </Link>
+                                    <!-- Active music -->
+                                    <div v-if="music" class="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#92A89C]/40 bg-[#92A89C]/5">
+                                        <span class="text-xs text-stone-600 flex-1 truncate">🎵 {{ music.title ?? 'Musik aktif' }}</span>
+                                        <span class="text-[10px] text-stone-400">aktif</span>
+                                    </div>
+
+                                    <!-- Preset list -->
+                                    <p class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider pt-1">Pilih Lagu</p>
+                                    <div class="space-y-1">
+                                        <div
+                                            v-for="preset in defaultMusic"
+                                            :key="preset.id"
+                                            :class="[
+                                                'flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors',
+                                                music?.title === preset.title
+                                                    ? 'border-[#92A89C] bg-[#92A89C]/10'
+                                                    : 'border-stone-200 bg-white'
+                                            ]"
+                                        >
+                                            <!-- Play/pause preview -->
+                                            <button
+                                                type="button"
+                                                @click="togglePreview(preset)"
+                                                class="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 transition-colors"
+                                            >
+                                                <svg v-if="previewingId === preset.id" viewBox="0 0 24 24" class="w-3 h-3 fill-stone-700"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                                                <svg v-else viewBox="0 0 24 24" class="w-3 h-3 fill-stone-700"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+                                            </button>
+                                            <!-- Title — click to select -->
+                                            <button
+                                                type="button"
+                                                :disabled="musicUploading"
+                                                @click="selectPresetMusic(preset)"
+                                                class="flex-1 text-left text-stone-600 hover:text-stone-800 transition-colors truncate"
+                                            >{{ preset.title }}</button>
+                                            <!-- Active check -->
+                                            <svg v-if="music?.title === preset.title" viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#92A89C] flex-shrink-0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Upload own -->
+                                    <label class="w-full flex items-center justify-center py-2 rounded-xl border-2 border-dashed border-stone-200 text-xs text-stone-500 cursor-pointer hover:border-stone-300 hover:bg-stone-50 transition-colors">
+                                        {{ musicUploading ? 'Mengupload...' : '+ Upload file sendiri (MP3, maks 10MB)' }}
+                                        <input type="file" accept=".mp3,.wav,.ogg,.m4a,.aac" class="sr-only" :disabled="musicUploading" @change="uploadMusic" />
+                                    </label>
+
+                                    <p v-if="musicError" class="text-xs text-red-400">{{ musicError }}</p>
                                 </template>
 
                                 <!-- Other sections: edit button -->
