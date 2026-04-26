@@ -55,13 +55,13 @@ This avoids scroll-within-scroll UX issues on mobile and gives each content type
 
 ```js
 const SECTIONS_STORYBOOK = [
-    { key: 'gallery',    label: 'Galeri',       icon: '🖼️' },
-    { key: 'events',     label: 'Date & Venue',  icon: '📅' },
-    { key: 'love_story', label: 'Love Story',    icon: '📖' },
-    { key: 'couple',     label: 'Tentang Kami',  icon: '💑' },
-    { key: 'rsvp',       label: 'RSVP',          icon: '✅' },
-    { key: 'gift',       label: 'Hadiah',        icon: '🎁' },
-    { key: 'music',      label: 'Musik',         icon: '🎵' },
+    { key: 'gallery',    label: 'Galeri'       },
+    { key: 'events',     label: 'Date & Venue' },
+    { key: 'love_story', label: 'Love Story'   },
+    { key: 'couple',     label: 'Tentang Kami' },
+    { key: 'rsvp',       label: 'RSVP'         },
+    { key: 'gift',       label: 'Hadiah'       },
+    { key: 'music',      label: 'Musik'        },
 ]
 ```
 
