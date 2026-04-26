@@ -12,6 +12,7 @@ import SectionGalleryPhotos from '@/Components/invitation/customize/SectionGalle
 import SectionEventsEditor from '@/Components/invitation/customize/SectionEventsEditor.vue';
 import SectionLoveStoryEditor from '@/Components/invitation/customize/SectionLoveStoryEditor.vue';
 import SectionCoupleEditor from '@/Components/invitation/customize/SectionCoupleEditor.vue';
+import SectionGiftEditor from '@/Components/invitation/customize/SectionGiftEditor.vue';
 
 const props = defineProps({
     invitation:    { type: Object,  required: true },
@@ -53,6 +54,7 @@ const sectionsData = ref(
 )
 const modalSection = ref(null)
 const coupleEditorRef = ref(null)
+const giftEditorRef = ref(null)
 
 const previewInvitation = computed(() => ({
     ...props.invitation,
@@ -407,12 +409,28 @@ watch(activeKey, async (key) => {
                         :model-value="details"
                         @update:model-value="details = $event"
                     />
+                    <SectionGiftEditor
+                        v-else-if="modalSection === 'gift'"
+                        ref="giftEditorRef"
+                        :invitation-id="invitation.id"
+                        :model-value="sectionsData.gift?.data ?? { accounts: [] }"
+                        @update:model-value="sectionsData = { ...sectionsData, gift: { ...sectionsData.gift, data: $event } }"
+                    />
                     <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
 
-                    <template v-if="modalSection === 'couple'" #footer>
+                    <template #footer>
                         <button
+                            v-if="modalSection === 'couple'"
                             type="button"
                             @click="coupleEditorRef?.save()"
+                            class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-all"
+                        >
+                            Simpan
+                        </button>
+                        <button
+                            v-else-if="modalSection === 'gift'"
+                            type="button"
+                            @click="giftEditorRef?.saveAll()"
                             class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-all"
                         >
                             Simpan
