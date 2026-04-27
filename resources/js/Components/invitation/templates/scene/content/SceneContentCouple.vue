@@ -1,70 +1,73 @@
 <!-- resources/js/Components/invitation/templates/scene/content/SceneContentCouple.vue -->
 <script setup>
-defineProps({
-    groomName: { type: String, default: '' },
-    brideName: { type: String, default: '' },
-    details:   { type: Object, default: () => ({}) },
+const DEFAULT_QUOTE = 'Dua insan yang dipertemukan, kini melangkah bersama menuju kebahagiaan.'
+
+const props = defineProps({
+    groomName:   { type: String, default: '' },
+    brideName:   { type: String, default: '' },
+    details:     { type: Object, default: () => ({}) },
+    quote:       { type: Object, default: () => ({}) },
+    coupleOrder: { type: String, default: 'groom_first' },
 })
 </script>
 
 <template>
     <div class="couple-wrap">
-        <p v-if="details.quote || details.opening_text" class="opening-text">
-            {{ details.quote || details.opening_text }}
-        </p>
+        <div class="opening-quote">
+            <p class="opening-text">{{ quote?.text?.trim() || DEFAULT_QUOTE }}</p>
+            <p v-if="quote?.source?.trim()" class="opening-source">{{ quote.source }}</p>
+        </div>
 
-        <!-- Groom -->
+        <!-- Person A (groom_first → groom, bride_first → bride) -->
         <div class="person-card">
             <div class="person-photo">
                 <img
-                    v-if="details.groom_photo_url"
-                    :src="details.groom_photo_url"
-                    :alt="groomName"
+                    v-if="coupleOrder === 'bride_first' ? details.bride_photo_url : details.groom_photo_url"
+                    :src="coupleOrder === 'bride_first' ? details.bride_photo_url : details.groom_photo_url"
+                    :alt="coupleOrder === 'bride_first' ? brideName : groomName"
                 />
                 <div v-else class="photo-placeholder">👤</div>
             </div>
             <div class="person-info">
-                <span class="person-role">The Groom</span>
-                <h3 class="person-name">{{ groomName }}</h3>
-                <p v-if="details.groom_parent_names" class="person-parents">
-                    Putra dari {{ details.groom_parent_names }}
+                <span class="person-role">{{ coupleOrder === 'bride_first' ? 'The Bride' : 'The Groom' }}</span>
+                <h3 class="person-name">{{ coupleOrder === 'bride_first' ? brideName : groomName }}</h3>
+                <p v-if="coupleOrder === 'bride_first' ? details.bride_parent_names : details.groom_parent_names" class="person-parents">
+                    {{ coupleOrder === 'bride_first' ? 'Putri' : 'Putra' }} dari
+                    {{ coupleOrder === 'bride_first' ? details.bride_parent_names : details.groom_parent_names }}
                 </p>
                 <a
-                    v-if="details.groom_instagram"
-                    :href="`https://instagram.com/${details.groom_instagram}`"
-                    target="_blank"
-                    rel="noopener"
-                    class="person-ig"
-                >@{{ details.groom_instagram }}</a>
+                    v-if="coupleOrder === 'bride_first' ? details.bride_instagram : details.groom_instagram"
+                    :href="`https://instagram.com/${coupleOrder === 'bride_first' ? details.bride_instagram : details.groom_instagram}`"
+                    target="_blank" rel="noopener" class="person-ig"
+                >@{{ coupleOrder === 'bride_first' ? details.bride_instagram : details.groom_instagram }}</a>
             </div>
         </div>
 
         <!-- Divider -->
         <div class="couple-divider">&</div>
 
-        <!-- Bride -->
+        <!-- Person B -->
         <div class="person-card">
             <div class="person-photo">
                 <img
-                    v-if="details.bride_photo_url"
-                    :src="details.bride_photo_url"
-                    :alt="brideName"
+                    v-if="coupleOrder === 'bride_first' ? details.groom_photo_url : details.bride_photo_url"
+                    :src="coupleOrder === 'bride_first' ? details.groom_photo_url : details.bride_photo_url"
+                    :alt="coupleOrder === 'bride_first' ? groomName : brideName"
                 />
                 <div v-else class="photo-placeholder">👤</div>
             </div>
             <div class="person-info">
-                <span class="person-role">The Bride</span>
-                <h3 class="person-name">{{ brideName }}</h3>
-                <p v-if="details.bride_parent_names" class="person-parents">
-                    Putri dari {{ details.bride_parent_names }}
+                <span class="person-role">{{ coupleOrder === 'bride_first' ? 'The Groom' : 'The Bride' }}</span>
+                <h3 class="person-name">{{ coupleOrder === 'bride_first' ? groomName : brideName }}</h3>
+                <p v-if="coupleOrder === 'bride_first' ? details.groom_parent_names : details.bride_parent_names" class="person-parents">
+                    {{ coupleOrder === 'bride_first' ? 'Putra' : 'Putri' }} dari
+                    {{ coupleOrder === 'bride_first' ? details.groom_parent_names : details.bride_parent_names }}
                 </p>
                 <a
-                    v-if="details.bride_instagram"
-                    :href="`https://instagram.com/${details.bride_instagram}`"
-                    target="_blank"
-                    rel="noopener"
-                    class="person-ig"
-                >@{{ details.bride_instagram }}</a>
+                    v-if="coupleOrder === 'bride_first' ? details.groom_instagram : details.bride_instagram"
+                    :href="`https://instagram.com/${coupleOrder === 'bride_first' ? details.groom_instagram : details.bride_instagram}`"
+                    target="_blank" rel="noopener" class="person-ig"
+                >@{{ coupleOrder === 'bride_first' ? details.groom_instagram : details.bride_instagram }}</a>
             </div>
         </div>
 
@@ -79,14 +82,24 @@ defineProps({
     padding-bottom: 16px;
 }
 
+.opening-quote {
+    padding:     4px 8px 16px;
+    text-align:  center;
+}
+
 .opening-text {
     font-size:   12px;
     color:       #888;
     font-style:  italic;
-    text-align:  center;
     line-height: 1.6;
-    padding:     4px 8px 16px;
     white-space: pre-line;
+    margin:      0;
+}
+
+.opening-source {
+    font-size:   11px;
+    color:       #aaa;
+    margin-top:  6px;
 }
 
 /* ── Person card ── */

@@ -44,6 +44,17 @@ const galleryLayout = ref(
     props.invitation.config?.gallery_layout ?? 'polaroid'
 )
 
+const coupleOrder = ref(
+    props.invitation.config?.couple_order ?? 'groom_first'
+)
+
+async function saveCoupleOrder(order) {
+    coupleOrder.value = order;
+    await axios.put(`/api/invitations/${props.invitation.id}`, {
+        custom_config: { couple_order: order },
+    });
+}
+
 const galleries    = ref([...(props.invitation.galleries ?? [])])
 const events       = ref([...(props.invitation.events     ?? [])])
 const details      = ref({ ...(props.invitation.details   ?? {}) })
@@ -52,7 +63,10 @@ const groomName = computed(() => details.value.groom_name ?? '—');
 const brideName = computed(() => details.value.bride_name ?? '—');
 
 const sectionsData = ref(
-    JSON.parse(JSON.stringify(props.invitation.sections ?? {}))
+    JSON.parse(JSON.stringify({
+        quote: { data: { text: '', source: '' }, is_enabled: true },
+        ...props.invitation.sections ?? {},
+    }))
 )
 const modalSection = ref(null)
 const coupleEditorRef = ref(null)
@@ -123,6 +137,7 @@ const previewInvitation = computed(() => ({
         ...props.invitation.config,
         section_backgrounds: form.value,
         gallery_layout:      galleryLayout.value,
+        couple_order:        coupleOrder.value,
     },
     galleries:    galleries.value,
     events:       events.value,
@@ -135,6 +150,7 @@ const previewInvitation = computed(() => ({
 const SECTIONS_REGULAR = [
     { key: 'cover',   label: 'Cover'   },
     { key: 'opening', label: 'Opening' },
+    { key: 'quote',   label: 'Kutipan' },
     { key: 'events',  label: 'Acara'   },
     { key: 'gallery', label: 'Galeri'  },
     { key: 'music',   label: 'Musik'   },
@@ -142,12 +158,13 @@ const SECTIONS_REGULAR = [
 ]
 
 const SECTIONS_STORYBOOK = [
-    { key: 'gallery',    label: 'Galeri'       },
-    { key: 'events',     label: 'Date & Venue' },
-    { key: 'love_story', label: 'Love Story'   },
-    { key: 'couple',     label: 'Tentang Kami' },
-    { key: 'gift',       label: 'Hadiah'       },
-    { key: 'music',      label: 'Musik'        },
+    { key: 'gallery',    label: 'Galeri'        },
+    { key: 'events',     label: 'Date & Venue'  },
+    { key: 'love_story', label: 'Love Story'    },
+    { key: 'couple',     label: 'Tentang Kami'  },
+    { key: 'gift',       label: 'Hadiah'        },
+    { key: 'quote',      label: 'Kutipan'       },
+    { key: 'music',      label: 'Musik'         },
 ]
 
 const sections = computed(() =>
@@ -192,7 +209,10 @@ async function save() {
             ? { gallery_layout: galleryLayout.value }
             : { section_backgrounds: form.value }
 
-        await axios.post(`/dashboard/invitations/${props.invitation.id}/customize`, payload);
+        await Promise.all([
+            axios.post(`/dashboard/invitations/${props.invitation.id}/customize`, payload),
+            saveQuote(),
+        ]);
         saveStatus.value = 'saved';
     } catch {
         saveStatus.value = 'error';
@@ -242,6 +262,7 @@ function scheduleAutoSave() {
 
 onUnmounted(() => {
     clearTimeout(autoSaveTimer)
+    clearTimeout(quoteTimer)
     previewAudio.value?.pause()
 });
 
@@ -254,6 +275,21 @@ const SECTION_SELECTORS = {
     closing: '.pearl-closing, .n-closing',
     music:   null,
 };
+
+async function saveQuote() {
+    const data = sectionsData.value.quote?.data ?? {};
+    await axios.patch(`/api/invitations/${props.invitation.id}/sections/quote`, {
+        data,
+        status: data.text?.trim() ? 'complete' : 'empty',
+        is_enabled: true,
+    });
+}
+
+let quoteTimer = null;
+function scheduleQuoteSave() {
+    clearTimeout(quoteTimer);
+    quoteTimer = setTimeout(saveQuote, 1500);
+}
 
 watch(galleryLayout, () => scheduleAutoSave())
 
@@ -309,7 +345,7 @@ watch(activeKey, async (key) => {
 
                 <!-- Mobile preview panel -->
                 <div v-if="activeTab === 'preview'" class="lg:hidden flex-1 flex items-center justify-center bg-stone-100 p-6 overflow-y-auto">
-                    <PhoneMockup screen-bg="#111">
+                    <PhoneMockup screen-bg="#111" :scrollable="!isStorybook">
                         <component
                             v-if="previewTemplate"
                             :is="previewTemplate"
@@ -324,7 +360,7 @@ watch(activeKey, async (key) => {
                 </div>
 
                 <!-- Section accordion -->
-                <div :class="['flex-1 overflow-y-auto divide-y divide-stone-50', activeTab === 'preview' ? 'hidden lg:block' : '']">
+                <div :class="['flex-1 overflow-y-auto divide-y divide-stone-50 pb-20 lg:pb-0', activeTab === 'preview' ? 'hidden lg:block' : '']">
                     <div v-for="section in sections" :key="section.key">
 
                         <!-- Row button -->
@@ -354,8 +390,21 @@ watch(activeKey, async (key) => {
                             <!-- ── Storybook sections ─────────────────────── -->
                             <template v-if="isStorybook">
 
+                                <!-- Cover: background control -->
+                                <template v-if="section.key === 'cover'">
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
+                                    <SectionBgControl
+                                        :model-value="form['cover']"
+                                        section-key="cover"
+                                        :invitation-id="invitation.id"
+                                        :uploading="uploadingKey === 'cover'"
+                                        @update:model-value="(bg) => { onBgChange('cover', bg); scheduleAutoSave(); }"
+                                        @upload="(file) => uploadBg('cover', file).then(ok => ok && scheduleAutoSave())"
+                                    />
+                                </template>
+
                                 <!-- Gallery: layout picker + edit photos button -->
-                                <template v-if="section.key === 'gallery'">
+                                <template v-else-if="section.key === 'gallery'">
                                     <GalleryLayoutPicker
                                         :model-value="galleryLayout"
                                         @update:model-value="galleryLayout = $event"
@@ -441,6 +490,60 @@ watch(activeKey, async (key) => {
                                     <p v-if="musicError" class="text-xs text-red-400">{{ musicError }}</p>
                                 </template>
 
+                                <!-- Couple: order toggle + edit button -->
+                                <template v-else-if="section.key === 'couple'">
+                                    <div class="flex items-center justify-between py-1">
+                                        <span class="text-sm text-stone-600">Nama wanita duluan</span>
+                                        <button
+                                            type="button"
+                                            @click="saveCoupleOrder(coupleOrder === 'bride_first' ? 'groom_first' : 'bride_first')"
+                                            :class="[
+                                                'w-10 h-6 rounded-full transition-colors relative flex-shrink-0',
+                                                coupleOrder === 'bride_first' ? 'bg-[#92A89C]' : 'bg-stone-200'
+                                            ]"
+                                        >
+                                            <span :class="[
+                                                'block w-4 h-4 bg-white rounded-full absolute top-1 transition-transform',
+                                                coupleOrder === 'bride_first' ? 'translate-x-5' : 'translate-x-1'
+                                            ]" />
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="openModal('couple')"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <span>Edit Tentang Kami</span>
+                                        <span class="text-stone-400">→</span>
+                                    </button>
+                                </template>
+
+                                <!-- Quote: inline inputs -->
+                                <template v-else-if="section.key === 'quote'">
+                                    <div class="space-y-2 pt-1">
+                                        <div class="space-y-1.5">
+                                            <label class="block text-xs font-medium text-stone-500">Teks Kutipan</label>
+                                            <textarea
+                                                v-model="sectionsData.quote.data.text"
+                                                rows="3"
+                                                placeholder="Tuliskan kutipan atau ayat yang bermakna..."
+                                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent resize-none transition"
+                                                @input="scheduleQuoteSave"
+                                            />
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="block text-xs font-medium text-stone-500">Sumber <span class="font-normal text-stone-400">(opsional)</span></label>
+                                            <input
+                                                v-model="sectionsData.quote.data.source"
+                                                type="text"
+                                                placeholder="— QS. Ar-Rum: 21"
+                                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
+                                                @input="scheduleQuoteSave"
+                                            />
+                                        </div>
+                                    </div>
+                                </template>
+
                                 <!-- Other sections: edit button -->
                                 <template v-else>
                                     <button
@@ -457,7 +560,33 @@ watch(activeKey, async (key) => {
 
                             <!-- ── Regular template sections ─────────────── -->
                             <template v-else>
-                                <template v-if="section.key !== 'music'">
+                                <!-- Quote: inline text + source inputs -->
+                                <template v-if="section.key === 'quote'">
+                                    <div class="space-y-2 pt-1">
+                                        <div class="space-y-1.5">
+                                            <label class="block text-xs font-medium text-stone-500">Teks Kutipan</label>
+                                            <textarea
+                                                v-model="sectionsData.quote.data.text"
+                                                rows="3"
+                                                placeholder="Tuliskan kutipan atau ayat yang bermakna..."
+                                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent resize-none transition"
+                                                @input="scheduleQuoteSave"
+                                            />
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="block text-xs font-medium text-stone-500">Sumber <span class="font-normal text-stone-400">(opsional)</span></label>
+                                            <input
+                                                v-model="sectionsData.quote.data.source"
+                                                type="text"
+                                                placeholder="— QS. Ar-Rum: 21"
+                                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
+                                                @input="scheduleQuoteSave"
+                                            />
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template v-else-if="section.key !== 'music'">
                                     <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
                                     <SectionBgControl
                                         :model-value="form[section.key]"
@@ -543,8 +672,23 @@ watch(activeKey, async (key) => {
                     </template>
                 </ContentModal>
 
-                <!-- Footer: Save -->
-                <div :class="['px-5 py-4 border-t border-stone-100 flex items-center gap-3', activeTab === 'preview' ? 'hidden lg:flex' : '']">
+                <!-- Footer: Save — desktop -->
+                <div :class="['hidden lg:flex px-5 py-4 border-t border-stone-100 items-center gap-3', activeTab === 'preview' ? 'lg:flex' : '']">
+                    <button
+                        type="button"
+                        @click="save"
+                        :disabled="saveStatus === 'saving'"
+                        class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 disabled:opacity-60 transition-all"
+                    >
+                        {{ saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan' }}
+                    </button>
+                    <span v-if="saveStatus === 'saved'" class="text-xs text-emerald-500 font-medium">✓ Tersimpan</span>
+                    <span v-if="saveStatus === 'error'"  class="text-xs text-red-400 font-medium">Gagal simpan</span>
+                </div>
+
+                <!-- Footer: Save — mobile fixed bottom bar -->
+                <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-100 px-4 py-3 flex items-center gap-3"
+                     style="padding-bottom: max(12px, env(safe-area-inset-bottom))">
                     <button
                         type="button"
                         @click="save"
@@ -560,7 +704,7 @@ watch(activeKey, async (key) => {
 
             <!-- ── Right: Live preview (desktop only) ────────────── -->
             <div class="hidden lg:flex flex-1 items-center justify-center bg-stone-100 p-8">
-                <PhoneMockup screen-bg="#111">
+                <PhoneMockup screen-bg="#111" :scrollable="!isStorybook">
                     <component
                         v-if="previewTemplate"
                         :is="previewTemplate"

@@ -64,15 +64,19 @@ class InvitationCustomizeController extends Controller
                 'template_category_slug'  => $invitation->template?->category?->slug,
                 'config'                  => $config,
                 'details'       => $invitation->details ? [
-                    'groom_name'       => $invitation->details->groom_name,
-                    'groom_nickname'   => $invitation->details->groom_nickname,
-                    'groom_instagram'  => $invitation->details->groom_instagram,
-                    'bride_name'       => $invitation->details->bride_name,
-                    'bride_nickname'   => $invitation->details->bride_nickname,
-                    'bride_instagram'  => $invitation->details->bride_instagram,
-                    'opening_text'     => $invitation->details->opening_text,
-                    'closing_text'     => $invitation->details->closing_text,
-                    'cover_photo_url'  => $invitation->details->cover_photo_url,
+                    'groom_name'         => $invitation->details->groom_name,
+                    'groom_nickname'     => $invitation->details->groom_nickname,
+                    'groom_instagram'    => $invitation->details->groom_instagram,
+                    'groom_parent_names' => $invitation->details->groom_parent_names,
+                    'groom_photo_url'    => $invitation->details->groom_photo_url,
+                    'bride_name'         => $invitation->details->bride_name,
+                    'bride_nickname'     => $invitation->details->bride_nickname,
+                    'bride_instagram'    => $invitation->details->bride_instagram,
+                    'bride_parent_names' => $invitation->details->bride_parent_names,
+                    'bride_photo_url'    => $invitation->details->bride_photo_url,
+                    'opening_text'       => $invitation->details->opening_text,
+                    'closing_text'       => $invitation->details->closing_text,
+                    'cover_photo_url'    => $invitation->details->cover_photo_url,
                 ] : null,
                 'events'    => $invitation->events->map(fn ($e) => [
                     'id'                   => $e->id,
@@ -91,12 +95,10 @@ class InvitationCustomizeController extends Controller
                     'id'        => $g->id,
                     'image_url' => $g->image_url,
                 ])->values(),
-                'sections' => $isStorybook
-                    ? $invitation->sections->keyBy('section_key')->map(fn ($s) => [
-                        'data'       => $s->data_json ?? [],
-                        'is_enabled' => $s->is_enabled,
-                    ])
-                    : null,
+                'sections' => $invitation->sections->keyBy('section_key')->map(fn ($s) => [
+                    'data'       => $s->data_json ?? [],
+                    'is_enabled' => $s->is_enabled,
+                ]),
                 'music' => $invitation->music->first() ? [
                     'title'    => $invitation->music->first()->title,
                     'file_url' => $invitation->music->first()->file_url,

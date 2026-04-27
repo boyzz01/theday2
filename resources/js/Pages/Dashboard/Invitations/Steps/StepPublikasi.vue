@@ -195,17 +195,18 @@ function goToDashboard() {
                         Salin
                     </button>
                 </div>
-                <a v-if="isStorybook && invitationId"
-                   :href="route('dashboard.invitations.customize', { invitation: invitationId })"
-                   class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all inline-block text-center"
-                   style="background-color: #92A89C">
-                    Kustomisasi Undangan →
-                </a>
-                <button v-else @click="goToDashboard"
-                        class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
-                        style="background-color: #92A89C">
-                    Kembali ke Dashboard
-                </button>
+                <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                    <a v-if="invitationId"
+                       :href="route('dashboard.invitations.customize', { invitation: invitationId })"
+                       class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all inline-block text-center"
+                       style="background-color: #92A89C">
+                        Kustomisasi Undangan →
+                    </a>
+                    <button @click="goToDashboard"
+                            class="px-5 py-2 rounded-xl text-sm font-semibold text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all">
+                        Ke Dashboard
+                    </button>
+                </div>
             </div>
         </Transition>
 
@@ -407,15 +408,17 @@ function goToDashboard() {
                             </svg>
                             Publikasikan Sekarang
                         </button>
-                        <div
-                            v-else
-                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50"
+                        <a
+                            v-else-if="invitationId"
+                            :href="route('dashboard.invitations.customize', { invitation: invitationId })"
+                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white transition-all"
+                            style="background-color: #92A89C"
                         >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                             </svg>
-                            Sudah Dipublikasikan
-                        </div>
+                            Kustomisasi Undangan
+                        </a>
                     </div>
                 </div>
             </SectionAccordionCard>

@@ -101,7 +101,9 @@ const visibleHotspots = computed(() =>
             v-if="!gateOpen"
             class="scene-cover"
             :style="{
-                backgroundImage: `url(${sceneConfig.background}), ${sceneConfig.fallbackBg}`,
+                backgroundImage: invitation.config?.section_backgrounds?.cover?.type === 'image' && invitation.config.section_backgrounds.cover.value
+                    ? `url(${invitation.config.section_backgrounds.cover.value}), ${sceneConfig.fallbackBg}`
+                    : `url(${sceneConfig.background}), ${sceneConfig.fallbackBg}`,
             }"
             @click="triggerGate"
         >
@@ -200,6 +202,8 @@ const visibleHotspots = computed(() =>
                 :groomName="groomName"
                 :brideName="brideName"
                 :details="details"
+                :quote="sectionData('quote')"
+                :couple-order="props.invitation.config?.couple_order ?? 'groom_first'"
             />
             <SceneContentLoveStory
                 v-else-if="activeSection === 'love_story'"

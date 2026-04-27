@@ -23,7 +23,10 @@ async function save() {
     error.value  = null
     try {
         const fd = new FormData()
-        const fields = ['groom_name','groom_nickname','bride_name','bride_nickname']
+        const fields = [
+            'groom_name','groom_nickname','groom_instagram','groom_parent_names',
+            'bride_name','bride_nickname','bride_instagram','bride_parent_names',
+        ]
         fields.forEach(f => { if (form.value[f] != null) fd.append(f, form.value[f]) })
         if (groomPhotoFile.value) fd.append('groom_photo', groomPhotoFile.value)
         if (bridePhotoFile.value) fd.append('bride_photo', bridePhotoFile.value)
@@ -56,6 +59,13 @@ defineExpose({ save })
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
             <input v-model="form.groom_nickname" type="text" placeholder="Nama panggilan"
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">@</span>
+                <input v-model="form.groom_instagram" type="text" placeholder="username instagram"
+                    class="w-full pl-7 pr-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
+            </div>
+            <input v-model="form.groom_parent_names" type="text" placeholder="Nama orang tua"
+                class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
             <label class="flex items-center gap-2 cursor-pointer">
                 <img v-if="form.groom_photo_url" :src="form.groom_photo_url" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                 <div v-else class="w-10 h-10 rounded-full bg-stone-100 flex-shrink-0" />
@@ -70,6 +80,13 @@ defineExpose({ save })
             <input v-model="form.bride_name" type="text" placeholder="Nama lengkap"
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
             <input v-model="form.bride_nickname" type="text" placeholder="Nama panggilan"
+                class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">@</span>
+                <input v-model="form.bride_instagram" type="text" placeholder="username instagram"
+                    class="w-full pl-7 pr-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
+            </div>
+            <input v-model="form.bride_parent_names" type="text" placeholder="Nama orang tua"
                 class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-[#92A89C]" />
             <label class="flex items-center gap-2 cursor-pointer">
                 <img v-if="form.bride_photo_url" :src="form.bride_photo_url" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
