@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(prepend: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
             \App\Http\Middleware\StagingBasicAuth::class,
         ]);
 
@@ -41,4 +42,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             return redirect('/');
         });
+
     })->create();
