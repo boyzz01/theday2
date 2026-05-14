@@ -11,7 +11,7 @@
 A premium wedding invitation template featuring a scroll/tap-controlled 3D cinematic camera walk through a wedding venue. As the guest navigates, the camera moves along a predefined path pausing at N stops to reveal invitation info cards. Available in 3 scene variants: Garden, Beach, Chapel.
 
 **Desktop:** invitation rendered inside a phone-frame (~390px) centered on dark background.
-**Mobile:** fullscreen, native window scroll (no redundant phone frame).
+**Mobile:** fullscreen, tap navigation (Instagram Story-style).
 
 ---
 
@@ -21,90 +21,149 @@ A premium wedding invitation template featuring a scroll/tap-controlled 3D cinem
 |----------|--------|--------|
 | 3D library | TresJS + Three.js | Vue-native, declarative, reactive |
 | Asset format | GLTF/GLB + Draco (geometry) + KTX2/Basis (textures) | Geometry -50%, textures -70% size |
-| Navigation driver | Scroll (desktop) / Tap (mobile) | Avoids iOS scroll quirks on mobile |
-| Camera path | CatmullRomCurve3 | Smooth interpolation |
-| Desktop layout | Phone frame centered, dark bg | Cinematic feel, simplifies viewport |
-| Mobile layout | Fullscreen + window scroll | No frame, no bouncy overscroll issues |
+| Navigation — desktop | Scroll on phone-frame container | Clean, no iOS quirks |
+| Navigation — mobile | Tap left/right (Instagram Story style) | Avoids address-bar clientHeight jumps |
+| Camera path | CatmullRomCurve3 per variant | Smooth interpolation, per-scene waypoints |
+| Desktop layout | Phone frame centered, dark bg | Cinematic feel |
+| Mobile layout | Fullscreen, no phone frame | No redundant wrapper |
 | Info cards | HTML Vue overlay (not 3D) | Accessible, easy to style |
-| Stops | N-stop array (not hardcoded 4) | Extensible without rewrite |
-| SSR | `<ClientOnly>` wrapper around TresCanvas | TresJS crashes server-side |
+| Stops | N-stop array **per scene variant** | Each variant has own waypoints |
+| Mobile animation | GSAP tween, duration 1.8s, power2.inOut, overwrite:true | Cinematic, not teleport |
+| Info card trigger — desktop | Range ±10% from stop.scrollPct | Continuous scroll |
+| Info card trigger — mobile | `currentStop === stop.index` | Discrete tap nav |
+| SSR | `<ClientOnly>` wrapper around `CinematicTemplate3D` | TresJS crashes server-side |
+| OG image | Pre-rendered 3D snapshot per variant + Canvas API overlay | No Puppeteer, handles 3D visuals |
+| AudioContext | Not created in v1 | Safari warns unused context; defer to v2 |
 
 ---
 
 ## Entry Gate: "Buka Undangan"
 
-Before the cinematic walk begins, user sees an entry screen:
-
-- Cover photo (blurred), couple name, wedding date
-- Single CTA button: **"Buka Undangan"**
-- On tap: initializes AudioContext (future-proof for BGM), resets scroll to 0, fades into 3D scene
-- This screen doubles as the **loading screen** — GLTF loads in background while user sees this
+Dual-purpose: loading screen + entry gesture.
 
 ```
-[blurred cover photo]
-  Andi & Budi
-  12 Juni 2026
-  [Buka Undangan ▶]
-  [loading bar — fills as GLTF loads]
+┌────────────────────────────┐
+│  [blurred cover photo]     │
+│                            │
+│    Andi & Budi             │
+│    12 Juni 2026            │
+│                            │
+│  [ Buka Undangan ▶ ]       │
+│  [████████░░░░ 65%]        │  ← loading bar
+└────────────────────────────┘
 ```
 
-Loading bar shows real progress via `GLTFLoader` progress callback. Button enabled only when load completes. First impression is always the cover photo, never a black frame.
+- GLTF + KTX2 textures + HDRI all load in background while user sees this screen
+- Loading bar aggregates progress from all loaders (weighted: GLTF 60%, textures 30%, HDRI 10%)
+- Button enabled only when all assets loaded
+- On tap: resets scroll/stop to 0, fades into 3D scene. AudioContext **not** created here (v2)
+- First impression is always the cover photo, never a black frame
 
 ---
 
-## Navigation: Scroll vs Tap
+## First-Time UX Hint
+
+On stop 0, after `EntryGate` fades out, show tap hint for 3 seconds then fade:
+
+```
+← tap     tap →
+  [ ○ ○ ○ ○ ]    ← progress dots
+```
+
+Arrow animation pulses left/right. Dismissed after 3s or first tap. Flag stored in `localStorage('cinematic-hint-seen')` — never shown again after first visit.
+
+---
+
+## Navigation
 
 ### Desktop
-- Scroll on phone-frame container drives `scrollProgress`
-- No iOS bounce issues (desktop browser)
+- `overflow-y: scroll` on phone-frame container
+- `useCinematicNavigation` listens to container's `scroll` event
+- `scrollProgress = scrollTop / (scrollHeight - clientHeight)`
 
 ### Mobile
-- **Tap navigation** (Instagram Story style): tap right half → next stop, tap left half → prev stop
-- No scroll at all on mobile — avoids address bar show/hide `clientHeight` jump
-- Progress indicator: dot indicators at top (like story progress bar)
-- Swipe gesture also supported as progressive enhancement
+- Fullscreen, no phone frame
+- Tap right half → `goNext()`, tap left half → `goPrev()`
+- Swipe (touchstart→touchend delta) also triggers next/prev
+- Progress: `MobileProgressDots` at top — **wrapped in a semi-transparent pill backdrop** to stay visible against any scene color (bright garden sky or dark chapel interior)
 
-### Shared composable
+### Mobile animation
 ```ts
-// composables/useCinematicNavigation.ts
-const currentStop = ref(0)         // 0 to stops.length-1
-const scrollProgress = ref(0)      // 0–1, interpolated between stops
-const isMobile = computed(() => window.innerWidth < 768)
-
-// Desktop: listen to container scroll → compute scrollProgress
-// Mobile: expose goNext() / goPrev() → animate scrollProgress
-```
-
----
-
-## N-Stop Architecture
-
-Stops are a **data array**, not hardcoded components. Future stops can be added by appending to the array — no code changes needed.
-
-```ts
-interface CinematicStop {
-  scrollPct: number        // 0–1, position on path
-  cameraPos: Vector3
-  lookAt: Vector3
-  card: {
-    component: string      // 'WelcomeCard' | 'StoryCard' | 'EventCard' | 'RsvpCard' | ...
-    props: Record<string, unknown>
-  }
+const tweenToStop = (targetIdx: number) => {
+  gsap.to(scrollProgress, {
+    value: stops[targetIdx].scrollPct,
+    duration: 1.8,
+    ease: 'power2.inOut',
+    overwrite: true,   // rapid taps cancel previous tween, never stack
+  })
+  currentStop.value = targetIdx
 }
 ```
 
-**v1 stops (4):**
+### Composable
+```ts
+// composables/useCinematicNavigation.ts
+const currentStop    = ref(0)    // 0 to stops.length-1
+const scrollProgress = ref(0)    // 0–1
+const isMobile       = computed(() => window.innerWidth < 768)
+// Desktop → scroll listener
+// Mobile  → goNext() / goPrev() → tweenToStop()
+```
 
-| # | scrollPct | Location | Card |
-|---|-----------|----------|------|
-| 0 | 0.00 | Gerbang | WelcomeCard — nama pasangan, tanggal |
-| 1 | 0.30 | Taman | StoryCard — kisah pasangan |
-| 2 | 0.65 | Aisle | EventCard — waktu, tempat |
-| 3 | 1.00 | Altar | RsvpCard — RSVP + pesan doa |
+---
 
-Info card visible when `Math.abs(scrollProgress - stop.scrollPct) < 0.10` (±10%, not ±5%).
+## N-Stop Architecture (per variant)
 
-**`InfoCard.vue`** is a single component with a `variant` prop that switches layout/content — not 4 separate components.
+Stops are owned by each scene variant — waypoints differ per environment.
+
+```ts
+interface CinematicStop {
+  index:     number
+  slug:      string            // unique per variant — enforced at runtime (dev warning)
+  scrollPct: number            // 0–1
+  cameraPos: Vector3
+  lookAt:    Vector3
+  card: {
+    component: string          // 'WelcomeCard' | 'StoryCard' | 'EventCard' | 'RsvpCard' | ...
+    props:     Record<string, unknown>
+  }
+}
+
+interface SceneVariant {
+  key:   'garden' | 'beach' | 'chapel'
+  gltf:  string                // path to .glb
+  stops: CinematicStop[]
+  lighting: LightingConfig
+}
+```
+
+**Threshold auto-generated** from stop positions — no magic numbers:
+```ts
+function getThreshold(stops: CinematicStop[], index: number): number {
+  const prev = stops[index - 1]?.scrollPct ?? 0
+  const next = stops[index + 1]?.scrollPct ?? 1
+  const curr = stops[index].scrollPct
+  return Math.min(curr - prev, next - curr) / 2
+}
+```
+
+**v1 stops per variant (all 4 stops, different cameraPos/lookAt):**
+
+| # | slug | scrollPct | Card |
+|---|------|-----------|------|
+| 0 | welcome | 0.00 | WelcomeCard — nama pasangan, tanggal |
+| 1 | story | 0.30 | StoryCard — kisah pasangan |
+| 2 | event | 0.65 | EventCard — waktu, tempat |
+| 3 | rsvp | 1.00 | RsvpCard — RSVP + doa |
+
+Beach variant: no "gerbang" stop — stop 0 starts at shoreline entrance.
+Slug uniqueness validated at runtime with `console.warn` in dev mode.
+
+**Info card visibility:**
+- Desktop: `Math.abs(scrollProgress - stop.scrollPct) < threshold` (continuous)
+- Mobile: `currentStop === stop.index` (discrete)
+
+**`InfoCard.vue`**: single component, `variant` prop switches layout — not 4 separate components.
 
 ---
 
@@ -112,123 +171,134 @@ Info card visible when `Math.abs(scrollProgress - stop.scrollPct) < 0.10` (±10%
 
 ```
 Invitation/Show.vue
-└── <ClientOnly>                          ← SSR safety
+└── <ClientOnly>
     └── CinematicTemplate3D.vue
-        ├── EntryGate.vue                 ← loading screen + "Buka Undangan"
-        ├── PhoneFrame.vue (desktop only) ← 390px frame, dark bg
-        │   ├── TresCanvas
-        │   │   ├── CameraRig.vue         ← scrollProgress → curve.getPointAt()
-        │   │   │                           + head bob: pos.y += sin(t*80)*0.025
-        │   │   ├── SceneEnvironment.vue  ← GLTF per variant
-        │   │   └── SceneLighting.vue     ← HDRI + per-variant light config
-        │   └── InfoCardOverlay.vue       ← absolute overlay
-        │       └── InfoCard.vue          ← variant prop, appears at stops
-        ├── MobileProgressDots.vue        ← mobile-only, top story-style dots
-        └── ReducedMotionFallback.vue     ← static snapshots, no animation
+        ├── EntryGate.vue                  ← loading + "Buka Undangan" + progress bar
+        ├── TapHint.vue                    ← first-time UX hint, localStorage flag
+        ├── PhoneFrame.vue (desktop only)  ← 390px centered, config.bg_style
+        │   └── SceneContainer.vue         ← shared by desktop (inside frame) + mobile (fullscreen)
+        │       ├── TresCanvas
+        │       │   ├── CameraRig.vue      ← scrollProgress → curve.getPointAt() + head bob
+        │       │   ├── SceneEnvironment.vue ← GLTF per variant, onBeforeUnmount: dispose()
+        │       │   └── SceneLighting.vue  ← per-variant HDRI + lights
+        │       └── InfoCardOverlay.vue
+        │           └── InfoCard.vue       ← variant prop, desktop range / mobile index trigger
+        └── MobileProgressDots.vue         ← mobile only, pill backdrop, top of screen
+```
+
+---
+
+## Fallback Decision Tree
+
+```
+App loads
+  └── WebGL supported?
+        ├── NO  → render standard 2D template (existing InvitationRenderer)
+        └── YES → prefers-reduced-motion?
+                    ├── YES → ReducedMotionFallback: static scene snapshots per stop,
+                    │         tap/scroll jumps directly (no camera animation), no head bob
+                    └── NO  → detect-gpu tier
+                                ├── tier 0 (very low) → standard 2D template
+                                ├── tier 1 (low)      → simplified scene: no particles,
+                                │                        shadows off, pixelRatio 1
+                                └── tier 2+ (ok)      → full experience, pixelRatio min(dpr,2)
 ```
 
 ---
 
 ## prefers-reduced-motion
 
-If `window.matchMedia('(prefers-reduced-motion: reduce)').matches`:
-
-- Camera does **not** animate along path
-- Scene jumps directly to stop on tap/scroll
-- Or fallback to full 2D template if WebGL still too intense
-- `CameraRig` checks this flag before every frame update
+`CameraRig` checks `matchMedia('(prefers-reduced-motion: reduce)')` before each frame:
+- If true: skip lerp/tween, jump to target position instantly
+- Head bob disabled
+- Mobile: `tweenToStop` uses `duration: 0`
 
 ---
 
 ## Scene Variants
 
-| Variant | Key | GLTF Contents | Lighting |
-|---------|-----|---------------|----------|
-| Garden | `garden` | Flower arch, path, hedges, trees | Warm sunlight + HDRI sky |
-| Beach | `beach` | Sandy aisle, palms, ocean plane | Golden sunset + env map |
-| Chapel | `chapel` | Pews, stained-glass windows, altar, candles | Soft indoor + point lights |
+| Variant | Key | GLTF Contents | Lighting | Stop 0 start |
+|---------|-----|---------------|----------|--------------|
+| Garden | `garden` | Flower arch, path, hedges, trees | Warm sunlight + HDRI sky | Garden gate |
+| Beach | `beach` | Sandy aisle, palms, ocean plane | Golden sunset + env map | Shoreline |
+| Chapel | `chapel` | Pews, stained-glass windows, altar, candles | Soft indoor + point lights | Chapel entrance |
 
-`config.scene_variant` in invitation config. Default: `garden`.
+`config.scene_variant`: `garden | beach | chapel`. Default: `garden`.
 
 ---
 
 ## Desktop Layout
 
+`config.bg_style` is **desktop-only** — mobile is always fullscreen with no outer background.
+
 ```
 ┌─────────────────────────────────────────────────┐
-│           dark bg (#0a0a0a) or blurred cover     │
-│    (config.bg_style: 'dark' | 'blurred-cover')  │
-│                                                  │
+│   bg: #0a0a0a (dark) OR blurred cover photo     │
+│   config.bg_style: 'dark' | 'blurred-cover'     │
+│                  (desktop only)                  │
 │         ┌─────────────────────┐                  │
 │         │   Phone Frame       │                  │
 │         │   390 × 844px       │                  │
 │         │   border-radius:40px│                  │
-│         │                     │                  │
 │         │  [TresCanvas]       │                  │
 │         │  [InfoOverlay]      │                  │
 │         └─────────────────────┘                  │
 └─────────────────────────────────────────────────┘
 ```
 
-Scroll captured on phone-frame container (`overflow-y: scroll`), not `window`.
-
 ---
 
 ## Camera Details
 
-- Path: `CatmullRomCurve3` through waypoints per scene variant
-- **Head bob:** `position.y += Math.sin(t * 80) * 0.025` — walking feel, not drone
-- Smooth lerp: `camera.position.lerp(target, 0.05)` per frame for inertia
+- Path: `CatmullRomCurve3` through waypoints defined per scene variant
+- **Head bob:** `position.y += Math.sin(t * 80) * 0.025` (disabled if reduced-motion)
+- Smooth lerp: `camera.position.lerp(target, 0.05)` per frame
 
 ---
 
-## Performance
+## Performance & Memory
 
 | Concern | Mitigation |
 |---------|------------|
-| GLTF geometry size | Draco compression, target <1MB geometry |
-| Texture size | KTX2/Basis compression, -70% vs PNG/JPG |
-| Render resolution | `pixelRatio: gpuTier.tier < 2 ? 1 : Math.min(dpr, 2)` via `detect-gpu` |
-| Shadows — general | `castShadow` key objects only, `shadowMapSize: 512` |
-| Shadows — altar area | `shadowMapSize: 1024` or baked lightmap in GLTF |
-| Lazy load | GLTF loaded only on `CinematicTemplate3D` mount |
-| WebGL unavailable | Fallback to standard 2D template |
-
-**New dependency:** `detect-gpu` (~5KB) for GPU tier detection before setting pixelRatio.
+| GLTF geometry | Draco compression, target <1MB |
+| Textures | KTX2/Basis compression, -70% |
+| Render resolution | `gpuTier.tier < 2 ? 1 : Math.min(dpr, 2)` via `detect-gpu` |
+| Shadows — general | Key objects only, `shadowMapSize: 512` |
+| Shadows — altar close-up | `shadowMapSize: 1024` or baked lightmap |
+| Lazy load | Dynamic import, GLTF loads on component mount |
+| WebGL unavailable | Fallback to 2D template |
+| **Memory cleanup** | `onBeforeUnmount`: `scene.traverse(obj => { obj.geometry?.dispose(); obj.material?.dispose(); obj.material?.map?.dispose() })` — prevents GPU memory leak when user previews multiple templates |
 
 ---
 
 ## Open Graph Image
 
-3D scene = no OG preview on WhatsApp share. Solution: **generate static OG image at invitation publish time**.
+Approach: **pre-rendered 3D snapshot per variant + Canvas API text overlay**.
 
-- Triggered: when invitation status changes to `published`
-- Process: PHP/Node snapshot job → render cover photo + couple name + date → save as `og_image`
-- Stored: `invitations.og_image_url` (existing or new column)
-- Meta tag: `<meta property="og:image" :content="invitation.og_image_url">`
-- Fallback: couple's cover photo if OG generation hasn't run yet
+- 3 base images manually rendered once per variant (1200×630px), stored as static assets
+- On invitation publish → background job composes: base image + couple name + date via `node-canvas` + `sharp`
+- Stored: `invitations.og_image_url`
+- Meta: `<meta property="og:image" :content="invitation.og_image_url">`
+- Fallback: couple's cover photo if job hasn't run
 
-OG image generation is a **background job** — does not block publish action.
+No Puppeteer needed. 3D visuals come from static base; only text is dynamic.
 
 ---
 
 ## Deep Linking to Stops
 
-URL hash or query param to jump directly to a stop on load:
-
-- `?stop=rsvp` or `#altar` → on mount, `useCinematicNavigation` reads param → sets `currentStop` to matching stop
-- Each stop has an optional `slug` field: `{ scrollPct: 1.0, slug: 'altar', ... }`
-- Enables WhatsApp messages: "Klik untuk RSVP: theday.co/i/andi-budi?stop=rsvp"
+- URL: `?stop=rsvp` or `#rsvp`
+- On mount: `useCinematicNavigation` reads param → matches `stop.slug` → sets `currentStop`, skips to position (no animation)
+- Slug uniqueness enforced at runtime (dev warning), required for deep link to resolve correctly
 
 ---
 
 ## Integration with Existing System
 
 - New template slug: `cinematic-3d` (row in `templates` table)
-- `InvitationRenderer.vue` checks `invitation.template.slug === 'cinematic-3d'` → renders `CinematicTemplate3D` inside `<ClientOnly>`
-- `config.scene_variant` field: `garden | beach | chapel` (default `garden`)
-- `config.bg_style` field: `dark | blurred-cover` (default `dark`)
-- No changes to existing templates or dashboard editor
+- `InvitationRenderer.vue`: if `template.slug === 'cinematic-3d'` → `<ClientOnly><CinematicTemplate3D /></ClientOnly>`
+- New config fields: `scene_variant` (garden/beach/chapel), `bg_style` (dark/blurred-cover, desktop only)
+- No changes to existing templates
 
 ---
 
@@ -238,17 +308,18 @@ URL hash or query param to jump directly to a stop on load:
 "@tresjs/core": "^4.x",
 "@tresjs/cientos": "^3.x",
 "three": "^0.170.x",
+"gsap": "^3.x",
 "detect-gpu": "^5.x"
 ```
 
-Estimated bundle addition: ~360KB gzip, loaded only for this template via dynamic import.
+~390KB gzip total, loaded only for this template via dynamic import. `gsap` may already be used elsewhere; verify before adding.
 
 ---
 
 ## Out of Scope (v1)
 
-- Background music (AudioContext initialized, not used)
-- Editor UI for customizing stops or camera path
+- Background music / AudioContext (initialized in v2, not v1)
+- Dashboard editor for stop/camera customization
 - User-uploaded 3D models
-- Video recording/export of the walk
 - More than 3 scene variants
+- Video export
