@@ -295,10 +295,22 @@ No Puppeteer needed. 3D visuals come from static base; only text is dynamic.
 
 ## Integration with Existing System
 
+`InvitationRenderer.vue` already has a hard branch: if `template_slug` found in `TEMPLATE_MAP` → render that component exclusively, otherwise → default section renderer. **Existing templates are completely unaffected.**
+
+Only change needed to existing files:
+```js
+// registry.js — add one line
+import CinematicTemplate3D from './CinematicTemplate3D.vue'
+export const TEMPLATE_MAP = {
+  // ... existing entries unchanged ...
+  'cinematic-3d': CinematicTemplate3D,
+}
+```
+
+Everything else is new files only:
 - New template slug: `cinematic-3d` (row in `templates` table)
-- `InvitationRenderer.vue`: if `template.slug === 'cinematic-3d'` → `<ClientOnly><CinematicTemplate3D /></ClientOnly>`
 - New config fields: `scene_variant` (garden/beach/chapel), `bg_style` (dark/blurred-cover, desktop only)
-- No changes to existing templates
+- TresJS + Three.js loaded via **dynamic import inside `CinematicTemplate3D`** — never bundled with other templates
 
 ---
 
