@@ -59,6 +59,11 @@ Dual-purpose: loading screen + entry gesture.
 - On tap: resets scroll/stop to 0, fades into 3D scene. AudioContext **not** created here (v2)
 - First impression is always the cover photo, never a black frame
 
+**Error states:**
+- Any loader fails (404, decode error, network drop) → show error UI: "Gagal memuat" + "Coba Lagi" button
+- Retry re-triggers all failed loaders
+- After 2 failed retries → auto-fallback to standard 2D template with toast notification
+
 ---
 
 ## First-Time UX Hint
@@ -84,7 +89,7 @@ Arrow animation pulses left/right. Dismissed after 3s or first tap. Flag stored 
 ### Mobile
 - Fullscreen, no phone frame
 - Tap right half → `goNext()`, tap left half → `goPrev()`
-- Swipe (touchstart→touchend delta) also triggers next/prev
+- Swipe: `Math.abs(deltaX) > 50 && deltaTime < 300ms` triggers next/prev
 - Progress: `MobileProgressDots` at top — **wrapped in a semi-transparent pill backdrop** to stay visible against any scene color (bright garden sky or dark chapel interior)
 
 ### Mobile animation
@@ -105,7 +110,9 @@ const tweenToStop = (targetIdx: number) => {
 // composables/useCinematicNavigation.ts
 const currentStop    = ref(0)    // 0 to stops.length-1
 const scrollProgress = ref(0)    // 0–1
-const isMobile       = computed(() => window.innerWidth < 768)
+// isMobile set in onMounted — never accessed at top-level (window unavailable SSR)
+let isMobile = false
+onMounted(() => { isMobile = window.innerWidth < 768 })
 // Desktop → scroll listener
 // Mobile  → goNext() / goPrev() → tweenToStop()
 ```
@@ -137,13 +144,13 @@ interface SceneVariant {
 }
 ```
 
-**Threshold auto-generated** from stop positions — no magic numbers:
+**Threshold auto-generated** from stop positions — min-clamped to avoid tiny windows when stops are close together:
 ```ts
 function getThreshold(stops: CinematicStop[], index: number): number {
   const prev = stops[index - 1]?.scrollPct ?? 0
   const next = stops[index + 1]?.scrollPct ?? 1
   const curr = stops[index].scrollPct
-  return Math.min(curr - prev, next - curr) / 2
+  return Math.max(Math.min(curr - prev, next - curr) / 2, 0.05) // min 5% always visible
 }
 ```
 
@@ -163,7 +170,7 @@ Slug uniqueness validated at runtime with `console.warn` in dev mode.
 - Desktop: `Math.abs(scrollProgress - stop.scrollPct) < threshold` (continuous)
 - Mobile: `currentStop === stop.index` (discrete)
 
-**`InfoCard.vue`**: single component, `variant` prop switches layout — not 4 separate components.
+**`InfoCard.vue`**: single component, `variant` prop switches layout. Rendered via `<component :is="resolveCard(stop.card.component)" v-bind="stop.card.props" />` inside `InfoCardOverlay` — not 4 separate components.
 
 ---
 
@@ -248,6 +255,47 @@ App loads
 
 ---
 
+## Memory Cleanup
+
+Full disposal pattern in `SceneEnvironment.vue` `onBeforeUnmount`:
+
+```ts
+// Dispose all PBR maps on all materials (including multi-material meshes)
+scene.traverse(obj => {
+  obj.geometry?.dispose()
+  const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+  mats.forEach(m => {
+    if (!m) return
+    Object.values(m).forEach(v => { if (v?.isTexture) v.dispose() })
+    m.dispose()
+  })
+})
+
+// Release GPU context entirely
+renderer.dispose()
+renderer.forceContextLoss()
+```
+
+Without `forceContextLoss()`, GPU memory stays allocated even after `dispose()` on some browsers. Critical for users who preview multiple templates in the editor.
+
+---
+
+## Landscape Orientation (Mobile)
+
+**Decision: lock to portrait.** Landscape with tap-nav and portrait-optimized 3D framing breaks badly and adds complexity out of proportion to benefit.
+
+Implementation:
+```css
+@media (orientation: landscape) and (max-width: 900px) {
+  .cinematic-scene { display: none; }
+  .cinematic-rotate-hint { display: flex; } /* "Putar perangkat ke mode portrait" */
+}
+```
+
+`cinematic-rotate-hint` is a simple full-screen overlay with a rotate icon and brief text. No JS needed.
+
+---
+
 ## Camera Details
 
 - Path: `CatmullRomCurve3` through waypoints defined per scene variant
@@ -262,12 +310,12 @@ App loads
 |---------|------------|
 | GLTF geometry | Draco compression, target <1MB |
 | Textures | KTX2/Basis compression, -70% |
-| Render resolution | `gpuTier.tier < 2 ? 1 : Math.min(dpr, 2)` via `detect-gpu` |
+| Render resolution | `gpuTier.tier < 1 ? 1 : gpuTier.tier === 1 ? 1.5 : Math.min(dpr, 2)` via `detect-gpu` |
 | Shadows — general | Key objects only, `shadowMapSize: 512` |
 | Shadows — altar close-up | `shadowMapSize: 1024` or baked lightmap |
 | Lazy load | Dynamic import, GLTF loads on component mount |
 | WebGL unavailable | Fallback to 2D template |
-| **Memory cleanup** | `onBeforeUnmount`: `scene.traverse(obj => { obj.geometry?.dispose(); obj.material?.dispose(); obj.material?.map?.dispose() })` — prevents GPU memory leak when user previews multiple templates |
+| **Memory cleanup** | `onBeforeUnmount`: full PBR + array material dispose + renderer context loss (see below) |
 
 ---
 
@@ -283,12 +331,15 @@ Approach: **pre-rendered 3D snapshot per variant + Canvas API text overlay**.
 
 No Puppeteer needed. 3D visuals come from static base; only text is dynamic.
 
+**Regeneration trigger:** OG image re-generated (not just on publish) whenever these fields change: `details.groom_name`, `details.bride_name`, `events[0].event_date`, `details.cover_photo_url`. Hook via Laravel model `updated` event on `Invitation`, dispatch `GenerateOgImageJob` only when relevant fields dirty.
+
 ---
 
 ## Deep Linking to Stops
 
 - URL: `?stop=rsvp` or `#rsvp`
-- On mount: `useCinematicNavigation` reads param → matches `stop.slug` → sets `currentStop`, skips to position (no animation)
+- **Flow with EntryGate:** deep link does NOT skip EntryGate. User sees gate → taps "Buka Undangan" → jumps directly to linked stop (no cinematic walk animation). This preserves the entry gesture + keeps AudioContext future-proof.
+- On mount: `useCinematicNavigation` stores deep-link slug, applies it after EntryGate dismisses
 - Slug uniqueness enforced at runtime (dev warning), required for deep link to resolve correctly
 
 ---
