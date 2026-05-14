@@ -34,6 +34,13 @@ use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/maintenance', function () {
+    if (!env('MAINTENANCE_MODE', false)) {
+        return redirect()->route('home');
+    }
+    return inertia('Maintenance');
+})->name('maintenance');
+
 Route::get('/', function () {
     $featuredArticles = \App\Models\Article::published()
         ->with('category')
