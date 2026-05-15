@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -380,6 +381,9 @@ const handleClickOutsideAvatar = (e) => {
                             {{ flash.success }}
                         </div>
                     </Transition>
+
+                    <!-- Language switcher -->
+                    <LanguageSwitcher />
 
                     <!-- Avatar dropdown -->
                     <div class="relative" ref="avatarDropdownRef">
