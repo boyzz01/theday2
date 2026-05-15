@@ -3,6 +3,9 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     invitation: { type: Object, required: true },
@@ -157,11 +160,11 @@ function toggleExpand(id) {
 function relativeTime(iso) {
     if (!iso) return '';
     const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
-    if (diff < 60)    return 'Baru saja';
-    if (diff < 3600)  return `${Math.floor(diff / 60)} mnt lalu`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
-    if (diff < 172800) return 'Kemarin';
-    if (diff < 2592000) return `${Math.floor(diff / 86400)} hari lalu`;
+    if (diff < 60)    return t('dashboard.invitations.bukuTamu.timeJustNow');
+    if (diff < 3600)  return t('dashboard.invitations.bukuTamu.timeMinutesAgo', { n: Math.floor(diff / 60) });
+    if (diff < 86400) return t('dashboard.invitations.bukuTamu.timeHoursAgo', { n: Math.floor(diff / 3600) });
+    if (diff < 172800) return t('dashboard.invitations.bukuTamu.timeYesterday');
+    if (diff < 2592000) return t('dashboard.invitations.bukuTamu.timeDaysAgo', { n: Math.floor(diff / 86400) });
     return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -171,7 +174,7 @@ function exportUrl(scope = 'all') {
 </script>
 
 <template>
-    <Head :title="`Buku Tamu — ${invitation.title}`" />
+    <Head :title="t('dashboard.invitations.bukuTamu.pageTitle', { title: invitation.title })" />
 
     <DashboardLayout>
         <template #header>
@@ -185,7 +188,7 @@ function exportUrl(scope = 'all') {
                     </svg>
                 </Link>
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-stone-800 truncate">Buku Tamu</h2>
+                    <h2 class="text-base font-semibold text-stone-800 truncate">{{ t('dashboard.invitations.bukuTamu.headerTitle') }}</h2>
                     <p class="text-sm text-stone-400 truncate">{{ invitation.title }}</p>
                 </div>
 
@@ -196,12 +199,12 @@ function exportUrl(scope = 'all') {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span class="hidden sm:inline">Export</span>
+                        <span class="hidden sm:inline">{{ t('dashboard.invitations.bukuTamu.export') }}</span>
                     </button>
                     <div class="absolute right-0 mt-1 w-48 bg-white border border-stone-100 rounded-xl shadow-lg py-1 z-20 hidden group-hover:block">
-                        <a :href="exportUrl('all')"    class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">Semua Ucapan</a>
-                        <a :href="exportUrl('visible')" class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">Hanya Tampil</a>
-                        <a :href="exportUrl('pinned')"  class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">Hanya Dipinned</a>
+                        <a :href="exportUrl('all')"    class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">{{ t('dashboard.invitations.bukuTamu.exportAll') }}</a>
+                        <a :href="exportUrl('visible')" class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">{{ t('dashboard.invitations.bukuTamu.exportVisible') }}</a>
+                        <a :href="exportUrl('pinned')"  class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">{{ t('dashboard.invitations.bukuTamu.exportPinned') }}</a>
                     </div>
                 </div>
             </div>
@@ -211,10 +214,10 @@ function exportUrl(scope = 'all') {
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             <button
                 v-for="stat in [
-                    { key: 'all',     label: 'Total',         value: summary.total,   color: 'stone',  icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-                    { key: 'visible', label: 'Tampil',        value: summary.visible, color: 'emerald',icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' },
-                    { key: 'hidden',  label: 'Disembunyikan', value: summary.hidden,  color: 'amber',  icon: 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' },
-                    { key: 'pinned',  label: 'Dipinned',      value: summary.pinned,  color: 'violet', icon: 'M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' },
+                    { key: 'all',     label: t('dashboard.invitations.bukuTamu.statTotal'),   value: summary.total,   color: 'stone',  icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+                    { key: 'visible', label: t('dashboard.invitations.bukuTamu.statVisible'), value: summary.visible, color: 'emerald',icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' },
+                    { key: 'hidden',  label: t('dashboard.invitations.bukuTamu.statHidden'),  value: summary.hidden,  color: 'amber',  icon: 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' },
+                    { key: 'pinned',  label: t('dashboard.invitations.bukuTamu.statPinned'),  value: summary.pinned,  color: 'violet', icon: 'M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' },
                 ]"
                 :key="stat.key"
                 @click="filter = stat.key"
@@ -246,7 +249,7 @@ function exportUrl(scope = 'all') {
                 <input
                     v-model="search"
                     type="text"
-                    placeholder="Cari nama atau ucapan…"
+                    :placeholder="t('dashboard.invitations.bukuTamu.searchPlaceholder')"
                     class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                 />
             </div>
@@ -255,10 +258,10 @@ function exportUrl(scope = 'all') {
             <div class="grid grid-cols-2 sm:flex gap-1.5">
                 <button
                     v-for="f in [
-                        { value: 'all',     label: 'Semua' },
-                        { value: 'visible', label: 'Tampil' },
-                        { value: 'hidden',  label: 'Disembunyikan' },
-                        { value: 'pinned',  label: 'Dipinned' },
+                        { value: 'all',     label: t('dashboard.invitations.bukuTamu.filterAll') },
+                        { value: 'visible', label: t('dashboard.invitations.bukuTamu.filterVisible') },
+                        { value: 'hidden',  label: t('dashboard.invitations.bukuTamu.filterHidden') },
+                        { value: 'pinned',  label: t('dashboard.invitations.bukuTamu.filterPinned') },
                     ]"
                     :key="f.value"
                     @click="filter = f.value"
@@ -276,9 +279,9 @@ function exportUrl(scope = 'all') {
                 v-model="sort"
                 class="px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 bg-white"
             >
-                <option value="newest">Terbaru</option>
-                <option value="oldest">Terlama</option>
-                <option value="pinned">Pinned dulu</option>
+                <option value="newest">{{ t('dashboard.invitations.bukuTamu.sortNewest') }}</option>
+                <option value="oldest">{{ t('dashboard.invitations.bukuTamu.sortOldest') }}</option>
+                <option value="pinned">{{ t('dashboard.invitations.bukuTamu.sortPinned') }}</option>
             </select>
         </div>
 
@@ -290,23 +293,23 @@ function exportUrl(scope = 'all') {
             leave-active-class="transition-all duration-150"
         >
             <div v-if="selectedIds.length" class="bg-[#92A89C]/10 border border-[#B8C7BF] rounded-2xl p-3 mb-3 flex items-center gap-3 flex-wrap">
-                <span class="text-sm font-medium text-[#2C2417]">{{ selectedIds.length }} dipilih</span>
+                <span class="text-sm font-medium text-[#2C2417]">{{ t('dashboard.invitations.bukuTamu.selectedCount', { n: selectedIds.length }) }}</span>
                 <div class="flex gap-2 flex-wrap">
                     <button @click="bulkAction('hide')"
                             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
-                        Sembunyikan
+                        {{ t('dashboard.invitations.bukuTamu.bulkHide') }}
                     </button>
                     <button @click="bulkAction('show')"
                             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
-                        Tampilkan
+                        {{ t('dashboard.invitations.bukuTamu.bulkShow') }}
                     </button>
                     <button @click="bulkAction('unpin')"
                             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors">
-                        Unpin
+                        {{ t('dashboard.invitations.bukuTamu.bulkUnpin') }}
                     </button>
                     <button @click="bulkAction('delete')"
                             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors">
-                        Hapus
+                        {{ t('dashboard.invitations.bukuTamu.bulkDelete') }}
                     </button>
                 </div>
                 <button @click="selectedIds = []" class="ml-auto p-1 text-stone-400 hover:text-stone-600">
@@ -341,12 +344,12 @@ function exportUrl(scope = 'all') {
                 </svg>
             </div>
             <p class="text-sm font-medium text-stone-600 mb-1">
-                {{ search || filter !== 'all' ? 'Tidak ada ucapan ditemukan' : 'Belum ada ucapan yang masuk' }}
+                {{ search || filter !== 'all' ? t('dashboard.invitations.bukuTamu.emptyNotFound') : t('dashboard.invitations.bukuTamu.emptyNoMessages') }}
             </p>
             <p class="text-xs text-stone-400">
                 {{ search || filter !== 'all'
-                    ? 'Coba ubah filter atau kata kunci pencarian'
-                    : 'Ucapan tamu akan muncul di sini setelah mereka membuka undangan' }}
+                    ? t('dashboard.invitations.bukuTamu.emptyFilterHint')
+                    : t('dashboard.invitations.bukuTamu.emptyHint') }}
             </p>
         </div>
 
@@ -360,7 +363,7 @@ function exportUrl(scope = 'all') {
                     @change="toggleSelectAll"
                     class="w-4 h-4 rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/50"
                 />
-                <span class="text-xs text-stone-400">Pilih semua ({{ messages.length }})</span>
+                <span class="text-xs text-stone-400">{{ t('dashboard.invitations.bukuTamu.selectAll', { n: messages.length }) }}</span>
             </div>
 
             <div
@@ -399,11 +402,11 @@ function exportUrl(scope = 'all') {
                                     <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                     </svg>
-                                    Pinned
+                                    {{ t('dashboard.invitations.bukuTamu.badgePinned') }}
                                 </span>
                                 <span v-if="msg.is_hidden"
                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">
-                                    Tersembunyi
+                                    {{ t('dashboard.invitations.bukuTamu.badgeHidden') }}
                                 </span>
 
                                 <span class="text-xs text-stone-400 ml-auto flex-shrink-0">{{ relativeTime(msg.created_at) }}</span>
@@ -419,7 +422,7 @@ function exportUrl(scope = 'all') {
                                 @click="toggleExpand(msg.id)"
                                 class="text-xs text-[#73877C] hover:text-[#73877C] mt-1 font-medium"
                             >
-                                {{ expandedIds.has(msg.id) ? 'Sembunyikan' : 'Lihat selengkapnya' }}
+                                {{ expandedIds.has(msg.id) ? t('dashboard.invitations.bukuTamu.hide') : t('dashboard.invitations.bukuTamu.showMore') }}
                             </button>
 
                             <!-- Actions -->
@@ -435,7 +438,7 @@ function exportUrl(scope = 'all') {
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                     </svg>
-                                    {{ msg.is_pinned ? 'Unpin' : 'Pin' }}
+                                    {{ msg.is_pinned ? t('dashboard.invitations.bukuTamu.actionUnpin') : t('dashboard.invitations.bukuTamu.actionPin') }}
                                 </button>
 
                                 <!-- Hide/Show -->
@@ -452,7 +455,7 @@ function exportUrl(scope = 'all') {
                                         <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
                                     </svg>
-                                    {{ msg.is_hidden ? 'Tampilkan' : 'Sembunyikan' }}
+                                    {{ msg.is_hidden ? t('dashboard.invitations.bukuTamu.actionShow') : t('dashboard.invitations.bukuTamu.actionHide') }}
                                 </button>
 
                                 <!-- Delete -->
@@ -464,7 +467,7 @@ function exportUrl(scope = 'all') {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
-                                    Hapus
+                                    {{ t('dashboard.invitations.bukuTamu.actionDelete') }}
                                 </button>
                             </div>
                         </div>
@@ -479,7 +482,7 @@ function exportUrl(scope = 'all') {
                     :disabled="loadingMore"
                     class="px-6 py-2.5 rounded-xl text-sm font-medium border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors disabled:opacity-60"
                 >
-                    {{ loadingMore ? 'Memuat…' : `Muat lebih banyak (${meta.total - messages.length} lagi)` }}
+                    {{ loadingMore ? t('dashboard.invitations.bukuTamu.loadingMore') : t('dashboard.invitations.bukuTamu.loadMore', { n: meta.total - messages.length }) }}
                 </button>
             </div>
         </div>
@@ -501,24 +504,24 @@ function exportUrl(scope = 'all') {
                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                     </div>
-                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">Hapus Ucapan?</h3>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">{{ t('dashboard.invitations.bukuTamu.deleteConfirmTitle') }}</h3>
                     <p class="text-sm text-stone-500 text-center mb-6">
                         {{ deleteTarget
-                            ? `Ucapan dari "${deleteTarget.display_name}" akan dihapus permanen.`
-                            : `${selectedIds.length} ucapan akan dihapus permanen.` }}
+                            ? t('dashboard.invitations.bukuTamu.deleteConfirmSingle', { name: deleteTarget.display_name })
+                            : t('dashboard.invitations.bukuTamu.deleteConfirmBulk', { n: selectedIds.length }) }}
                     </p>
                     <div class="flex gap-2">
                         <button
                             @click="showDeleteConfirm = false"
                             class="flex-1 py-2.5 rounded-xl text-sm font-medium border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
                         >
-                            Batal
+                            {{ t('dashboard.invitations.bukuTamu.cancel') }}
                         </button>
                         <button
                             @click="executeDelete"
                             class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
                         >
-                            Ya, Hapus
+                            {{ t('dashboard.invitations.bukuTamu.deleteConfirm') }}
                         </button>
                     </div>
                 </div>

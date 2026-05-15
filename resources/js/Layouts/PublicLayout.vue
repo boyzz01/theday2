@@ -17,15 +17,15 @@ const { t } = useLocale();
 
         <!-- Footer -->
         <footer class="border-t border-stone-100 py-6 text-center text-xs text-stone-400">
-            <p class="mb-2">© {{ new Date().getFullYear() }} TheDay. {{ t('Dibuat dengan ❤️ di Indonesia.', 'Made with ❤️ in Indonesia.') }}</p>
+            <p class="mb-2">© {{ new Date().getFullYear() }} TheDay. {{ t('public.footer.madeWith') }}</p>
             <div class="flex items-center justify-center gap-4">
-                <a href="/kontak" class="hover:text-stone-600 transition-colors">{{ t('Kontak', 'Contact') }}</a>
+                <a href="/kontak" class="hover:text-stone-600 transition-colors">{{ t('public.footer.contact') }}</a>
                 <span class="text-stone-200">·</span>
-                <a href="/kebijakan-privasi" class="hover:text-stone-600 transition-colors">{{ t('Kebijakan Privasi', 'Privacy Policy') }}</a>
+                <a href="/kebijakan-privasi" class="hover:text-stone-600 transition-colors">{{ t('public.footer.privacyPolicy') }}</a>
                 <span class="text-stone-200">·</span>
-                <a href="/syarat-ketentuan" class="hover:text-stone-600 transition-colors">{{ t('Syarat & Ketentuan', 'Terms & Conditions') }}</a>
+                <a href="/syarat-ketentuan" class="hover:text-stone-600 transition-colors">{{ t('public.footer.termsConditions') }}</a>
                 <span class="text-stone-200">·</span>
-                <a href="/kebijakan-cookie" class="hover:text-stone-600 transition-colors">{{ t('Kebijakan Cookie', 'Cookie Policy') }}</a>
+                <a href="/kebijakan-cookie" class="hover:text-stone-600 transition-colors">{{ t('public.footer.cookiePolicy') }}</a>
             </div>
         </footer>
     </div>

@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useLocale } from '@/Composables/useLocale';
 
 defineProps({
@@ -8,8 +8,7 @@ defineProps({
     status:           { type: String,  default: null  },
 });
 
-const { locale, toggleLocale } = useLocale();
-const tr = computed(() => usePage().props.translations[locale.value]);
+const { locale, toggleLocale, t } = useLocale();
 
 const form = useForm({
     email:    '',
@@ -27,7 +26,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="tr.login_title" />
+    <Head :title="t('auth.login_title')" />
 
     <div class="min-h-screen flex" style="background-color: #FFFCF7">
 
@@ -56,10 +55,10 @@ function submit() {
 
                 <!-- Center quote -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <p class="text-[#B8C7BF]/70 text-xs font-medium uppercase tracking-widest mb-4">{{ tr.welcome_back }}</p>
+                    <p class="text-[#B8C7BF]/70 text-xs font-medium uppercase tracking-widest mb-4">{{ t('auth.welcome_back') }}</p>
                     <h1 class="text-white text-4xl font-bold leading-tight mb-6 whitespace-pre-line"
-                        style="font-family: 'Playfair Display', serif">{{ tr.login_headline }}</h1>
-                    <p class="text-[#B8C7BF]/70 text-sm leading-relaxed max-w-xs">{{ tr.login_sub }}</p>
+                        style="font-family: 'Playfair Display', serif">{{ t('auth.login_headline') }}</h1>
+                    <p class="text-[#B8C7BF]/70 text-sm leading-relaxed max-w-xs">{{ t('auth.login_sub') }}</p>
                 </div>
 
                 <!-- Decorative card preview -->
@@ -73,14 +72,14 @@ function submit() {
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-white text-xs font-semibold">{{ tr.card_invitation }}</p>
+                                <p class="text-white text-xs font-semibold">{{ t('auth.card_invitation') }}</p>
                                 <p class="text-white/40 text-xs">Rina &amp; Budi • 12 Juli 2026</p>
                             </div>
                         </div>
                         <div class="h-px bg-white/10 mb-3"/>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-white/50">{{ tr.card_confirmed }}</span>
-                            <span class="text-[#B8C7BF] font-semibold">{{ tr.card_count }}</span>
+                            <span class="text-white/50">{{ t('auth.card_confirmed') }}</span>
+                            <span class="text-[#B8C7BF] font-semibold">{{ t('auth.card_count') }}</span>
                         </div>
                     </div>
                 </div>
@@ -124,14 +123,14 @@ function submit() {
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold text-stone-900 mb-1.5"
                             style="font-family: 'Playfair Display', serif">
-                            {{ tr.login_heading }}
+                            {{ t('auth.login_heading') }}
                         </h2>
                         <p class="text-sm text-stone-500">
-                            {{ tr.no_account }}
+                            {{ t('auth.no_account') }}
                             <Link :href="route('register')"
                                   class="font-semibold hover:underline"
                                   style="color: #73877C">
-                                {{ tr.register_free }}
+                                {{ t('auth.register_free') }}
                             </Link>
                         </p>
                     </div>
@@ -151,7 +150,7 @@ function submit() {
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-medium text-stone-700 mb-1.5">
-                                {{ tr.email }}
+                                {{ t('auth.email') }}
                             </label>
                             <input
                                 id="email"
@@ -177,11 +176,11 @@ function submit() {
                         <!-- Password -->
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
-                                <label for="password" class="text-sm font-medium text-stone-700">{{ tr.password }}</label>
+                                <label for="password" class="text-sm font-medium text-stone-700">{{ t('auth.password') }}</label>
                                 <Link v-if="canResetPassword"
                                       :href="route('password.request')"
                                       class="text-xs text-stone-400 hover:text-stone-600 transition-colors">
-                                    {{ tr.forgot_password }}
+                                    {{ t('auth.forgot_password') }}
                                 </Link>
                             </div>
                             <div class="relative">
@@ -237,7 +236,7 @@ function submit() {
                                     </svg>
                                 </div>
                             </div>
-                            <span class="text-sm text-stone-500">{{ tr.remember_me }}</span>
+                            <span class="text-sm text-stone-500">{{ t('auth.remember_me') }}</span>
                         </label>
 
                         <!-- Submit -->
@@ -252,9 +251,9 @@ function submit() {
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                {{ tr.login_submitting }}
+                                {{ t('auth.login_submitting') }}
                             </span>
-                            <span v-else>{{ tr.login_submit }}</span>
+                            <span v-else>{{ t('auth.login_submit') }}</span>
                         </button>
 
                     </form>
@@ -262,7 +261,7 @@ function submit() {
                     <!-- Divider -->
                     <div class="my-6 flex items-center gap-3">
                         <div class="flex-1 h-px bg-stone-100"/>
-                        <span class="text-xs text-stone-400">{{ tr.or }}</span>
+                        <span class="text-xs text-stone-400">{{ t('auth.or') }}</span>
                         <div class="flex-1 h-px bg-stone-100"/>
                     </div>
 
@@ -277,12 +276,12 @@ function submit() {
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        {{ tr.login_with_google }}
+                        {{ t('auth.login_with_google') }}
                     </a>
 
                     <!-- Back to home -->
                     <p class="text-center text-xs text-stone-400 mt-6">
-                        <a href="/" class="hover:text-stone-600 transition-colors">{{ tr.back_home }}</a>
+                        <a href="/" class="hover:text-stone-600 transition-colors">{{ t('auth.back_home') }}</a>
                     </p>
 
                 </div>

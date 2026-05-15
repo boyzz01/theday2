@@ -22,8 +22,8 @@ function useTemplate() {
 
     <!-- ── Demo banner (sticky top, above everything) ───────────── -->
     <div
-        class="sticky top-0 z-[100] w-full"
-        style="background: linear-gradient(90deg, #2C1A0E, #4A2C18)"
+        class="sticky top-0 z-[100] w-full backdrop-blur-md"
+        style="background: linear-gradient(90deg, rgba(44,26,14,0.55), rgba(74,44,24,0.55))"
     >
         <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-3 flex-wrap sm:flex-nowrap">
             <!-- Icon + text -->

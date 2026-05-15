@@ -39,10 +39,10 @@ return [
         ],
 
         'gallery' => [
-            '/image/demo-image/bride-groom.png',
-            '/image/demo-image/bride-groom.png',
-            '/image/demo-image/bride-groom.png',
-            '/image/demo-image/bride-groom.png',
+            '/image/demo-image/galeri/galeri-0.webp',
+            '/image/demo-image/galeri/galeri-1.webp',
+            '/image/demo-image/galeri/galeri-0.webp',
+            '/image/demo-image/galeri/galeri-1.webp',
         ],
 
         'love_story' => [

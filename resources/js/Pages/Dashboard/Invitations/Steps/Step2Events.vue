@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t, locale } = useLocale();
 
 const props = defineProps({
     events:      { type: Object, required: true }, // ref([])
@@ -30,7 +33,12 @@ function onDrop(index) {
 
 // ── Date picker ──────────────────────────────────────────────────
 const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const DAYS_EN   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const calMonths = computed(() => locale.value === 'id' ? MONTHS_ID : MONTHS_EN);
+const calDays   = computed(() => locale.value === 'id' ? DAYS_ID : DAYS_EN);
 
 const showDatePicker = ref(false);
 const activeEvent    = ref(null);
@@ -59,7 +67,7 @@ function nextCalMonth() {
     if (calMonth.value === 11) { calMonth.value = 0; calYear.value++; }
     else calMonth.value++;
 }
-const calDays = computed(() => {
+const calDaysCells = computed(() => {
     const first = new Date(calYear.value, calMonth.value, 1).getDay();
     const total = new Date(calYear.value, calMonth.value + 1, 0).getDate();
     const cells = [];
@@ -81,7 +89,7 @@ function isPickedDay(day) {
 function calDisplayDate(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(y, m - 1, d).toLocaleDateString(locale.value === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 </script>
@@ -91,9 +99,9 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 
         <div>
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">
-                Acara & Lokasi
+                {{ t('dashboard.invitations.step2Events.title') }}
             </h2>
-            <p class="text-sm text-stone-400 mt-0.5">Tambahkan satu atau beberapa rangkaian acara</p>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step2Events.subtitle') }}</p>
         </div>
 
         <!-- Event cards -->
@@ -118,7 +126,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 
                     <!-- Badge -->
                     <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">
-                        Acara {{ index + 1 }}
+                        {{ t('dashboard.invitations.step2Events.eventBadge', { n: index + 1 }) }}
                     </span>
 
                     <!-- Move buttons -->
@@ -159,39 +167,39 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                 <!-- Fields grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Nama Acara <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.eventName') }} <span class="text-red-400">*</span></label>
                         <input v-model="event.event_name" type="text" placeholder="Akad Nikah / Resepsi"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Tanggal <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.date') }} <span class="text-red-400">*</span></label>
                         <button type="button" @click="openDatePicker(event)"
                                 class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm text-left transition-colors hover:border-[#92A89C]/50 bg-white">
                             <span v-if="event.event_date" class="text-stone-800">{{ calDisplayDate(event.event_date) }}</span>
-                            <span v-else class="text-stone-400">Pilih tanggal</span>
+                            <span v-else class="text-stone-400">{{ t('dashboard.invitations.step2Events.pickDate') }}</span>
                         </button>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.startTime') }}</label>
                         <input :value="event.start_time ? event.start_time.slice(0, 5) : ''"
                                @input="onTimeInput($event, event, 'start_time')"
                                type="text" maxlength="5" placeholder="HH:MM"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Waktu Selesai</label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.endTime') }}</label>
                         <input :value="event.end_time ? event.end_time.slice(0, 5) : ''"
                                @input="onTimeInput($event, event, 'end_time')"
                                type="text" maxlength="5" placeholder="HH:MM"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Nama Venue <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.venueName') }} <span class="text-red-400">*</span></label>
                         <input v-model="event.venue_name" type="text" placeholder="Gedung Serbaguna XYZ"
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-stone-600">Link Google Maps</label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.mapsUrl') }}</label>
                         <input v-model="event.maps_url" type="url" placeholder="https://maps.google.com/..."
                                class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                     </div>
@@ -199,7 +207,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 
                 <!-- Address (full width) -->
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-stone-600">Alamat Lengkap</label>
+                    <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.step2Events.address') }}</label>
                     <textarea v-model="event.venue_address" rows="2"
                               placeholder="Jl. Contoh No. 1, Kecamatan, Kota"
                               class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none bg-white"/>
@@ -215,7 +223,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Tambah Acara
+            {{ t('dashboard.invitations.step2Events.addEvent') }}
         </button>
     </div>
 
@@ -231,7 +239,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                     </div>
                     <div class="flex items-center justify-between px-5 py-4">
                         <div>
-                            <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                            <p class="text-sm font-bold text-stone-800">{{ t('dashboard.invitations.step2Events.datePickerTitle') }}</p>
                             <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
                         </div>
                         <button type="button" @click="closeDatePicker"
@@ -248,7 +256,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
-                        <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                        <span class="text-sm font-semibold text-stone-700">{{ calMonths[calMonth] }} {{ calYear }}</span>
                         <button type="button" @click="nextCalMonth"
                                 class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -257,12 +265,12 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                         </button>
                     </div>
                     <div class="grid grid-cols-7 px-4 pb-1">
-                        <div v-for="d in DAYS_ID" :key="d"
+                        <div v-for="d in calDays" :key="d"
                              class="text-center text-xs font-semibold py-1"
-                             :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                             :class="(locale === 'id' ? d === 'Min' : d === 'Sun') ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
                     </div>
                     <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
-                        <div v-for="(day, i) in calDays" :key="i" class="flex items-center justify-center aspect-square">
+                        <div v-for="(day, i) in calDaysCells" :key="i" class="flex items-center justify-center aspect-square">
                             <button v-if="day" type="button" @click="pickDay(day)"
                                     class="w-9 h-9 rounded-full text-sm font-medium transition-all"
                                     :class="isPickedDay(day) ? 'text-white font-bold shadow-sm' : 'text-stone-700 hover:bg-[#92A89C]/10 active:bg-[#92A89C]/20'"
@@ -275,8 +283,8 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                         <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
                                 class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
                                 style="background-color:#92A89C">
-                            <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
-                            <span v-else>Pilih tanggal dulu</span>
+                            <span v-if="currentPickerDate">{{ t('dashboard.invitations.step2Events.datePickerConfirm', { date: calDisplayDate(currentPickerDate) }) }}</span>
+                            <span v-else>{{ t('dashboard.invitations.step2Events.datePickerPrompt') }}</span>
                         </button>
                     </div>
                 </div>

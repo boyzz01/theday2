@@ -16,6 +16,7 @@ class TemplateSeeder extends Seeder
     {
         $pernikahan = TemplateCategory::where('slug', 'pernikahan')->firstOrFail();
         $storybook  = TemplateCategory::where('slug', 'storybook')->firstOrFail();
+        $cinema     = TemplateCategory::where('slug', 'cinema')->firstOrFail();
 
         $weddingDemo = [
             'details' => [
@@ -51,10 +52,10 @@ class TemplateSeeder extends Seeder
                 ],
             ],
             'gallery' => [
-                '/image/demo-image/bride-groom.png',
-                '/image/demo-image/bride-groom.png',
-                '/image/demo-image/bride-groom.png',
-                '/image/demo-image/bride-groom.png',
+                '/image/demo-image/galeri/galeri-0.webp',
+                '/image/demo-image/galeri/galeri-1.webp',
+                '/image/demo-image/galeri/galeri-0.webp',
+                '/image/demo-image/galeri/galeri-1.webp',
             ],
             'gift' => [
                 'accounts' => [
@@ -241,6 +242,26 @@ class TemplateSeeder extends Seeder
                 'tier'           => 'premium',
                 'is_active'      => true,
                 'sort_order'     => 4,
+            ],
+
+            // ── Cinema ────────────────────────────────────────────
+            [
+                'category_id'    => $cinema->id,
+                'name'           => 'Netflix',
+                'slug'           => 'netflix',
+                'thumbnail_url'  => null,
+                'description'    => 'Template undangan pernikahan bertema Netflix — cinematic, bold, dan ikonik. Tamu diajak masuk lewat layar "Who\'s Watching?" sebelum menikmati undangan seperti sebuah Netflix Original.',
+                'default_config' => [
+                    'netflix_subtitle' => 'Sebuah Kisah Cinta',
+                    'netflix_tags'     => ['#lovestory', '#romantic', '#halal', '#forever'],
+                ],
+                'demo_data'      => array_merge($weddingDemo, ['custom_config' => [
+                    'netflix_subtitle' => 'Sebuah Kisah Cinta',
+                    'netflix_tags'     => ['#lovestory', '#romantic', '#halal', '#forever'],
+                ]]),
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 8,
             ],
         ];
 

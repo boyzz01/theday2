@@ -1,6 +1,9 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t: $t } = useLocale();
 
 const props = defineProps({
     transactions: { type: Array, default: () => [] },
@@ -20,13 +23,13 @@ const typeClass = {
 </script>
 
 <template>
-    <Head title="Riwayat Pembayaran" />
+    <Head :title="$t('dashboard.transactions.title')" />
 
     <DashboardLayout>
         <template #header>
             <div>
-                <h2 class="text-base font-semibold text-stone-800">Riwayat Pembayaran</h2>
-                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">Semua transaksi paket dan add-on.</p>
+                <h2 class="text-base font-semibold text-stone-800">{{ $t('dashboard.transactions.title') }}</h2>
+                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">{{ $t('dashboard.transactions.subtitle') }}</p>
             </div>
         </template>
 
@@ -41,8 +44,8 @@ const typeClass = {
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
                     </div>
-                    <p class="text-sm font-medium text-stone-600 mb-1">Belum ada transaksi</p>
-                    <p class="text-xs text-stone-400">Riwayat pembayaran akan muncul di sini.</p>
+                    <p class="text-sm font-medium text-stone-600 mb-1">{{ $t('dashboard.transactions.emptyHeading') }}</p>
+                    <p class="text-xs text-stone-400">{{ $t('dashboard.transactions.emptyBody') }}</p>
                 </div>
 
                 <!-- Mobile: card list -->
@@ -71,7 +74,7 @@ const typeClass = {
                                :href="route('dashboard.transactions.invoice', t.id)"
                                target="_blank"
                                class="text-xs font-semibold text-[#92A89C] hover:underline">
-                                Unduh Invoice
+                                {{ $t('dashboard.transactions.downloadInvoice') }}
                             </a>
                         </div>
                     </div>
@@ -82,13 +85,13 @@ const typeClass = {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-stone-100">
-                                <th class="text-left px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Tanggal</th>
-                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Invoice</th>
-                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Jenis</th>
-                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Detail</th>
-                                <th class="text-right px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Harga</th>
-                                <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Status</th>
-                                <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Aksi</th>
+                                <th class="text-left px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colDate') }}</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colInvoice') }}</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colType') }}</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colDetail') }}</th>
+                                <th class="text-right px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colPrice') }}</th>
+                                <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colStatus') }}</th>
+                                <th class="text-center px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{{ $t('dashboard.transactions.colActions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-stone-100">
@@ -114,7 +117,7 @@ const typeClass = {
                                        :href="route('dashboard.transactions.invoice', t.id)"
                                        target="_blank"
                                        class="text-xs font-semibold text-[#92A89C] hover:underline">
-                                        Invoice
+                                        {{ $t('dashboard.transactions.invoiceLink') }}
                                     </a>
                                     <span v-else class="text-xs text-stone-300">—</span>
                                 </td>

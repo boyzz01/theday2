@@ -31,7 +31,7 @@ function applyFilters() {
 const previewTemplate = ref(null);
 const showPreview     = ref(false);
 
-const openPreview  = (t) => { previewTemplate.value = t; showPreview.value = true; };
+const openPreview  = (tpl) => { previewTemplate.value = tpl; showPreview.value = true; };
 const closePreview = () => { showPreview.value = false; };
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -40,10 +40,10 @@ const tierConfig = {
     premium: { label: 'Premium', bg: '#EFF2F0', color: '#2C2417' },
 };
 
-const primaryColor   = (t) => t.default_config?.primary_color   ?? '#92A89C';
-const secondaryColor = (t) => t.default_config?.secondary_color ?? '#FEFAE0';
-const accentColor    = (t) => t.default_config?.accent_color    ?? '#CCD5AE';
-const fontTitle      = (t) => t.default_config?.font_title      ?? 'serif';
+const primaryColor   = (tmpl) => tmpl.default_config?.primary_color   ?? '#92A89C';
+const secondaryColor = (tmpl) => tmpl.default_config?.secondary_color ?? '#FEFAE0';
+const accentColor    = (tmpl) => tmpl.default_config?.accent_color    ?? '#CCD5AE';
+const fontTitle      = (tmpl) => tmpl.default_config?.font_title      ?? 'serif';
 
 function useTemplate(templateId) {
     router.visit(`/use-template/${templateId}`);
@@ -52,20 +52,20 @@ function useTemplate(templateId) {
 const { locale, t } = useLocale();
 
 const allCategories = computed(() => [
-    { slug: 'all', name: t('Semua', 'All') },
+    { slug: 'all', name: t('public.gallery.all') },
     ...props.categories.map(c => ({ ...c, name: locale.value === 'en' ? (c.name_en || c.name) : c.name })),
 ]);
 
 const tiers = computed(() => [
-    { value: 'all',     label: t('Semua', 'All') },
-    { value: 'free',    label: t('Gratis', 'Free') },
+    { value: 'all',     label: t('public.gallery.all') },
+    { value: 'free',    label: t('public.gallery.free') },
     { value: 'premium', label: 'Premium' },
 ]);
 
 const tName  = (tmpl) => locale.value === 'en' ? (tmpl.name_en        || tmpl.name)        : tmpl.name;
 const tDesc  = (tmpl) => locale.value === 'en' ? (tmpl.description_en || tmpl.description) : tmpl.description;
 const tCat   = (tmpl) => locale.value === 'en' ? (tmpl.category.name_en || tmpl.category.name) : tmpl.category.name;
-const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
+const tTier  = (tier) => tier === 'free' ? t('public.gallery.free') : 'Premium';
 </script>
 
 <template>
@@ -77,12 +77,12 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
             <!-- Heading -->
             <div class="text-center max-w-xl mx-auto mb-8">
                 <h1 class="text-2xl font-semibold text-stone-800 mb-2" style="font-family: 'Cormorant Garamond', serif; font-size: 2rem">
-                    {{ t('Pilih Template Undanganmu', 'Choose Your Invitation Template') }}
+                    {{ t('public.gallery.heading') }}
                 </h1>
                 <p class="text-sm text-stone-400">
-                    {{ t('Semua template bisa dikustomisasi warna, font, dan isinya.', 'All templates are customizable in color, font, and content.') }}
-                    <a href="/register" class="underline hover:text-stone-600 transition-colors">{{ t('Daftar gratis', 'Register free') }}</a>
-                    {{ t('untuk mulai membuat undanganmu.', 'to start creating your invitation.') }}
+                    {{ t('public.gallery.subheading') }}
+                    <a href="/register" class="underline hover:text-stone-600 transition-colors">{{ t('public.gallery.registerFree') }}</a>
+                    {{ t('public.gallery.toStart') }}
                 </p>
             </div>
 
@@ -126,7 +126,7 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
             </div>
 
             <p class="text-xs text-stone-400">
-                {{ t('Menampilkan', 'Showing') }}
+                {{ t('public.gallery.showing') }}
                 <span class="font-semibold text-stone-600">{{ templates.length }}</span>
                 template
             </p>
@@ -210,7 +210,7 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                {{ t('Gunakan', 'Use') }}
+                                {{ t('public.gallery.use') }}
                             </button>
                         </div>
                     </div>
@@ -235,7 +235,7 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
                                 class="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
                                 :style="`background-color: ${primaryColor(template)}`"
                             >
-                                {{ t('Gunakan', 'Use') }}
+                                {{ t('public.gallery.use') }}
                             </button>
                         </div>
                     </div>
@@ -244,14 +244,14 @@ const tTier  = (tier) => tier === 'free' ? t('Gratis', 'Free') : 'Premium';
 
             <div v-else class="py-24 text-center">
                 <div class="text-5xl mb-4">🎨</div>
-                <p class="text-sm font-medium text-stone-600 mb-1">{{ t('Tidak ada template ditemukan', 'No templates found') }}</p>
-                <p class="text-xs text-stone-400">{{ t('Coba ubah filter kategori atau tier.', 'Try changing the category or tier filter.') }}</p>
+                <p class="text-sm font-medium text-stone-600 mb-1">{{ t('public.gallery.noTemplatesFound') }}</p>
+                <p class="text-xs text-stone-400">{{ t('public.gallery.noTemplatesHint') }}</p>
                 <button
                     @click="activeCategory = 'all'; activeTier = 'all'; applyFilters()"
                     class="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
                     style="background-color: #92A89C"
                 >
-                    {{ t('Reset Filter', 'Reset Filter') }}
+                    {{ t('public.gallery.resetFilter') }}
                 </button>
             </div>
         </div>

@@ -1,26 +1,31 @@
-import { ref, readonly } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { i18n } from './i18n';
 
 const LANG_KEY = 'theday_lang';
-const locale = ref(localStorage.getItem(LANG_KEY) || 'id');
 
 export function useLocale() {
+    const { t } = useI18n();
+    const locale = i18n.global.locale;
+
     function setLocale(lang) {
+        if (!['id', 'en'].includes(lang)) return;
         locale.value = lang;
-        localStorage.setItem(LANG_KEY, lang);
+        try { localStorage.setItem(LANG_KEY, lang); } catch (_) {}
+        axios.defaults.headers.common['X-Locale'] = lang;
+        // Refresh translations prop from server for the new locale
+        router.reload({ only: ['translations', 'locale'] });
     }
 
     function toggleLocale() {
         setLocale(locale.value === 'id' ? 'en' : 'id');
     }
 
-    function t(id, en) {
+    // Deprecated — for callers not yet migrated to t('key')
+    function tLegacy(id, en) {
         return locale.value === 'en' ? en : id;
     }
 
-    return {
-        locale: readonly(locale),
-        setLocale,
-        toggleLocale,
-        t,
-    };
+    return { locale, t, setLocale, toggleLocale, tLegacy };
 }
