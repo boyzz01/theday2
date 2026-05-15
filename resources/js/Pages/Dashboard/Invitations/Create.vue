@@ -3,6 +3,9 @@ import { computed, reactive, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { useInvitationEditor } from '@/Composables/useInvitationEditor.js';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 import StepInformasi from './Steps/StepInformasi.vue';
 import StepTampilan  from './Steps/StepTampilan.vue';
 import StepPublikasi from './Steps/StepPublikasi.vue';
@@ -24,10 +27,10 @@ const step1Errors = reactive({});
 function validateStep1() {
     for (const k of Object.keys(step1Errors)) delete step1Errors[k];
 
-    if (editor.details.groom_nickname?.length > 50)   step1Errors.groom_nickname  = 'Maksimal 50 karakter';
-    if (editor.details.groom_instagram?.length > 100)  step1Errors.groom_instagram = 'Maksimal 100 karakter';
-    if (editor.details.bride_nickname?.length > 50)    step1Errors.bride_nickname  = 'Maksimal 50 karakter';
-    if (editor.details.bride_instagram?.length > 100)  step1Errors.bride_instagram = 'Maksimal 100 karakter';
+    if (editor.details.groom_nickname?.length > 50)   step1Errors.groom_nickname  = t('dashboard.invitations.create.maxChar50');
+    if (editor.details.groom_instagram?.length > 100)  step1Errors.groom_instagram = t('dashboard.invitations.create.maxChar100');
+    if (editor.details.bride_nickname?.length > 50)    step1Errors.bride_nickname  = t('dashboard.invitations.create.maxChar50');
+    if (editor.details.bride_instagram?.length > 100)  step1Errors.bride_instagram = t('dashboard.invitations.create.maxChar100');
 
     return Object.keys(step1Errors).length === 0;
 }
@@ -38,14 +41,14 @@ function onTemplateChanged(newTemplate) {
     currentTemplate.value = newTemplate;
 }
 
-const steps = [
-    { number: 1, label: 'Informasi', key: 'informasi' },
-    { number: 2, label: 'Tampilan',  key: 'tampilan'  },
-    { number: 3, label: 'Publikasi', key: 'publikasi' },
-];
+const steps = computed(() => [
+    { number: 1, label: t('dashboard.invitations.create.stepInformasi'), key: 'informasi' },
+    { number: 2, label: t('dashboard.invitations.create.stepTampilan'),  key: 'tampilan'  },
+    { number: 3, label: t('dashboard.invitations.create.stepPublikasi'), key: 'publikasi' },
+]);
 
 const currentStepKey = computed(() =>
-    steps.find(s => s.number === editor.currentStep)?.key
+    steps.value.find(s => s.number === editor.currentStep)?.key
 );
 
 const stepSaveMap = {
@@ -83,12 +86,12 @@ const progressPercent = computed(() =>
 </script>
 
 <template>
-    <Head title="Buat Undangan" />
+    <Head :title="t('dashboard.invitations.create.pageTitle')" />
 
     <DashboardLayout>
         <template #header>
             <div class="flex items-center gap-2">
-                <span class="text-sm text-stone-400">Buat Undangan</span>
+                <span class="text-sm text-stone-400">{{ t('dashboard.invitations.create.breadcrumb') }}</span>
                 <span class="text-stone-300">/</span>
                 <span class="text-sm font-medium text-stone-700 truncate max-w-xs">{{ currentTemplate.name }}</span>
             </div>
@@ -209,7 +212,7 @@ const progressPercent = computed(() =>
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        Kembali
+                        {{ t('dashboard.invitations.create.back') }}
                     </button>
                     <div v-else />
 
@@ -223,7 +226,7 @@ const progressPercent = computed(() =>
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                         </svg>
-                        {{ editor.isSaving ? 'Menyimpan…' : editor.currentStep === 2 ? 'Lanjut ke Publikasi' : 'Simpan & Lanjut' }}
+                        {{ editor.isSaving ? t('dashboard.invitations.create.saving') : editor.currentStep === 2 ? t('dashboard.invitations.create.nextToPublish') : t('dashboard.invitations.create.saveAndNext') }}
                         <svg v-if="!editor.isSaving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>

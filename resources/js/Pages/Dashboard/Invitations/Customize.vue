@@ -2,6 +2,9 @@
 import { ref, computed, watch, onUnmounted, nextTick } from 'vue';
 import { Link, Head } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import SectionBgControl from '@/Components/invitation/customize/SectionBgControl.vue';
 import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
@@ -107,7 +110,7 @@ async function uploadMusic(event) {
         })
         music.value = { file_url: res.data.data.file_url, title: res.data.data.title }
     } catch {
-        musicError.value = 'Upload gagal. Coba lagi.'
+        musicError.value = t('dashboard.invitations.customize.musicUploadFailed')
     } finally {
         musicUploading.value = false
         event.target.value = ''
@@ -125,7 +128,7 @@ async function selectPresetMusic(preset) {
         })
         music.value = { file_url: res.data.data.file_url, title: res.data.data.title }
     } catch {
-        musicError.value = 'Gagal memilih musik. Coba lagi.'
+        musicError.value = t('dashboard.invitations.customize.musicSelectFailed')
     } finally {
         musicUploading.value = false
     }
@@ -147,28 +150,26 @@ const previewInvitation = computed(() => ({
 }));
 
 // ── Sections config ───────────────────────────────────────────────────────
-const SECTIONS_REGULAR = [
-    { key: 'cover',   label: 'Cover'   },
-    { key: 'opening', label: 'Opening' },
-    { key: 'quote',   label: 'Kutipan' },
-    { key: 'events',  label: 'Acara'   },
-    { key: 'gallery', label: 'Galeri'  },
-    { key: 'music',   label: 'Musik'   },
-    { key: 'closing', label: 'Penutup' },
-]
-
-const SECTIONS_STORYBOOK = [
-    { key: 'gallery',    label: 'Galeri'        },
-    { key: 'events',     label: 'Date & Venue'  },
-    { key: 'love_story', label: 'Love Story'    },
-    { key: 'couple',     label: 'Tentang Kami'  },
-    { key: 'gift',       label: 'Hadiah'        },
-    { key: 'quote',      label: 'Kutipan'       },
-    { key: 'music',      label: 'Musik'         },
-]
-
 const sections = computed(() =>
-    isStorybook.value ? SECTIONS_STORYBOOK : SECTIONS_REGULAR
+    isStorybook.value
+        ? [
+            { key: 'gallery',    label: t('dashboard.invitations.customize.sectionGallery')   },
+            { key: 'events',     label: t('dashboard.invitations.customize.sectionDateVenue')  },
+            { key: 'love_story', label: t('dashboard.invitations.customize.sectionLoveStory')  },
+            { key: 'couple',     label: t('dashboard.invitations.customize.sectionCouple')     },
+            { key: 'gift',       label: t('dashboard.invitations.customize.sectionGift')       },
+            { key: 'quote',      label: t('dashboard.invitations.customize.sectionQuote')      },
+            { key: 'music',      label: t('dashboard.invitations.customize.sectionMusic')      },
+          ]
+        : [
+            { key: 'cover',   label: t('dashboard.invitations.customize.sectionCover')   },
+            { key: 'opening', label: t('dashboard.invitations.customize.sectionOpening') },
+            { key: 'quote',   label: t('dashboard.invitations.customize.sectionQuote')   },
+            { key: 'events',  label: t('dashboard.invitations.customize.sectionEvents')  },
+            { key: 'gallery', label: t('dashboard.invitations.customize.sectionGallery') },
+            { key: 'music',   label: t('dashboard.invitations.customize.sectionMusic')   },
+            { key: 'closing', label: t('dashboard.invitations.customize.sectionClosing') },
+          ]
 )
 
 // ── Background change handler ─────────────────────────────────────────────
@@ -194,7 +195,7 @@ async function uploadBg(sectionKey, file) {
         });
         return true;
     } catch {
-        alert('Upload gagal. Coba lagi.');
+        alert(t('dashboard.invitations.customize.uploadFailed'));
         return false;
     } finally {
         uploadingKey.value = null;
@@ -219,22 +220,24 @@ async function save() {
     }
 }
 
+
+
 function openModal(key)   { modalSection.value = key }
 function closeModal()     { modalSection.value = null }
 
 function sectionBadge(key) {
     switch (key) {
-        case 'gallery':    return galleries.value.length ? `${galleries.value.length} foto` : null
-        case 'events':     return events.value.length    ? `${events.value.length} acara`   : null
+        case 'gallery':    return galleries.value.length ? t('dashboard.invitations.customize.galleryPhotos', { n: galleries.value.length }) : null
+        case 'events':     return events.value.length    ? t('dashboard.invitations.customize.galleryEvents', { n: events.value.length })   : null
         case 'love_story': {
             const count = sectionsData.value.love_story?.data?.stories?.length ?? 0
-            return count ? `${count} chapter` : null
+            return count ? t('dashboard.invitations.customize.loveStoryChapters', { n: count }) : null
         }
         case 'couple':
-            return (details.value.groom_name || details.value.bride_name) ? 'terisi' : null
+            return (details.value.groom_name || details.value.bride_name) ? t('dashboard.invitations.customize.coupleInfo') : null
         case 'gift': {
             const count = sectionsData.value.gift?.data?.accounts?.length ?? 0
-            return count ? `${count} rekening` : null
+            return count ? t('dashboard.invitations.customize.giftAccounts', { n: count }) : null
         }
         default: return null
     }
@@ -302,16 +305,16 @@ watch(activeKey, async (key) => {
 </script>
 
 <template>
-    <Head title="Kustomisasi Undangan" />
+    <Head :title="t('dashboard.invitations.customize.pageTitle')" />
     <DashboardLayout>
         <!-- Premium lock overlay -->
         <div v-if="!canUsePremium" class="min-h-screen flex items-center justify-center p-8">
             <div class="max-w-sm text-center space-y-4">
                 <div class="text-4xl">🔒</div>
-                <h2 class="text-lg font-semibold text-stone-800">Fitur Premium</h2>
-                <p class="text-sm text-stone-500">Kustomisasi tampilan per-section tersedia di paket Premium.</p>
+                <h2 class="text-lg font-semibold text-stone-800">{{ t('dashboard.invitations.customize.premiumTitle') }}</h2>
+                <p class="text-sm text-stone-500">{{ t('dashboard.invitations.customize.premiumBody') }}</p>
                 <Link href="/dashboard/paket" class="inline-block px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-opacity">
-                    Upgrade ke Premium
+                    {{ t('dashboard.invitations.customize.premiumUpgrade') }}
                 </Link>
             </div>
         </div>
@@ -325,7 +328,7 @@ watch(activeKey, async (key) => {
                 <!-- Header -->
                 <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between flex-shrink-0">
                     <div>
-                        <h1 class="text-sm font-bold text-stone-800">Kustomisasi</h1>
+                        <h1 class="text-sm font-bold text-stone-800">{{ t('dashboard.invitations.customize.headerTitle') }}</h1>
                         <p class="text-xs text-stone-400 mt-0.5">{{ groomName }} & {{ brideName }}</p>
                     </div>
                     <!-- Mobile tab toggle -->
@@ -334,12 +337,12 @@ watch(activeKey, async (key) => {
                             type="button"
                             @click="activeTab = 'edit'"
                             :class="['text-xs px-3 py-1.5 rounded-md font-medium transition-all', activeTab === 'edit' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500']"
-                        >Edit</button>
+                        >{{ t('dashboard.invitations.customize.tabEdit') }}</button>
                         <button
                             type="button"
                             @click="activeTab = 'preview'"
                             :class="['text-xs px-3 py-1.5 rounded-md font-medium transition-all', activeTab === 'preview' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500']"
-                        >Preview</button>
+                        >{{ t('dashboard.invitations.customize.tabPreview') }}</button>
                     </div>
                 </div>
 
@@ -354,7 +357,7 @@ watch(activeKey, async (key) => {
                             :auto-open="true"
                         />
                         <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
-                            Template tidak ditemukan
+                            {{ t('dashboard.invitations.customize.templateNotFound') }}
                         </div>
                     </PhoneMockup>
                 </div>
@@ -392,7 +395,7 @@ watch(activeKey, async (key) => {
 
                                 <!-- Cover: background control -->
                                 <template v-if="section.key === 'cover'">
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">{{ t('dashboard.invitations.customize.bgBackground') }}</p>
                                     <SectionBgControl
                                         :model-value="form['cover']"
                                         section-key="cover"
@@ -414,7 +417,7 @@ watch(activeKey, async (key) => {
                                         @click="openModal('gallery')"
                                         class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
                                     >
-                                        <span>Edit Foto</span>
+                                        <span>{{ t('dashboard.invitations.customize.editPhoto') }}</span>
                                         <span class="text-stone-400">→</span>
                                     </button>
                                 </template>
@@ -422,7 +425,7 @@ watch(activeKey, async (key) => {
                                 <!-- RSVP: inline toggle -->
                                 <template v-else-if="section.key === 'rsvp'">
                                     <div class="flex items-center justify-between pt-1">
-                                        <span class="text-sm text-stone-600">Aktifkan RSVP</span>
+                                        <span class="text-sm text-stone-600">{{ t('dashboard.invitations.customize.activateRsvp') }}</span>
                                         <button
                                             type="button"
                                             @click="toggleRsvp"
@@ -443,12 +446,12 @@ watch(activeKey, async (key) => {
                                 <template v-else-if="section.key === 'music'">
                                     <!-- Active music -->
                                     <div v-if="music" class="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#92A89C]/40 bg-[#92A89C]/5">
-                                        <span class="text-xs text-stone-600 flex-1 truncate">🎵 {{ music.title ?? 'Musik aktif' }}</span>
-                                        <span class="text-[10px] text-stone-400">aktif</span>
+                                        <span class="text-xs text-stone-600 flex-1 truncate">🎵 {{ music.title ?? t('dashboard.invitations.customize.sectionMusic') }}</span>
+                                        <span class="text-[10px] text-stone-400">{{ t('dashboard.invitations.customize.musicActive') }}</span>
                                     </div>
 
                                     <!-- Preset list -->
-                                    <p class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider pt-1">Pilih Lagu</p>
+                                    <p class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider pt-1">{{ t('dashboard.invitations.customize.chooseSong') }}</p>
                                     <div class="space-y-1">
                                         <div
                                             v-for="preset in defaultMusic"
@@ -483,7 +486,7 @@ watch(activeKey, async (key) => {
 
                                     <!-- Upload own -->
                                     <label class="w-full flex items-center justify-center py-2 rounded-xl border-2 border-dashed border-stone-200 text-xs text-stone-500 cursor-pointer hover:border-stone-300 hover:bg-stone-50 transition-colors">
-                                        {{ musicUploading ? 'Mengupload...' : '+ Upload file sendiri (MP3, maks 10MB)' }}
+                                        {{ musicUploading ? t('dashboard.invitations.customize.uploading') : t('dashboard.invitations.customize.uploadMusic') }}
                                         <input type="file" accept=".mp3,.wav,.ogg,.m4a,.aac" class="sr-only" :disabled="musicUploading" @change="uploadMusic" />
                                     </label>
 
@@ -493,7 +496,7 @@ watch(activeKey, async (key) => {
                                 <!-- Couple: order toggle + edit button -->
                                 <template v-else-if="section.key === 'couple'">
                                     <div class="flex items-center justify-between py-1">
-                                        <span class="text-sm text-stone-600">Nama wanita duluan</span>
+                                        <span class="text-sm text-stone-600">{{ t('dashboard.invitations.customize.brideFirst') }}</span>
                                         <button
                                             type="button"
                                             @click="saveCoupleOrder(coupleOrder === 'bride_first' ? 'groom_first' : 'bride_first')"
@@ -513,7 +516,7 @@ watch(activeKey, async (key) => {
                                         @click="openModal('couple')"
                                         class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
                                     >
-                                        <span>Edit Tentang Kami</span>
+                                        <span>{{ t('dashboard.invitations.customize.editAboutUs') }}</span>
                                         <span class="text-stone-400">→</span>
                                     </button>
                                 </template>
@@ -522,21 +525,21 @@ watch(activeKey, async (key) => {
                                 <template v-else-if="section.key === 'quote'">
                                     <div class="space-y-2 pt-1">
                                         <div class="space-y-1.5">
-                                            <label class="block text-xs font-medium text-stone-500">Teks Kutipan</label>
+                                            <label class="block text-xs font-medium text-stone-500">{{ t('dashboard.invitations.customize.quoteText') }}</label>
                                             <textarea
                                                 v-model="sectionsData.quote.data.text"
                                                 rows="3"
-                                                placeholder="Tuliskan kutipan atau ayat yang bermakna..."
+                                                :placeholder="t('dashboard.invitations.customize.quotePlaceholder')"
                                                 class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent resize-none transition"
                                                 @input="scheduleQuoteSave"
                                             />
                                         </div>
                                         <div class="space-y-1.5">
-                                            <label class="block text-xs font-medium text-stone-500">Sumber <span class="font-normal text-stone-400">(opsional)</span></label>
+                                            <label class="block text-xs font-medium text-stone-500">{{ t('dashboard.invitations.customize.quoteSource') }} <span class="font-normal text-stone-400">{{ t('dashboard.invitations.customize.quoteSourceOptional') }}</span></label>
                                             <input
                                                 v-model="sectionsData.quote.data.source"
                                                 type="text"
-                                                placeholder="— QS. Ar-Rum: 21"
+                                                :placeholder="t('dashboard.invitations.customize.quoteSourcePlaceholder')"
                                                 class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                                                 @input="scheduleQuoteSave"
                                             />
@@ -551,7 +554,7 @@ watch(activeKey, async (key) => {
                                         @click="openModal(section.key)"
                                         class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-600 hover:bg-stone-50 transition-colors"
                                     >
-                                        <span>Edit {{ section.label }}</span>
+                                        <span>{{ t('dashboard.invitations.customize.editSection', { label: section.label }) }}</span>
                                         <span class="text-stone-400">→</span>
                                     </button>
                                 </template>
@@ -564,21 +567,21 @@ watch(activeKey, async (key) => {
                                 <template v-if="section.key === 'quote'">
                                     <div class="space-y-2 pt-1">
                                         <div class="space-y-1.5">
-                                            <label class="block text-xs font-medium text-stone-500">Teks Kutipan</label>
+                                            <label class="block text-xs font-medium text-stone-500">{{ t('dashboard.invitations.customize.quoteText') }}</label>
                                             <textarea
                                                 v-model="sectionsData.quote.data.text"
                                                 rows="3"
-                                                placeholder="Tuliskan kutipan atau ayat yang bermakna..."
+                                                :placeholder="t('dashboard.invitations.customize.quotePlaceholder')"
                                                 class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent resize-none transition"
                                                 @input="scheduleQuoteSave"
                                             />
                                         </div>
                                         <div class="space-y-1.5">
-                                            <label class="block text-xs font-medium text-stone-500">Sumber <span class="font-normal text-stone-400">(opsional)</span></label>
+                                            <label class="block text-xs font-medium text-stone-500">{{ t('dashboard.invitations.customize.quoteSource') }} <span class="font-normal text-stone-400">{{ t('dashboard.invitations.customize.quoteSourceOptional') }}</span></label>
                                             <input
                                                 v-model="sectionsData.quote.data.source"
                                                 type="text"
-                                                placeholder="— QS. Ar-Rum: 21"
+                                                :placeholder="t('dashboard.invitations.customize.quoteSourcePlaceholder')"
                                                 class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                                                 @input="scheduleQuoteSave"
                                             />
@@ -587,7 +590,7 @@ watch(activeKey, async (key) => {
                                 </template>
 
                                 <template v-else-if="section.key !== 'music'">
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">Background</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2">{{ t('dashboard.invitations.customize.bgBackground') }}</p>
                                     <SectionBgControl
                                         :model-value="form[section.key]"
                                         :section-key="section.key"
@@ -598,12 +601,12 @@ watch(activeKey, async (key) => {
                                     />
                                 </template>
                                 <template v-if="section.key === 'music'">
-                                    <p class="text-xs text-stone-500">Upload file musik (MP3, maks 10MB). Gunakan fitur upload musik di halaman edit undangan.</p>
+                                    <p class="text-xs text-stone-500">{{ t('dashboard.invitations.customize.musicInfo') }}</p>
                                     <Link
                                         :href="route('dashboard.invitations.edit', invitation.id)"
                                         class="inline-block text-xs px-3 py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50"
                                     >
-                                        Buka Editor Musik →
+                                        {{ t('dashboard.invitations.customize.openMusicEditor') }}
                                     </Link>
                                 </template>
                             </template>
@@ -650,7 +653,7 @@ watch(activeKey, async (key) => {
                         :model-value="sectionsData.gift?.data ?? { accounts: [] }"
                         @update:model-value="sectionsData = { ...sectionsData, gift: { ...sectionsData.gift, data: $event } }"
                     />
-                    <div v-else class="text-sm text-stone-400 text-center py-8">Editor segera hadir.</div>
+                    <div v-else class="text-sm text-stone-400 text-center py-8">{{ t('dashboard.invitations.customize.comingSoon') }}</div>
 
                     <template #footer>
                         <button
@@ -659,7 +662,7 @@ watch(activeKey, async (key) => {
                             @click="coupleEditorRef?.save()"
                             class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-all"
                         >
-                            Simpan
+                            {{ t('dashboard.invitations.customize.save') }}
                         </button>
                         <button
                             v-else-if="modalSection === 'gift'"
@@ -667,7 +670,7 @@ watch(activeKey, async (key) => {
                             @click="giftEditorRef?.saveAll()"
                             class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 transition-all"
                         >
-                            Simpan
+                            {{ t('dashboard.invitations.customize.save') }}
                         </button>
                     </template>
                 </ContentModal>
@@ -680,10 +683,10 @@ watch(activeKey, async (key) => {
                         :disabled="saveStatus === 'saving'"
                         class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 disabled:opacity-60 transition-all"
                     >
-                        {{ saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan' }}
+                        {{ saveStatus === 'saving' ? t('dashboard.invitations.customize.saving') : t('dashboard.invitations.customize.save') }}
                     </button>
-                    <span v-if="saveStatus === 'saved'" class="text-xs text-emerald-500 font-medium">✓ Tersimpan</span>
-                    <span v-if="saveStatus === 'error'"  class="text-xs text-red-400 font-medium">Gagal simpan</span>
+                    <span v-if="saveStatus === 'saved'" class="text-xs text-emerald-500 font-medium">{{ t('dashboard.invitations.customize.saved') }}</span>
+                    <span v-if="saveStatus === 'error'"  class="text-xs text-red-400 font-medium">{{ t('dashboard.invitations.customize.saveError') }}</span>
                 </div>
 
                 <!-- Footer: Save — mobile fixed bottom bar -->
@@ -695,10 +698,10 @@ watch(activeKey, async (key) => {
                         :disabled="saveStatus === 'saving'"
                         class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#92A89C] hover:opacity-90 disabled:opacity-60 transition-all"
                     >
-                        {{ saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan' }}
+                        {{ saveStatus === 'saving' ? t('dashboard.invitations.customize.saving') : t('dashboard.invitations.customize.save') }}
                     </button>
-                    <span v-if="saveStatus === 'saved'" class="text-xs text-emerald-500 font-medium">✓ Tersimpan</span>
-                    <span v-if="saveStatus === 'error'"  class="text-xs text-red-400 font-medium">Gagal simpan</span>
+                    <span v-if="saveStatus === 'saved'" class="text-xs text-emerald-500 font-medium">{{ t('dashboard.invitations.customize.saved') }}</span>
+                    <span v-if="saveStatus === 'error'"  class="text-xs text-red-400 font-medium">{{ t('dashboard.invitations.customize.saveError') }}</span>
                 </div>
             </div>
 
@@ -713,7 +716,7 @@ watch(activeKey, async (key) => {
                         :auto-open="true"
                     />
                     <div v-else class="flex items-center justify-center h-full text-stone-400 text-sm">
-                        Template tidak ditemukan
+                        {{ t('dashboard.invitations.customize.templateNotFound') }}
                     </div>
                 </PhoneMockup>
             </div>

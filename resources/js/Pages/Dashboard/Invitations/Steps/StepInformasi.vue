@@ -4,6 +4,9 @@
 
 import { ref } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     basic:             { type: Object,   required: true },
@@ -36,14 +39,14 @@ function handlePhotoUpload(event, field) {
     <div class="p-4 sm:p-6 space-y-3">
 
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Informasi</h2>
-            <p class="text-sm text-stone-400 mt-0.5">Detail dasar undangan dan identitas pasangan</p>
+            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.invitations.stepInformasi.title') }}</h2>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.stepInformasi.subtitle') }}</p>
         </div>
 
         <!-- Couple -->
         <SectionAccordionCard
-            title="Pasangan"
-            description="Data mempelai pria dan wanita"
+            :title="t('dashboard.invitations.stepInformasi.sectionCouple')"
+            :description="t('dashboard.invitations.stepInformasi.sectionCoupleDesc')"
             :is-required="true"
             :is-enabled="true"
             :status="sections.couple?.completion_status ?? 'empty'"
@@ -53,15 +56,15 @@ function handlePhotoUpload(event, field) {
             <div class="space-y-6">
                 <!-- Mempelai Pria -->
                 <div class="space-y-3">
-                    <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wide">Mempelai Pria</h3>
+                    <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wide">{{ t('dashboard.invitations.stepInformasi.groomTitle') }}</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">Nama Lengkap</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.fullName') }}</label>
                             <input v-model="details.groom_name" type="text" placeholder="Ahmad Budi"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">Nama Panggilan</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.nickname') }}</label>
                             <input v-model="details.groom_nickname" type="text" placeholder="Budi"
                                    :class="['w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:border-transparent transition',
                                             errors.groom_nickname ? 'border-red-300 focus:ring-red-200' : 'border-stone-200 focus:ring-[#92A89C]/50']"
@@ -69,7 +72,7 @@ function handlePhotoUpload(event, field) {
                             <p v-if="errors.groom_nickname" class="text-xs text-red-500">{{ errors.groom_nickname }}</p>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
-                            <label class="block text-xs font-medium text-stone-600">Instagram <span class="font-normal text-stone-400">(opsional)</span></label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.instagram') }} <span class="font-normal text-stone-400">{{ t('dashboard.invitations.stepInformasi.instagramOptional') }}</span></label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">@</span>
                                 <input v-model="details.groom_instagram" type="text" placeholder="username"
@@ -80,7 +83,7 @@ function handlePhotoUpload(event, field) {
                             <p v-if="errors.groom_instagram" class="text-xs text-red-500">{{ errors.groom_instagram }}</p>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
-                            <label class="block text-xs font-medium text-stone-600">Nama Orang Tua</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.parentNames') }}</label>
                             <input v-model="details.groom_parent_names" type="text" placeholder="Bapak & Ibu Hasan"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
@@ -95,7 +98,7 @@ function handlePhotoUpload(event, field) {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            {{ details.groom_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
+                            {{ details.groom_photo_url ? t('dashboard.invitations.stepInformasi.changePhoto') : t('dashboard.invitations.stepInformasi.uploadPhoto') }}
                             <input type="file" accept="image/*" class="sr-only"
                                    @change="handlePhotoUpload($event, 'groom_photo_url')"/>
                         </label>
@@ -104,28 +107,28 @@ function handlePhotoUpload(event, field) {
                             type="button"
                             @click="deletePhotoField('groom_photo')"
                             class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-100 text-sm font-medium text-red-400 hover:bg-red-50 hover:border-red-200 transition-all"
-                            title="Hapus foto pria"
+                            :title="t('dashboard.invitations.stepInformasi.deleteGroomPhotoTitle')"
                         >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Hapus
+                            {{ t('dashboard.invitations.stepInformasi.deletePhoto') }}
                         </button>
                     </div>
                 </div>
 
                 <!-- Mempelai Wanita -->
                 <div class="space-y-3">
-                    <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wide">Mempelai Wanita</h3>
+                    <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wide">{{ t('dashboard.invitations.stepInformasi.brideTitle') }}</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">Nama Lengkap</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.fullName') }}</label>
                             <input v-model="details.bride_name" type="text" placeholder="Siti Ani"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-stone-600">Nama Panggilan</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.nickname') }}</label>
                             <input v-model="details.bride_nickname" type="text" placeholder="Ani"
                                    :class="['w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:border-transparent transition',
                                             errors.bride_nickname ? 'border-red-300 focus:ring-red-200' : 'border-stone-200 focus:ring-[#92A89C]/50']"
@@ -133,7 +136,7 @@ function handlePhotoUpload(event, field) {
                             <p v-if="errors.bride_nickname" class="text-xs text-red-500">{{ errors.bride_nickname }}</p>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
-                            <label class="block text-xs font-medium text-stone-600">Instagram <span class="font-normal text-stone-400">(opsional)</span></label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.instagram') }} <span class="font-normal text-stone-400">{{ t('dashboard.invitations.stepInformasi.instagramOptional') }}</span></label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">@</span>
                                 <input v-model="details.bride_instagram" type="text" placeholder="username"
@@ -144,7 +147,7 @@ function handlePhotoUpload(event, field) {
                             <p v-if="errors.bride_instagram" class="text-xs text-red-500">{{ errors.bride_instagram }}</p>
                         </div>
                         <div class="space-y-1.5 sm:col-span-2">
-                            <label class="block text-xs font-medium text-stone-600">Nama Orang Tua</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepInformasi.parentNames') }}</label>
                             <input v-model="details.bride_parent_names" type="text" placeholder="Bapak & Ibu Rasyid"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"/>
                         </div>
@@ -159,7 +162,7 @@ function handlePhotoUpload(event, field) {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            {{ details.bride_photo_url ? 'Ganti Foto' : 'Upload Foto' }}
+                            {{ details.bride_photo_url ? t('dashboard.invitations.stepInformasi.changePhoto') : t('dashboard.invitations.stepInformasi.uploadPhoto') }}
                             <input type="file" accept="image/*" class="sr-only"
                                    @change="handlePhotoUpload($event, 'bride_photo_url')"/>
                         </label>
@@ -168,13 +171,13 @@ function handlePhotoUpload(event, field) {
                             type="button"
                             @click="deletePhotoField('bride_photo')"
                             class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-100 text-sm font-medium text-red-400 hover:bg-red-50 hover:border-red-200 transition-all"
-                            title="Hapus foto wanita"
+                            :title="t('dashboard.invitations.stepInformasi.deleteBridePhotoTitle')"
                         >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Hapus
+                            {{ t('dashboard.invitations.stepInformasi.deletePhoto') }}
                         </button>
                     </div>
                 </div>

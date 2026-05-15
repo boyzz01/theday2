@@ -5,6 +5,9 @@
 import { ref, computed } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     galleries:          { type: Object,   required: true }, // ref([])
@@ -48,14 +51,14 @@ async function handleGalleryUpload(event) {
     <div class="p-4 sm:p-6 space-y-3">
 
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Media</h2>
-            <p class="text-sm text-stone-400 mt-0.5">Galeri foto, video, dan kisah cinta (semua opsional)</p>
+            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.invitations.stepMedia.title') }}</h2>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.stepMedia.subtitle') }}</p>
         </div>
 
         <!-- Gallery (optional) -->
         <SectionAccordionCard
-            title="Galeri Foto"
-            description="Koleksi foto untuk ditampilkan di undangan"
+            :title="t('dashboard.invitations.stepMedia.galleryTitle')"
+            :description="t('dashboard.invitations.stepMedia.galleryDesc')"
             :is-required="sections.gallery?.is_required ?? false"
             :is-enabled="sections.gallery?.is_enabled ?? false"
             :status="sections.gallery?.completion_status ?? 'disabled'"
@@ -97,10 +100,10 @@ async function handleGalleryUpload(event) {
 
                 <!-- Gallery photo limit indicator for free users -->
                 <div v-if="!canUsePremium" class="flex items-center justify-between text-xs text-stone-400">
-                    <span>{{ galleries.length }} / {{ maxGalleryPhotos }} foto</span>
+                    <span>{{ t('dashboard.invitations.stepMedia.galleryPhotoCount', { n: galleries.length, max: maxGalleryPhotos }) }}</span>
                     <a v-if="galleryAtLimit" href="/upgrade"
                        class="font-semibold text-[#73877C] hover:underline">
-                        Upgrade untuk lebih
+                        {{ t('dashboard.invitations.stepMedia.galleryUpgradeMore') }}
                     </a>
                 </div>
 
@@ -117,26 +120,26 @@ async function handleGalleryUpload(event) {
                     <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    {{ uploadingGallery ? 'Mengunggah…' : 'Upload Foto' }}
+                    {{ uploadingGallery ? t('dashboard.invitations.stepMedia.galleryUploading') : t('dashboard.invitations.stepMedia.galleryUpload') }}
                     <input type="file" accept="image/*" multiple class="sr-only"
                            :disabled="uploadingGallery || !invitationId"
                            @change="handleGalleryUpload"/>
                 </label>
                 <!-- Limit reached state -->
                 <div v-else class="w-full py-4 rounded-xl border-2 border-dashed border-[#B8C7BF]/60 bg-[#92A89C]/5 text-sm text-center text-stone-500">
-                    Batas {{ maxGalleryPhotos }} foto tercapai.
-                    <a href="/upgrade" class="font-semibold text-[#73877C] hover:underline">Upgrade ke Premium</a>
-                    untuk foto tidak terbatas.
+                    {{ t('dashboard.invitations.stepMedia.galleryLimitReached', { max: maxGalleryPhotos }) }}
+                    <a href="/upgrade" class="font-semibold text-[#73877C] hover:underline">{{ t('dashboard.invitations.stepMedia.galleryUpgradePremium') }}</a>
+                    {{ t('dashboard.invitations.stepMedia.galleryUnlimited') }}
                 </div>
-                <p v-if="!invitationId" class="text-xs text-[#92A89C]">Simpan Step 1 terlebih dahulu untuk upload foto.</p>
+                <p v-if="!invitationId" class="text-xs text-[#92A89C]">{{ t('dashboard.invitations.stepMedia.gallerySaveFirst') }}</p>
             </div>
         </SectionAccordionCard>
 
         <!-- Video — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
             v-if="canUsePremium"
-            title="Video"
-            description="Link video YouTube atau Vimeo untuk ditampilkan"
+            :title="t('dashboard.invitations.stepMedia.videoTitle')"
+            :description="t('dashboard.invitations.stepMedia.videoDesc')"
             :is-required="sections.video?.is_required ?? false"
             :is-enabled="sections.video?.is_enabled ?? false"
             :status="sections.video?.completion_status ?? 'disabled'"
@@ -146,7 +149,7 @@ async function handleGalleryUpload(event) {
         >
             <div class="space-y-3">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-stone-700">URL Video</label>
+                    <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.stepMedia.videoUrlLabel') }}</label>
                     <input
                         v-model="sections.video.data_json.url"
                         type="url"
@@ -155,7 +158,7 @@ async function handleGalleryUpload(event) {
                     />
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-stone-700">Keterangan</label>
+                    <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.stepMedia.videoCaptionLabel') }}</label>
                     <input
                         v-model="sections.video.data_json.caption"
                         type="text"
@@ -169,8 +172,8 @@ async function handleGalleryUpload(event) {
         <!-- Love Story — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
             v-if="canUsePremium"
-            title="Kisah Cinta"
-            description="Ceritakan perjalanan kisah cinta kalian"
+            :title="t('dashboard.invitations.stepMedia.loveStoryTitle')"
+            :description="t('dashboard.invitations.stepMedia.loveStoryDesc')"
             :is-required="sections.love_story?.is_required ?? false"
             :is-enabled="sections.love_story?.is_enabled ?? false"
             :status="sections.love_story?.completion_status ?? 'disabled'"
@@ -185,7 +188,7 @@ async function handleGalleryUpload(event) {
                     class="rounded-xl border border-stone-200 p-4 space-y-3 bg-stone-50/50"
                 >
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">Momen {{ index + 1 }}</span>
+                        <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">{{ t('dashboard.invitations.stepMedia.momentBadge', { n: index + 1 }) }}</span>
                         <button
                             @click="sections.love_story.data_json.stories.splice(index, 1)"
                             class="p-1 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
@@ -215,7 +218,7 @@ async function handleGalleryUpload(event) {
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Tambah Momen
+                    {{ t('dashboard.invitations.stepMedia.addMoment') }}
                 </button>
             </div>
         </SectionAccordionCard>

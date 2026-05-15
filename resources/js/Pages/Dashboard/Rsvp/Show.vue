@@ -2,6 +2,9 @@
 import { computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     invitation: { type: Object, required: true },
@@ -12,18 +15,18 @@ const props = defineProps({
 
 const color = computed(() => props.invitation.template_color);
 
-const filters = [
-    { key: 'semua',       label: 'Semua',       emoji: '📋' },
-    { key: 'hadir',       label: 'Hadir',       emoji: '🎉' },
-    { key: 'tidak_hadir', label: 'Tidak Hadir', emoji: '😢' },
-    { key: 'ragu',        label: 'Ragu',        emoji: '🤔' },
-];
+const filters = computed(() => [
+    { key: 'semua',       label: t('dashboard.rsvp.filterAll'),          emoji: '📋' },
+    { key: 'hadir',       label: t('dashboard.rsvp.filterAttending'),    emoji: '🎉' },
+    { key: 'tidak_hadir', label: t('dashboard.rsvp.filterNotAttending'), emoji: '😢' },
+    { key: 'ragu',        label: t('dashboard.rsvp.filterMaybe'),        emoji: '🤔' },
+]);
 
-const attendanceBadge = {
-    hadir:       { label: 'Hadir',       cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
-    tidak_hadir: { label: 'Tidak Hadir', cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
-    ragu:        { label: 'Masih Ragu',  cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
-};
+const attendanceBadge = computed(() => ({
+    hadir:       { label: t('dashboard.rsvp.badgeAttending'),    cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+    tidak_hadir: { label: t('dashboard.rsvp.badgeNotAttending'), cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+    ragu:        { label: t('dashboard.rsvp.badgeMaybe'),        cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
+}));
 
 function setFilter(key) {
     router.get(route('dashboard.rsvp.show', props.invitation.id), { filter: key }, {
@@ -37,7 +40,7 @@ function doExport() {
 </script>
 
 <template>
-    <Head :title="`RSVP – ${invitation.title || 'Undangan'}`" />
+    <Head :title="`${t('dashboard.rsvp.pageTitle')} – ${invitation.title || t('dashboard.rsvp.fallbackInvitation')}`" />
 
     <DashboardLayout>
         <template #header>
@@ -49,8 +52,10 @@ function doExport() {
                     </svg>
                 </Link>
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-stone-800 truncate">RSVP — {{ invitation.title || '(Tanpa judul)' }}</h2>
-                    <p class="text-sm text-stone-400 mt-0.5">Daftar konfirmasi kehadiran tamu.</p>
+                    <h2 class="text-base font-semibold text-stone-800 truncate">
+                        {{ t('dashboard.rsvp.headingShow', { title: invitation.title || t('dashboard.rsvp.noTitle') }) }}
+                    </h2>
+                    <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.rsvp.subtitleShow') }}</p>
                 </div>
             </div>
         </template>
@@ -59,24 +64,24 @@ function doExport() {
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center">
                 <p class="text-2xl font-bold text-stone-800">{{ summary.total }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">Total</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.rsvp.statTotal') }}</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center">
                 <p class="text-2xl font-bold text-emerald-600">{{ summary.hadir }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">Hadir</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.rsvp.statAttending') }}</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center">
                 <p class="text-2xl font-bold text-red-500">{{ summary.tidak_hadir }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">Tidak Hadir</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.rsvp.statNotAttending') }}</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center">
                 <p class="text-2xl font-bold text-[#92A89C]">{{ summary.ragu }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">Masih Ragu</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.rsvp.statMaybe') }}</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-100 p-4 text-center col-span-2 sm:col-span-1"
                  :style="`background: linear-gradient(135deg, ${color}12, ${color}22); border-color: ${color}33`">
                 <p class="text-2xl font-bold" :style="`color: ${color}`">{{ summary.total_tamu }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">Est. Tamu Hadir</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.rsvp.statEstGuests') }}</p>
             </div>
         </div>
 
@@ -106,14 +111,14 @@ function doExport() {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Export Excel
+                {{ t('dashboard.rsvp.exportExcel') }}
             </button>
         </div>
 
         <!-- Empty state for filtered -->
         <div v-if="!rsvps.length"
              class="bg-white rounded-2xl border border-dashed border-stone-200 p-12 text-center">
-            <p class="text-sm text-stone-500">Belum ada konfirmasi untuk filter ini.</p>
+            <p class="text-sm text-stone-500">{{ t('dashboard.rsvp.emptyFilter') }}</p>
         </div>
 
         <!-- RSVP list -->
@@ -140,7 +145,7 @@ function doExport() {
                             {{ attendanceBadge[r.attendance]?.label ?? r.attendance }}
                         </span>
                         <span v-if="r.attendance === 'hadir'" class="text-xs text-stone-400">
-                            {{ r.guest_count }} orang
+                            {{ r.guest_count }} {{ t('dashboard.rsvp.persons') }}
                         </span>
                     </div>
                     <p v-if="r.phone" class="text-xs text-stone-400 mt-0.5">{{ r.phone }}</p>

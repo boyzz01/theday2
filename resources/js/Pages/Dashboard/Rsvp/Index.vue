@@ -1,26 +1,30 @@
 <script setup>
+import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     invitations: { type: Array, default: () => [] },
 });
 
-const statusConfig = {
-    draft:     { label: 'Draft',         cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
-    published: { label: 'Aktif',         cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
-    archived:  { label: 'Diarsipkan',    cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
-};
+const statusConfig = computed(() => ({
+    draft:     { label: t('dashboard.rsvp.statusDraft'),     cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
+    published: { label: t('dashboard.rsvp.statusPublished'), cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+    archived:  { label: t('dashboard.rsvp.statusArchived'),  cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+}));
 </script>
 
 <template>
-    <Head title="RSVP" />
+    <Head :title="t('dashboard.rsvp.pageTitle')" />
 
     <DashboardLayout>
         <template #header>
             <div>
-                <h2 class="text-base font-semibold text-stone-800">RSVP</h2>
-                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">Konfirmasi kehadiran tamu undanganmu.</p>
+                <h2 class="text-base font-semibold text-stone-800">{{ t('dashboard.rsvp.headingIndex') }}</h2>
+                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">{{ t('dashboard.rsvp.subtitleIndex') }}</p>
             </div>
         </template>
 
@@ -33,13 +37,13 @@ const statusConfig = {
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
-            <p class="text-sm font-medium text-stone-600 mb-1">Belum ada undangan</p>
-            <p class="text-xs text-stone-400 mb-5">Buat undangan terlebih dahulu untuk melihat RSVP.</p>
+            <p class="text-sm font-medium text-stone-600 mb-1">{{ t('dashboard.rsvp.emptyHeading') }}</p>
+            <p class="text-xs text-stone-400 mb-5">{{ t('dashboard.rsvp.emptyBody') }}</p>
             <Link
                 :href="route('dashboard.templates')"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
             >
-                Buat Undangan
+                {{ t('dashboard.rsvp.createInvitation') }}
             </Link>
         </div>
 
@@ -65,7 +69,7 @@ const statusConfig = {
                         <p class="text-3xl font-bold" :style="`color: ${inv.template_color}`">
                             {{ inv.total_rsvps }}
                         </p>
-                        <p class="text-xs text-stone-500 mt-0.5">konfirmasi masuk</p>
+                        <p class="text-xs text-stone-500 mt-0.5">{{ t('dashboard.rsvp.confirmationsIn') }}</p>
                         <div class="w-8 h-px mx-auto mt-2" :style="`background-color: ${inv.template_color}`"/>
                     </div>
 
@@ -80,16 +84,16 @@ const statusConfig = {
                 <!-- Card body -->
                 <div class="p-4">
                     <p class="text-sm font-semibold text-stone-800 truncate mb-3">
-                        {{ inv.title || '(Tanpa judul)' }}
+                        {{ inv.title || t('dashboard.rsvp.noTitle') }}
                     </p>
 
                     <!-- Mini stats -->
                     <div class="flex items-center gap-3 text-xs mb-4">
-                        <span class="text-emerald-600">{{ inv.hadir_count }} hadir</span>
-                        <span v-if="inv.tidak_hadir_count" class="text-red-500">{{ inv.tidak_hadir_count }} tidak</span>
-                        <span v-if="inv.ragu_count" class="text-stone-400">{{ inv.ragu_count }} ragu</span>
+                        <span class="text-emerald-600">{{ inv.hadir_count }} {{ t('dashboard.rsvp.attending') }}</span>
+                        <span v-if="inv.tidak_hadir_count" class="text-red-500">{{ inv.tidak_hadir_count }} {{ t('dashboard.rsvp.notShort') }}</span>
+                        <span v-if="inv.ragu_count" class="text-stone-400">{{ inv.ragu_count }} {{ t('dashboard.rsvp.maybeShort') }}</span>
                         <span v-if="inv.total_tamu" class="ml-auto text-stone-500 font-medium">
-                            {{ inv.total_tamu }} tamu
+                            {{ inv.total_tamu }} {{ t('dashboard.rsvp.guests') }}
                         </span>
                     </div>
 
@@ -98,7 +102,7 @@ const statusConfig = {
                         :href="route('dashboard.rsvp.show', inv.id)"
                         class="block w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
                     >
-                        Lihat RSVP
+                        {{ t('dashboard.rsvp.viewRsvp') }}
                     </Link>
                 </div>
             </div>

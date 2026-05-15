@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     publish:      { type: Object,   required: true },
@@ -99,7 +102,7 @@ async function handleAction(action) {
         const result = await props.saveStep6(action);
         publishStatus.value = result?.status ?? action;
     } catch (e) {
-        publishError.value = e.response?.data?.message ?? 'Terjadi kesalahan.';
+        publishError.value = e.response?.data?.message ?? t('dashboard.invitations.step6Review.generalError');
     }
 }
 
@@ -119,9 +122,9 @@ function goToDashboard() {
 
         <div>
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">
-                Review & Publikasi
+                {{ t('dashboard.invitations.step6Review.title') }}
             </h2>
-            <p class="text-sm text-stone-400 mt-0.5">Atur URL, keamanan, dan jadwal undangan Anda</p>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step6Review.subtitle') }}</p>
         </div>
 
         <!-- Success state -->
@@ -134,8 +137,8 @@ function goToDashboard() {
                     </svg>
                 </div>
                 <div>
-                    <p class="text-base font-semibold text-green-800">Undangan berhasil dipublikasikan!</p>
-                    <p class="text-sm text-green-600 mt-0.5">Bagikan link di bawah kepada tamu undangan Anda</p>
+                    <p class="text-base font-semibold text-green-800">{{ t('dashboard.invitations.step6Review.publishedTitle') }}</p>
+                    <p class="text-sm text-green-600 mt-0.5">{{ t('dashboard.invitations.step6Review.publishedSubtitle') }}</p>
                 </div>
                 <div v-if="invitationUrl"
                      class="flex items-center gap-2 bg-white rounded-xl border border-green-200 px-4 py-2.5 text-sm">
@@ -146,13 +149,13 @@ function goToDashboard() {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                         </svg>
-                        Salin
+                        {{ t('dashboard.invitations.step6Review.copyLink') }}
                     </button>
                 </div>
                 <button @click="goToDashboard"
                         class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
                         style="background-color: #92A89C">
-                    Kembali ke Dashboard
+                    {{ t('dashboard.invitations.step6Review.backToDashboard') }}
                 </button>
             </div>
 
@@ -165,12 +168,12 @@ function goToDashboard() {
                     </svg>
                 </div>
                 <div>
-                    <p class="text-base font-semibold text-stone-700">Disimpan sebagai draft</p>
-                    <p class="text-sm text-stone-400 mt-0.5">Anda dapat mempublikasikannya kapan saja dari dashboard</p>
+                    <p class="text-base font-semibold text-stone-700">{{ t('dashboard.invitations.step6Review.draftTitle') }}</p>
+                    <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step6Review.draftSubtitle') }}</p>
                 </div>
                 <button @click="goToDashboard"
                         class="px-5 py-2 rounded-xl text-sm font-semibold text-stone-700 bg-stone-200 hover:bg-stone-300 transition-all">
-                    Kembali ke Dashboard
+                    {{ t('dashboard.invitations.step6Review.backToDashboard') }}
                 </button>
             </div>
         </Transition>
@@ -186,21 +189,21 @@ function goToDashboard() {
                              class="w-full h-full object-cover" alt="Template"/>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-stone-800">{{ basic.title || 'Judul Undangan' }}</p>
-                        <p class="text-xs text-stone-400">{{ template.name }} · Pernikahan</p>
+                        <p class="text-sm font-semibold text-stone-800">{{ basic.title || t('dashboard.invitations.step6Review.invitationTitle') }}</p>
+                        <p class="text-xs text-stone-400">{{ template.name }} · {{ t('dashboard.invitations.step6Review.wedding') }}</p>
                     </div>
                     <span :class="[
                         'ml-auto text-xs font-medium px-2.5 py-1 rounded-lg',
                         invitationId ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-stone-100 text-stone-500',
                     ]">
-                        {{ invitationId ? 'Tersimpan' : 'Belum disimpan' }}
+                        {{ invitationId ? t('dashboard.invitations.step6Review.saved') : t('dashboard.invitations.step6Review.notSaved') }}
                     </span>
                 </div>
             </div>
 
             <!-- Slug / URL -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-medium text-stone-700">URL Undangan</label>
+                <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step6Review.urlLabel') }}</label>
                 <div :class="[
                     'flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-[#92A89C]/50',
                     slugStatus === 'taken'     ? 'border-red-300'   :
@@ -231,24 +234,24 @@ function goToDashboard() {
                 </div>
 
                 <!-- Status messages -->
-                <p v-if="slugStatus === 'available'" class="text-xs text-green-600">URL tersedia</p>
+                <p v-if="slugStatus === 'available'" class="text-xs text-green-600">{{ t('dashboard.invitations.step6Review.urlAvailable') }}</p>
                 <div v-else-if="slugStatus === 'taken'" class="flex items-center gap-2 flex-wrap">
-                    <p class="text-xs text-red-500">URL sudah dipakai.</p>
+                    <p class="text-xs text-red-500">{{ t('dashboard.invitations.step6Review.urlTaken') }}</p>
                     <button v-if="slugSuggestion"
                             @click="applySuggestion"
                             class="text-xs font-semibold text-[#73877C] underline hover:text-[#2C2417] transition-colors">
-                        Pakai "/{{ slugSuggestion }}"
+                        {{ t('dashboard.invitations.step6Review.urlUseSuggestion', { slug: slugSuggestion }) }}
                     </button>
                 </div>
-                <p v-else class="text-xs text-stone-400">Hanya huruf, angka, dan tanda hubung. Contoh: budi-dan-ani-2025</p>
+                <p v-else class="text-xs text-stone-400">{{ t('dashboard.invitations.step6Review.urlHint') }}</p>
             </div>
 
             <!-- Password protection -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-stone-700">Proteksi Password</p>
-                        <p class="text-xs text-stone-400">Tamu harus memasukkan password untuk membuka undangan</p>
+                        <p class="text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step6Review.passwordTitle') }}</p>
+                        <p class="text-xs text-stone-400">{{ t('dashboard.invitations.step6Review.passwordDesc') }}</p>
                     </div>
                     <button
                         @click="publish.is_password_protected = !publish.is_password_protected"
@@ -276,13 +279,13 @@ function goToDashboard() {
 
             <!-- Expiry date -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-medium text-stone-700">Tanggal Kedaluwarsa <span class="text-stone-400 font-normal">(opsional)</span></label>
+                <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step6Review.expiresLabel') }} <span class="text-stone-400 font-normal">{{ t('dashboard.invitations.step6Review.expiresOptional') }}</span></label>
                 <input
                     v-model="publish.expires_at"
                     type="datetime-local"
                     class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition"
                 />
-                <p class="text-xs text-stone-400">Undangan akan otomatis tidak dapat diakses setelah tanggal ini</p>
+                <p class="text-xs text-stone-400">{{ t('dashboard.invitations.step6Review.expiresHint') }}</p>
             </div>
 
             <!-- Error -->
@@ -305,7 +308,7 @@ function goToDashboard() {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    Simpan Draft
+                    {{ t('dashboard.invitations.step6Review.saveDraft') }}
                 </button>
                 <button
                     @click="handleAction('publish')"
@@ -321,7 +324,7 @@ function goToDashboard() {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
-                    Publikasikan Sekarang
+                    {{ t('dashboard.invitations.step6Review.publishNow') }}
                 </button>
             </div>
 

@@ -4,6 +4,9 @@
 
 import { ref } from 'vue';
 import TemplatePicker from '@/Components/Wizard/TemplatePicker.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     customConfig:    { type: Object,  required: true },
@@ -29,15 +32,15 @@ function onTemplateChanged(newTemplate) {
     <div class="p-4 sm:p-6 space-y-3">
 
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Tampilan</h2>
-            <p class="text-sm text-stone-400 mt-0.5">Pilih template untuk undangan kamu</p>
+            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.invitations.stepTampilan.title') }}</h2>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.stepTampilan.subtitle') }}</p>
         </div>
 
         <!-- Current Template Card -->
         <div class="rounded-2xl border border-stone-200 bg-white overflow-hidden">
             <div class="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-semibold text-stone-800">Template Aktif</p>
+                    <p class="text-sm font-semibold text-stone-800">{{ t('dashboard.invitations.stepTampilan.activeTemplate') }}</p>
                     <p class="text-xs text-stone-400 mt-0.5">{{ template.name }}</p>
                 </div>
                 <button
@@ -46,7 +49,7 @@ function onTemplateChanged(newTemplate) {
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
-                    Ganti Template
+                    {{ t('dashboard.invitations.stepTampilan.changeTemplate') }}
                 </button>
             </div>
             <div class="relative h-40 bg-stone-100 overflow-hidden">
