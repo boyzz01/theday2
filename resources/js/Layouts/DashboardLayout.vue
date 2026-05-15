@@ -3,6 +3,9 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -13,81 +16,93 @@ const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const expandedGroups = ref({});
 
-const navItems = [
+const navItems = computed(() => [
     {
-        label: 'Dashboard',
+        id: 'dashboard',
+        label: t('nav.dashboard'),
         route: 'dashboard',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>`,
     },
     {
-        label: 'Undangan Saya',
+        id: 'myInvitations',
+        label: t('nav.myInvitations'),
         route: 'dashboard.invitations.index',
         activePattern: 'dashboard.invitations.*',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
     },
     {
-        label: 'Tamu',
+        id: 'guests',
+        label: t('nav.guests'),
         group: true,
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`,
         children: [
             {
-                label: 'Guest List Manager',
+                id: 'guestList',
+                label: t('nav.guestList'),
                 route: 'dashboard.guest-list.index',
                 activePattern: 'dashboard.guest-list.*',
                 premiumOnly: true,
             },
             {
-                label: 'RSVP',
+                id: 'rsvp',
+                label: t('nav.rsvp'),
                 route: 'dashboard.rsvp.index',
                 activePattern: 'dashboard.rsvp.*',
             },
             {
-                label: 'Ucapan',
+                id: 'ucapan',
+                label: t('nav.ucapan'),
                 route: 'dashboard.buku-tamu.index',
                 activePattern: 'dashboard.buku-tamu.*',
             },
         ],
     },
     {
-        label: 'Wedding Planner',
+        id: 'weddingPlanner',
+        label: t('nav.weddingPlanner'),
         route: 'dashboard.checklist.index',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>`,
     },
     {
-        label: 'Budget Planner',
+        id: 'budgetPlanner',
+        label: t('nav.budgetPlanner'),
         route: 'dashboard.budget-planner.index',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>`,
     },
     {
-        label: 'Template',
+        id: 'templates',
+        label: t('nav.templates'),
         route: 'dashboard.templates',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>`,
     },
     {
-        label: 'Paket & Langganan',
+        id: 'paket',
+        label: t('nav.paket'),
         route: 'dashboard.paket',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
     },
     {
-        label: 'Riwayat Pembayaran',
+        id: 'transactions',
+        label: t('nav.transactions'),
         route: 'dashboard.transactions.index',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>`,
     },
     {
-        label: 'Pengaturan Akun',
+        id: 'settings',
+        label: t('nav.settings'),
         route: 'profile.edit',
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>`,
     },
-];
+]);
 
 const checklistTodo        = computed(() => page.props.checklist_todo ?? 0);
 const canCreateInvitation  = computed(() => page.props.can_create_invitation ?? true);
@@ -124,15 +139,15 @@ const isGroupActive = (item) => {
     return item.children.some(child => isActive(child));
 };
 
-const toggleGroup = (label) => {
-    expandedGroups.value[label] = !expandedGroups.value[label];
+const toggleGroup = (id) => {
+    expandedGroups.value[id] = !expandedGroups.value[id];
 };
 
 // auto-expand group yang berisi halaman aktif
 onMounted(() => {
-    navItems.forEach(item => {
+    navItems.value.forEach(item => {
         if (item.group && isGroupActive(item)) {
-            expandedGroups.value[item.label] = true;
+            expandedGroups.value[item.id] = true;
         }
     });
 
@@ -194,7 +209,7 @@ const handleClickOutsideAvatar = (e) => {
                 <button
                     class="hidden lg:flex ml-auto p-1 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
                     @click="sidebarCollapsed = true"
-                    title="Sembunyikan sidebar"
+                    :title="t('dashboard.layout.sidebar.collapse')"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
@@ -207,7 +222,7 @@ const handleClickOutsideAvatar = (e) => {
                 <button
                     class="p-1.5 rounded-md text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors"
                     @click="sidebarCollapsed = false"
-                    title="Tampilkan sidebar"
+                    :title="t('dashboard.layout.sidebar.expand')"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
@@ -217,13 +232,13 @@ const handleClickOutsideAvatar = (e) => {
 
             <!-- Nav Items -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                <template v-for="item in navItems" :key="item.label">
+                <template v-for="item in navItems" :key="item.id">
 
                     <!-- Group (with children) -->
                     <template v-if="item.group">
                         <!-- Group header button -->
                         <button
-                            @click="toggleGroup(item.label)"
+                            @click="toggleGroup(item.id)"
                             :class="[
                                 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 cursor-pointer',
                                 isGroupActive(item)
@@ -238,7 +253,7 @@ const handleClickOutsideAvatar = (e) => {
                             <span v-if="!sidebarCollapsed" class="flex-1 text-left">{{ item.label }}</span>
                             <svg v-if="!sidebarCollapsed"
                                  class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
-                                 :class="expandedGroups[item.label] ? 'rotate-180' : ''"
+                                 :class="expandedGroups[item.id] ? 'rotate-180' : ''"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
@@ -246,14 +261,14 @@ const handleClickOutsideAvatar = (e) => {
 
                         <!-- Sub-items -->
                         <Transition name="expand">
-                            <div v-if="!sidebarCollapsed && expandedGroups[item.label]"
+                            <div v-if="!sidebarCollapsed && expandedGroups[item.id]"
                                  class="mt-1 ml-4 pl-3 border-l border-stone-100 space-y-0.5">
-                                <template v-for="child in item.children" :key="child.label">
+                                <template v-for="child in item.children" :key="child.id">
                                     <!-- Coming soon: non-clickable -->
                                     <span v-if="child.comingSoon"
                                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-stone-400 cursor-default select-none">
                                         {{ child.label }}
-                                        <span class="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-400 font-medium">Segera</span>
+                                        <span class="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-400 font-medium">{{ t('dashboard.layout.dropdown.comingSoon') }}</span>
                                     </span>
                                     <!-- Normal child link -->
                                     <Link v-else
@@ -310,16 +325,16 @@ const handleClickOutsideAvatar = (e) => {
                     : 'bg-stone-50 border-stone-200'">
                 <p class="text-xs font-medium"
                    :class="plan?.plan_slug === 'premium' ? 'text-[#C8A26B]' : 'text-stone-400'">
-                    Paket Aktif
+                    {{ t('dashboard.layout.planBadge.activePlan') }}
                 </p>
                 <p class="text-sm font-semibold mt-0.5"
                    :class="plan?.plan_slug === 'premium' ? 'text-[#2C2417]' : 'text-stone-600'">
-                    {{ plan?.plan_name ?? 'Gratis' }}
+                    {{ plan?.plan_name ?? t('dashboard.layout.planBadge.free') }}
                 </p>
                 <Link :href="route('dashboard.paket')"
                       class="text-xs mt-1 inline-block font-medium transition-colors hover:opacity-80"
                       style="color: #C8A26B">
-                    {{ plan?.plan_slug === 'premium' ? 'Kelola →' : 'Upgrade →' }}
+                    {{ plan?.plan_slug === 'premium' ? t('dashboard.layout.planBadge.manage') : t('dashboard.layout.planBadge.upgrade') }}
                 </Link>
             </div>
 
@@ -338,7 +353,7 @@ const handleClickOutsideAvatar = (e) => {
                         v-if="!sidebarCollapsed"
                         @click="logout"
                         class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 cursor-pointer"
-                        title="Keluar"
+                        :title="t('dashboard.layout.sidebar.logout')"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -413,7 +428,7 @@ const handleClickOutsideAvatar = (e) => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                     </svg>
-                                    Pengaturan Akun
+                                    {{ t('nav.settings') }}
                                 </Link>
                                 <!-- Logout -->
                                 <button
@@ -424,7 +439,7 @@ const handleClickOutsideAvatar = (e) => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                     </svg>
-                                    Keluar
+                                    {{ t('nav.logout') }}
                                 </button>
                             </div>
                         </Transition>
@@ -438,15 +453,13 @@ const handleClickOutsideAvatar = (e) => {
                      class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
                      style="background-color:#F0EDE6;border-bottom:1px solid #D9CFC4">
                     <span style="color: #2C2417">
-                        Paket Premiummu berakhir dalam
-                        <strong>{{ plan.days_remaining }} hari</strong>.
-                        Perpanjang sekarang agar tidak terputus.
+                        {{ t('dashboard.layout.banner.expiry.message', { days: plan.days_remaining }) }}
                     </span>
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <Link :href="route('dashboard.paket')"
                               class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 cursor-pointer"
                               style="background-color:#C8A26B">
-                            Perpanjang →
+                            {{ t('dashboard.layout.banner.expiry.renew') }}
                         </Link>
                         <button @click="dismissedExpiry = true"
                                 class="transition-colors cursor-pointer"
@@ -465,15 +478,13 @@ const handleClickOutsideAvatar = (e) => {
                      class="flex items-center justify-between gap-3 px-4 lg:px-6 py-2.5 text-sm"
                      style="background-color:#FEF3C7;border-bottom:1px solid #FDE68A">
                     <span style="color:#92400E">
-                        ⚠️ Subscription habis. Undangan masih aktif selama
-                        <strong>{{ plan.grace_days_remaining }} hari</strong> lagi.
-                        Setelah itu undangan akan diarsipkan otomatis.
+                        {{ t('dashboard.layout.banner.grace.message', { days: plan.grace_days_remaining }) }}
                     </span>
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <Link :href="route('dashboard.paket')"
                               class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 cursor-pointer"
                               style="background-color:#D97706">
-                            Perpanjang →
+                            {{ t('dashboard.layout.banner.grace.renew') }}
                         </Link>
                         <button @click="dismissedGrace = true"
                                 class="transition-colors cursor-pointer"
@@ -507,16 +518,14 @@ const handleClickOutsideAvatar = (e) => {
                         </svg>
                     </div>
                     <h3 class="text-base font-semibold text-stone-800 text-center mb-1">
-                        Batas Undangan Tercapai
+                        {{ t('dashboard.layout.modal.invitationLimit.title') }}
                     </h3>
                     <p class="text-sm text-stone-500 text-center mb-6 leading-relaxed">
                         <template v-if="plan?.plan_slug === 'premium'">
-                            Kamu sudah mencapai batas {{ plan?.max_invitations ?? 2 }} undangan di paket Premium.
-                            Hapus undangan lama untuk membuat yang baru.
+                            {{ t('dashboard.layout.modal.invitationLimit.premiumBody', { max: plan?.max_invitations ?? 2 }) }}
                         </template>
                         <template v-else>
-                            Paket aktifmu sudah mencapai batas jumlah undangan.
-                            Upgrade ke Premium untuk membuat lebih banyak undangan.
+                            {{ t('dashboard.layout.modal.invitationLimit.freeBody') }}
                         </template>
                     </p>
                     <div class="flex gap-3">
@@ -524,7 +533,7 @@ const handleClickOutsideAvatar = (e) => {
                             @click="showLimitModal = false"
                             class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors cursor-pointer"
                         >
-                            Tutup
+                            {{ t('dashboard.layout.modal.invitationLimit.close') }}
                         </button>
                         <Link
                             v-if="plan?.plan_slug !== 'premium'"
@@ -533,7 +542,7 @@ const handleClickOutsideAvatar = (e) => {
                             style="background-color: #C8A26B"
                             @click="showLimitModal = false"
                         >
-                            Upgrade Paket
+                            {{ t('dashboard.layout.modal.invitationLimit.upgradePlan') }}
                         </Link>
                     </div>
                 </div>

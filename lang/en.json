@@ -50,7 +50,42 @@
     "rsvp": {},
     "transactions": {},
     "bukuTamu": {},
-    "invitations": {}
+    "invitations": {},
+    "layout": {
+      "sidebar": {
+        "collapse": "Collapse sidebar",
+        "expand": "Expand sidebar",
+        "logout": "Logout"
+      },
+      "planBadge": {
+        "activePlan": "Active Plan",
+        "free": "Free",
+        "manage": "Manage →",
+        "upgrade": "Upgrade →"
+      },
+      "banner": {
+        "expiry": {
+          "message": "Your Premium plan expires in {days} days. Renew now to avoid interruption.",
+          "renew": "Renew →"
+        },
+        "grace": {
+          "message": "⚠️ Subscription expired. Your invitations are still active for {days} more days. After that they will be archived automatically.",
+          "renew": "Renew →"
+        }
+      },
+      "modal": {
+        "invitationLimit": {
+          "title": "Invitation Limit Reached",
+          "premiumBody": "You have reached the limit of {max} invitations in your Premium plan. Delete an old invitation to create a new one.",
+          "freeBody": "Your current plan has reached the invitation limit. Upgrade to Premium to create more invitations.",
+          "close": "Close",
+          "upgradePlan": "Upgrade Plan"
+        }
+      },
+      "dropdown": {
+        "comingSoon": "Coming Soon"
+      }
+    }
   },
   "auth": {
     "login_title": "Sign In — TheDay",

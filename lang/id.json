@@ -50,7 +50,42 @@
     "rsvp": {},
     "transactions": {},
     "bukuTamu": {},
-    "invitations": {}
+    "invitations": {},
+    "layout": {
+      "sidebar": {
+        "collapse": "Sembunyikan sidebar",
+        "expand": "Tampilkan sidebar",
+        "logout": "Keluar"
+      },
+      "planBadge": {
+        "activePlan": "Paket Aktif",
+        "free": "Gratis",
+        "manage": "Kelola →",
+        "upgrade": "Upgrade →"
+      },
+      "banner": {
+        "expiry": {
+          "message": "Paket Premiummu berakhir dalam {days} hari. Perpanjang sekarang agar tidak terputus.",
+          "renew": "Perpanjang →"
+        },
+        "grace": {
+          "message": "⚠️ Subscription habis. Undangan masih aktif selama {days} hari lagi. Setelah itu undangan akan diarsipkan otomatis.",
+          "renew": "Perpanjang →"
+        }
+      },
+      "modal": {
+        "invitationLimit": {
+          "title": "Batas Undangan Tercapai",
+          "premiumBody": "Kamu sudah mencapai batas {max} undangan di paket Premium. Hapus undangan lama untuk membuat yang baru.",
+          "freeBody": "Paket aktifmu sudah mencapai batas jumlah undangan. Upgrade ke Premium untuk membuat lebih banyak undangan.",
+          "close": "Tutup",
+          "upgradePlan": "Upgrade Paket"
+        }
+      },
+      "dropdown": {
+        "comingSoon": "Segera"
+      }
+    }
   },
   "auth": {
     "login_title": "Masuk — TheDay",
