@@ -1,0 +1,55 @@
+{
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "loading": "Memuat...",
+    "search": "Cari",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "yes": "Ya",
+    "no": "Tidak",
+    "confirm": "Konfirmasi",
+    "close": "Tutup",
+    "submit": "Kirim",
+    "update": "Perbarui",
+    "create": "Buat",
+    "view": "Lihat",
+    "more": "Lainnya",
+    "actions": "Aksi"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myInvitations": "Undangan Saya",
+    "guests": "Tamu",
+    "guestList": "Guest List Manager",
+    "rsvp": "RSVP",
+    "ucapan": "Ucapan",
+    "weddingPlanner": "Wedding Planner",
+    "budgetPlanner": "Budget Planner",
+    "templates": "Template",
+    "paket": "Paket & Langganan",
+    "transactions": "Riwayat Pembayaran",
+    "settings": "Pengaturan Akun",
+    "logout": "Keluar"
+  },
+  "validation": {
+    "required": ":field wajib diisi",
+    "email": "Format email tidak valid",
+    "min": ":field minimal :min karakter",
+    "max": ":field maksimal :max karakter"
+  },
+  "dashboard": {
+    "index": {},
+    "paket": {},
+    "templates": {},
+    "checklist": {},
+    "budget": {},
+    "guests": {},
+    "rsvp": {},
+    "transactions": {},
+    "bukuTamu": {},
+    "invitations": {}
+  }
+}

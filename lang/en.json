@@ -1,0 +1,55 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "close": "Close",
+    "submit": "Submit",
+    "update": "Update",
+    "create": "Create",
+    "view": "View",
+    "more": "More",
+    "actions": "Actions"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myInvitations": "My Invitations",
+    "guests": "Guests",
+    "guestList": "Guest List Manager",
+    "rsvp": "RSVP",
+    "ucapan": "Greetings",
+    "weddingPlanner": "Wedding Planner",
+    "budgetPlanner": "Budget Planner",
+    "templates": "Templates",
+    "paket": "Plans & Subscription",
+    "transactions": "Payment History",
+    "settings": "Account Settings",
+    "logout": "Logout"
+  },
+  "validation": {
+    "required": ":field is required",
+    "email": "Invalid email format",
+    "min": ":field minimum :min characters",
+    "max": ":field maximum :max characters"
+  },
+  "dashboard": {
+    "index": {},
+    "paket": {},
+    "templates": {},
+    "checklist": {},
+    "budget": {},
+    "guests": {},
+    "rsvp": {},
+    "transactions": {},
+    "bukuTamu": {},
+    "invitations": {}
+  }
+}
