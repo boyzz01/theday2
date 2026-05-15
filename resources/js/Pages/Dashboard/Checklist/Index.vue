@@ -1243,7 +1243,7 @@ const currentPickerDate = computed(() =>
 
         <!-- ── FAB mobile ─────────────────────────────────────────── -->
         <button @click="openCreate"
-                class="fixed bottom-6 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
+                class="fixed bottom-20 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
                 style="background-color: #92A89C">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
