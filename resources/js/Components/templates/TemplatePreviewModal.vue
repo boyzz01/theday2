@@ -4,7 +4,7 @@ import PhoneMockup from '@/Components/ui/PhoneMockup.vue';
 import { useLocale } from '@/Composables/useLocale';
 import { TEMPLATE_MAP } from '@/Components/invitation/templates/registry';
 
-const { locale, t } = useLocale();
+const { locale, tLegacy } = useLocale();
 
 const props = defineProps({
     isOpen:   { type: Boolean, required: true },
@@ -74,20 +74,20 @@ const isStorybook = computed(() => props.template?.category?.slug === 'storybook
 
 const features = computed(() => isStorybook.value
     ? [
-        { label: t('Dunia ilustrasi interaktif',          'Interactive illustrated world')   },
-        { label: t('Hotspot animasi CSS',                 'CSS animated hotspots')           },
-        { label: t('Formulir RSVP interaktif',            'Interactive RSVP form')           },
-        { label: t('Buku tamu & ucapan',                  'Guestbook & wishes')              },
-        { label: t('Gallery foto lightbox',               'Lightbox photo gallery')          },
-        { label: t('Berbagi via WhatsApp',                'Share via WhatsApp')              },
+        { label: tLegacy('Dunia ilustrasi interaktif',          'Interactive illustrated world')   },
+        { label: tLegacy('Hotspot animasi CSS',                 'CSS animated hotspots')           },
+        { label: tLegacy('Formulir RSVP interaktif',            'Interactive RSVP form')           },
+        { label: tLegacy('Buku tamu & ucapan',                  'Guestbook & wishes')              },
+        { label: tLegacy('Gallery foto lightbox',               'Lightbox photo gallery')          },
+        { label: tLegacy('Berbagi via WhatsApp',                'Share via WhatsApp')              },
     ]
     : [
-        { label: t('Animasi scroll halus',     'Smooth scroll animation')   },
-        { label: t('Formulir RSVP interaktif', 'Interactive RSVP form')     },
-        { label: t('Gallery foto lightbox',    'Lightbox photo gallery')    },
-        { label: t('Hitung mundur acara',      'Event countdown timer')     },
-        { label: t('Ucapan & doa tamu',        'Guest wishes & prayers')    },
-        { label: t('Berbagi via WhatsApp',     'Share via WhatsApp')        },
+        { label: tLegacy('Animasi scroll halus',     'Smooth scroll animation')   },
+        { label: tLegacy('Formulir RSVP interaktif', 'Interactive RSVP form')     },
+        { label: tLegacy('Gallery foto lightbox',    'Lightbox photo gallery')    },
+        { label: tLegacy('Hitung mundur acara',      'Event countdown timer')     },
+        { label: tLegacy('Ucapan & doa tamu',        'Guest wishes & prayers')    },
+        { label: tLegacy('Berbagi via WhatsApp',     'Share via WhatsApp')        },
     ]
 );
 
@@ -165,7 +165,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                     class="px-2.5 py-1 rounded-full text-xs font-semibold"
                                     :style="`background:${tierBadge[tier].bg};color:${tierBadge[tier].color}`"
                                 >
-                                    {{ tier === 'free' ? t('Gratis', 'Free') : 'Premium' }}
+                                    {{ tier === 'free' ? tLegacy('Gratis', 'Free') : 'Premium' }}
                                 </span>
                                 <h3 class="text-base font-semibold text-stone-800">{{ tName }}</h3>
                                 <span class="text-xs text-stone-400 hidden sm:inline">· {{ tCatName }}</span>
@@ -208,7 +208,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                              :style="`background: linear-gradient(160deg, ${secondary}, ${primary}18)`">
                                             <div class="w-12 h-0.5 mb-5 rounded-full" :style="`background:${primary}`"/>
                                             <p class="text-[10px] tracking-[0.2em] uppercase font-medium mb-2" :style="`color:${primary}`">
-                                                {{ t('Undangan Pernikahan', 'Wedding Invitation') }}
+                                                {{ tLegacy('Undangan Pernikahan', 'Wedding Invitation') }}
                                             </p>
                                             <p class="text-3xl font-bold leading-tight text-stone-800 mb-1"
                                                :style="`font-family: '${fontTitle}', serif`">{{ groomName }}</p>
@@ -227,7 +227,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             </p>
                                         </div>
                                         <div v-if="events.length" class="px-4 pb-4 space-y-3">
-                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ t('Waktu & Lokasi', 'Date & Location') }}</p>
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ tLegacy('Waktu & Lokasi', 'Date & Location') }}</p>
                                             <div v-for="(ev, i) in events" :key="i" class="rounded-2xl p-3.5"
                                                  :style="`background:${primary}12; border:1px solid ${primary}25`">
                                                 <p class="text-xs font-bold text-stone-800 mb-1">{{ ev.event_name }}</p>
@@ -239,7 +239,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             </div>
                                         </div>
                                         <div v-if="gallery.length" class="px-4 pb-5">
-                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ t('Galeri Foto', 'Photo Gallery') }}</p>
+                                            <p class="text-[10px] tracking-[0.15em] uppercase font-semibold text-center mb-3" :style="`color:${primary}`">{{ tLegacy('Galeri Foto', 'Photo Gallery') }}</p>
                                             <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
                                                 <img v-for="(src, i) in gallery" :key="i" :src="src"
                                                      class="w-20 h-24 object-cover rounded-xl flex-shrink-0"
@@ -249,9 +249,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                         </div>
                                         <div class="px-5 pb-8 text-center">
                                             <button class="w-full py-3 rounded-2xl text-xs font-bold text-white shadow-sm" :style="`background:${primary}`">
-                                                {{ t('Konfirmasi Kehadiran', 'Confirm Attendance') }}
+                                                {{ tLegacy('Konfirmasi Kehadiran', 'Confirm Attendance') }}
                                             </button>
-                                            <p class="mt-4 text-[10px] text-stone-300">{{ t('Dibuat dengan TheDay', 'Made with TheDay') }}</p>
+                                            <p class="mt-4 text-[10px] text-stone-300">{{ tLegacy('Dibuat dengan TheDay', 'Made with TheDay') }}</p>
                                         </div>
                                     </div>
                                 </PhoneMockup>
@@ -266,15 +266,15 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                         <h2 class="text-xl font-bold text-stone-900 mb-1"
                                             :style="`font-family: '${fontTitle}', serif`">{{ tName }}</h2>
                                         <p class="text-sm text-stone-500 leading-relaxed">
-                                            {{ tDesc ?? t('Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.', 'An elegant template fully customizable to your needs.') }}
+                                            {{ tDesc ?? tLegacy('Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.', 'An elegant template fully customizable to your needs.') }}
                                         </p>
                                     </div>
 
                                     <!-- Color palette -->
                                     <div v-if="!isStorybook">
-                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('Palet Warna', 'Color Palette') }}</p>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ tLegacy('Palet Warna', 'Color Palette') }}</p>
                                         <div class="flex items-center gap-2">
-                                            <div v-for="([label, color]) in [[t('Primer','Primary'), primary], [t('Sekunder','Secondary'), secondary], [t('Aksen','Accent'), accent]]"
+                                            <div v-for="([label, color]) in [[tLegacy('Primer','Primary'), primary], [tLegacy('Sekunder','Secondary'), secondary], [tLegacy('Aksen','Accent'), accent]]"
                                                  :key="label" class="flex flex-col items-center gap-1">
                                                 <div class="w-9 h-9 rounded-xl border border-stone-100 shadow-sm" :style="`background:${color}`"/>
                                                 <span class="text-[10px] text-stone-400">{{ label }}</span>
@@ -288,7 +288,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 
                                     <!-- Features -->
                                     <div>
-                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('Fitur Tersedia', 'Available Features') }}</p>
+                                        <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ tLegacy('Fitur Tersedia', 'Available Features') }}</p>
                                         <ul class="space-y-1.5">
                                             <li v-for="f in features" :key="f.label" class="flex items-center gap-2 text-sm text-stone-600">
                                                 <span class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
@@ -312,12 +312,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                         </svg>
-                                        {{ t('Lihat Demo Lengkap', 'View Full Demo') }}
+                                        {{ tLegacy('Lihat Demo Lengkap', 'View Full Demo') }}
                                     </a>
                                     <button @click="emit('use-template', template.id)"
                                             class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                                             :style="`background:${primary}`">
-                                        {{ t('Gunakan Template Ini', 'Use This Template') }}
+                                        {{ tLegacy('Gunakan Template Ini', 'Use This Template') }}
                                     </button>
                                 </div>
                             </div>
