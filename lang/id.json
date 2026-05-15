@@ -44,7 +44,187 @@
     "index": {},
     "paket": {},
     "templates": {},
-    "checklist": {},
+    "checklist": {
+      "header": {
+        "title": "Wedding Planner"
+      },
+      "error": {
+        "loadFailed": "Gagal memuat checklist. Silakan muat ulang halaman.",
+        "retry": "Coba lagi"
+      },
+      "bulk": {
+        "selected": "{count} dipilih",
+        "markDone": "Selesai",
+        "archive": "Arsipkan",
+        "delete": "Hapus"
+      },
+      "summary": {
+        "progress": "Progress",
+        "done": "Selesai",
+        "doneOf": "dari {total} task",
+        "overdue": "Terlambat",
+        "overdueTask": "task overdue",
+        "upcoming": "7 Hari Lagi",
+        "upcomingDeadline": "deadline dekat"
+      },
+      "allDone": "Semua task selesai! Pernikahan siap dirayakan.",
+      "eventDate": {
+        "prompt": "Isi tanggal acara agar tenggat task dihitung otomatis.",
+        "placeholder": "Pilih tanggal acara",
+        "saving": "Menyimpan…",
+        "save": "Simpan",
+        "errorPast": "Tanggal acara tidak boleh di masa lalu.",
+        "errorSave": "Gagal menyimpan tanggal."
+      },
+      "controls": {
+        "groupCategory": "Grup: Kategori",
+        "groupDeadline": "Grup: Deadline",
+        "groupAssignee": "Grup: PIC",
+        "statusAll": "Semua status",
+        "statusTodo": "Belum selesai",
+        "statusDone": "Selesai",
+        "statusArchived": "Diarsipkan",
+        "categoryAll": "Semua kategori",
+        "priorityAll": "Semua prioritas",
+        "assigneeAll": "Semua PIC",
+        "sortDefault": "Urutan default",
+        "sortDueDate": "Tenggat terdekat",
+        "sortPriority": "Prioritas tertinggi",
+        "moveDoneToBottom": "Selesai ke bawah",
+        "moveDoneTooltip": "Task yang sudah selesai otomatis dipindah ke bagian bawah grup, agar task yang belum selesai lebih mudah dilihat.",
+        "addTask": "Tambah Task"
+      },
+      "group": {
+        "taskCount": "{count} task"
+      },
+      "empty": {
+        "noTasks": "Belum ada task",
+        "noTasksHint": "Mulai persiapan pernikahanmu",
+        "addTask": "Tambah task",
+        "noFilterMatch": "Tidak ada task yang cocok dengan filter ini."
+      },
+      "swipe": {
+        "done": "Selesai",
+        "edit": "Edit",
+        "delete": "Hapus"
+      },
+      "subtask": {
+        "loading": "Memuat subtugas…",
+        "empty": "Belum ada subtugas.",
+        "placeholder": "Tambah subtugas…",
+        "add": "+ Tambah"
+      },
+      "task": {
+        "restore": "Pulihkan"
+      },
+      "actions": {
+        "deleteConfirm": "Hapus \"{title}\"?",
+        "toastDeleted": "Task dihapus.",
+        "toastBulkDone": "Ditandai selesai.",
+        "toastBulkArchived": "Diarsipkan.",
+        "toastBulkDeleted": "Task dihapus.",
+        "toastBulkFailed": "Gagal melakukan aksi.",
+        "toastUpdated": "Task diperbarui.",
+        "toastAdded": "Task ditambahkan."
+      },
+      "form": {
+        "titleAdd": "Tambah Task Baru",
+        "titleEdit": "Edit Task",
+        "fieldName": "Nama task",
+        "namePlaceholder": "Contoh: Booking fotografer",
+        "fieldCategory": "Kategori",
+        "categoryCustomPlaceholder": "Nama kategori",
+        "switchToList": "← Dari daftar",
+        "switchToCustom": "+ Kategori lain",
+        "categoryRequired": "Kategori wajib diisi.",
+        "fieldPriority": "Prioritas",
+        "fieldAssignee": "Penanggung jawab (opsional)",
+        "assigneeNone": "Tidak ditentukan",
+        "assigneeCustomPlaceholder": "Nama penanggung jawab",
+        "fieldDueDate": "Tenggat (opsional)",
+        "dueDatePlaceholder": "Pilih tanggal",
+        "reminderLabel": "Aktifkan pengingat",
+        "reminderSub": "Pengingat in-app sebelum tenggat",
+        "reminderDaysBefore": "{days} hari sebelum",
+        "fieldNotes": "Catatan (opsional)",
+        "notesPlaceholder": "Tambahkan catatan…",
+        "btnCancel": "Batal",
+        "btnSaving": "Menyimpan…",
+        "btnSave": "Simpan",
+        "btnAdd": "Tambah"
+      },
+      "datePicker": {
+        "title": "Pilih Tanggal",
+        "confirm": "Pilih — {date}",
+        "noDate": "Pilih tanggal dulu"
+      },
+      "priority": {
+        "high": "Tinggi",
+        "medium": "Sedang",
+        "low": "Rendah"
+      },
+      "urgency": {
+        "overdue": "Lewat {days} hari",
+        "today": "Hari ini",
+        "tomorrow": "Besok",
+        "daysLeft": "{days} hari lagi",
+        "countdown": "H-{days}"
+      },
+      "deadlineGroup": {
+        "overdue": "Terlambat",
+        "today": "Hari ini",
+        "week": "7 hari ke depan",
+        "month": "30 hari ke depan",
+        "later": "Nanti",
+        "done": "Selesai"
+      },
+      "assignee": {
+        "noPic": "Tanpa PIC",
+        "bride": "Mempelai Wanita",
+        "groom": "Mempelai Pria",
+        "both": "Bersama",
+        "parents": "Orang Tua",
+        "family": "Keluarga",
+        "wo": "Wedding Organizer",
+        "custom": "Lainnya…"
+      },
+      "category": {
+        "administrasi": "Administrasi",
+        "venue": "Venue",
+        "vendor": "Vendor",
+        "undangan": "Undangan",
+        "keuangan": "Keuangan",
+        "busana": "Busana",
+        "dekorasi": "Dekorasi",
+        "dokumentasi": "Dokumentasi",
+        "tamu": "Tamu",
+        "acara": "Acara",
+        "lainnya": "Lainnya"
+      },
+      "months": {
+        "jan": "Januari",
+        "feb": "Februari",
+        "mar": "Maret",
+        "apr": "April",
+        "may": "Mei",
+        "jun": "Juni",
+        "jul": "Juli",
+        "aug": "Agustus",
+        "sep": "September",
+        "oct": "Oktober",
+        "nov": "November",
+        "dec": "Desember"
+      },
+      "days": {
+        "sun": "Min",
+        "mon": "Sen",
+        "tue": "Sel",
+        "wed": "Rab",
+        "thu": "Kam",
+        "fri": "Jum",
+        "sat": "Sab"
+      }
+    },
     "budget": {},
     "guests": {},
     "rsvp": {},

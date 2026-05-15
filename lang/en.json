@@ -44,7 +44,187 @@
     "index": {},
     "paket": {},
     "templates": {},
-    "checklist": {},
+    "checklist": {
+      "header": {
+        "title": "Wedding Planner"
+      },
+      "error": {
+        "loadFailed": "Failed to load checklist. Please reload the page.",
+        "retry": "Try again"
+      },
+      "bulk": {
+        "selected": "{count} selected",
+        "markDone": "Done",
+        "archive": "Archive",
+        "delete": "Delete"
+      },
+      "summary": {
+        "progress": "Progress",
+        "done": "Done",
+        "doneOf": "of {total} tasks",
+        "overdue": "Overdue",
+        "overdueTask": "overdue tasks",
+        "upcoming": "Next 7 Days",
+        "upcomingDeadline": "upcoming deadline"
+      },
+      "allDone": "All tasks done! Ready to celebrate your wedding.",
+      "eventDate": {
+        "prompt": "Set your event date so task deadlines are calculated automatically.",
+        "placeholder": "Pick event date",
+        "saving": "Saving…",
+        "save": "Save",
+        "errorPast": "Event date cannot be in the past.",
+        "errorSave": "Failed to save date."
+      },
+      "controls": {
+        "groupCategory": "Group: Category",
+        "groupDeadline": "Group: Deadline",
+        "groupAssignee": "Group: Assignee",
+        "statusAll": "All statuses",
+        "statusTodo": "To do",
+        "statusDone": "Done",
+        "statusArchived": "Archived",
+        "categoryAll": "All categories",
+        "priorityAll": "All priorities",
+        "assigneeAll": "All assignees",
+        "sortDefault": "Default order",
+        "sortDueDate": "Earliest deadline",
+        "sortPriority": "Highest priority",
+        "moveDoneToBottom": "Done to bottom",
+        "moveDoneTooltip": "Completed tasks are automatically moved to the bottom of the group, so pending tasks are easier to see.",
+        "addTask": "Add Task"
+      },
+      "group": {
+        "taskCount": "{count} task"
+      },
+      "empty": {
+        "noTasks": "No tasks yet",
+        "noTasksHint": "Start planning your wedding",
+        "addTask": "Add task",
+        "noFilterMatch": "No tasks match the current filter."
+      },
+      "swipe": {
+        "done": "Done",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "subtask": {
+        "loading": "Loading subtasks…",
+        "empty": "No subtasks yet.",
+        "placeholder": "Add subtask…",
+        "add": "+ Add"
+      },
+      "task": {
+        "restore": "Restore"
+      },
+      "actions": {
+        "deleteConfirm": "Delete \"{title}\"?",
+        "toastDeleted": "Task deleted.",
+        "toastBulkDone": "Marked as done.",
+        "toastBulkArchived": "Archived.",
+        "toastBulkDeleted": "Task deleted.",
+        "toastBulkFailed": "Action failed.",
+        "toastUpdated": "Task updated.",
+        "toastAdded": "Task added."
+      },
+      "form": {
+        "titleAdd": "Add New Task",
+        "titleEdit": "Edit Task",
+        "fieldName": "Task name",
+        "namePlaceholder": "E.g. Book photographer",
+        "fieldCategory": "Category",
+        "categoryCustomPlaceholder": "Category name",
+        "switchToList": "← From list",
+        "switchToCustom": "+ Other category",
+        "categoryRequired": "Category is required.",
+        "fieldPriority": "Priority",
+        "fieldAssignee": "Assignee (optional)",
+        "assigneeNone": "Unassigned",
+        "assigneeCustomPlaceholder": "Assignee name",
+        "fieldDueDate": "Deadline (optional)",
+        "dueDatePlaceholder": "Pick date",
+        "reminderLabel": "Enable reminder",
+        "reminderSub": "In-app reminder before deadline",
+        "reminderDaysBefore": "{days} days before",
+        "fieldNotes": "Notes (optional)",
+        "notesPlaceholder": "Add a note…",
+        "btnCancel": "Cancel",
+        "btnSaving": "Saving…",
+        "btnSave": "Save",
+        "btnAdd": "Add"
+      },
+      "datePicker": {
+        "title": "Pick Date",
+        "confirm": "Select — {date}",
+        "noDate": "Pick a date first"
+      },
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "urgency": {
+        "overdue": "{days} days overdue",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "daysLeft": "{days} days left",
+        "countdown": "D-{days}"
+      },
+      "deadlineGroup": {
+        "overdue": "Overdue",
+        "today": "Today",
+        "week": "Next 7 days",
+        "month": "Next 30 days",
+        "later": "Later",
+        "done": "Done"
+      },
+      "assignee": {
+        "noPic": "No Assignee",
+        "bride": "Bride",
+        "groom": "Groom",
+        "both": "Both",
+        "parents": "Parents",
+        "family": "Family",
+        "wo": "Wedding Organizer",
+        "custom": "Other…"
+      },
+      "category": {
+        "administrasi": "Administration",
+        "venue": "Venue",
+        "vendor": "Vendor",
+        "undangan": "Invitations",
+        "keuangan": "Finance",
+        "busana": "Attire",
+        "dekorasi": "Decoration",
+        "dokumentasi": "Documentation",
+        "tamu": "Guests",
+        "acara": "Event",
+        "lainnya": "Other"
+      },
+      "months": {
+        "jan": "January",
+        "feb": "February",
+        "mar": "March",
+        "apr": "April",
+        "may": "May",
+        "jun": "June",
+        "jul": "July",
+        "aug": "August",
+        "sep": "September",
+        "oct": "October",
+        "nov": "November",
+        "dec": "December"
+      },
+      "days": {
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat"
+      }
+    },
     "budget": {},
     "guests": {},
     "rsvp": {},
