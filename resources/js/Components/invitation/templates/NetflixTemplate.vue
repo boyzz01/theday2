@@ -5,6 +5,7 @@ import NetflixWhoWatching from './netflix/NetflixWhoWatching.vue'
 import NetflixIntro       from './netflix/NetflixIntro.vue'
 import NetflixCover       from './netflix/NetflixCover.vue'
 import NetflixHero        from './netflix/NetflixHero.vue'
+import TheDayLogo         from './netflix/TheDayLogo.vue'
 
 const props = defineProps({
     invitation: { type: Object,  required: true },
@@ -26,6 +27,7 @@ const {
     copiedAccount, copyToClipboard,
     localMessages, msgForm, msgSubmitting, msgSuccess, msgError, submitMessage,
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
+    vReveal,
 } = useInvitationTemplate(props, {
     galleryLayout: 'grid',
     openingStyle:  'fade',
@@ -37,6 +39,18 @@ const cfg             = computed(() => props.invitation.config ?? {})
 const netflixSubtitle = computed(() => cfg.value.netflix_subtitle ?? 'Sebuah Kisah Cinta')
 const netflixTags     = computed(() => cfg.value.netflix_tags ?? ['#lovestory', '#romantic'])
 const heroQuote       = computed(() => cfg.value.netflix_hero_quote ?? sectionData('quote').text ?? '')
+
+// Netflix is image-driven — fallback to shared demo cover when none set
+const effectiveCoverUrl = computed(() =>
+    coverPhotoUrl.value ||
+    '/image/demo-image/cover-demo.webp'
+)
+
+// Hero ("show poster") — uses first gallery photo, falls back to cover
+const effectiveHeroUrl = computed(() =>
+    (galleries.value[0]?.image_url ?? galleries.value[0]?.file_url) ||
+    effectiveCoverUrl.value
+)
 
 // ── Guest name for WhoWatching ────────────────────────────────────────────────
 const guestName = computed(() => {
@@ -86,10 +100,65 @@ const eventDateForHero = computed(() => {
     const day = firstEvent.value.event_day_name ?? ''
     return day ? `${day}, ${d}` : d
 })
+
+// ── Remind Me — download .ics calendar file ───────────────────────────────────
+function onRemindMe() {
+    const ev = firstEvent.value
+    if (!ev) return
+
+    // Build datetime from event_date + start_time (defaults if missing)
+    const date  = ev.event_date ?? ''
+    const start = (ev.start_time ?? '08:00').slice(0, 5)
+    const end   = (ev.end_time   ?? '10:00').slice(0, 5)
+    if (!date) return
+
+    const fmt = (d, t) => `${d.replace(/-/g, '')}T${t.replace(':', '')}00`
+    const dtStart = fmt(date, start)
+    const dtEnd   = fmt(date, end)
+    const stamp   = new Date().toISOString().replace(/[-:]|\.\d+/g, '')
+
+    const summary  = `Pernikahan ${groomName.value} & ${brideName.value}`
+    const location = ev.venue_address
+        ? `${ev.venue_name ?? ''} - ${ev.venue_address}`.replace(/^- /, '')
+        : (ev.venue_name ?? '')
+    const desc     = `${ev.event_name ?? 'Wedding'} - ${groomName.value} & ${brideName.value}`
+    const uid      = `${date}-${Math.random().toString(36).slice(2, 10)}@theday.app`
+
+    const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//TheDay//Netflix Wedding//EN',
+        'CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART:${dtStart}`,
+        `DTEND:${dtEnd}`,
+        `SUMMARY:${summary}`,
+        `LOCATION:${location.replace(/,/g, '\\,')}`,
+        `DESCRIPTION:${desc.replace(/,/g, '\\,')}`,
+        'BEGIN:VALARM',
+        'TRIGGER:-P1D',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:Reminder: ${summary}`,
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR',
+    ].join('\r\n')
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `${groomName.value}-${brideName.value}-wedding.ics`
+        .toLowerCase().replace(/\s+/g, '-')
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
-    <div style="font-family: Arial, Helvetica, sans-serif; background: #141414; min-height: 100vh;">
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #141414; min-height: 100vh;">
 
         <!-- Audio -->
         <audio
@@ -99,40 +168,38 @@ const eventDateForHero = computed(() => {
             loop preload="none" class="sr-only"
         />
 
-        <!-- Phase 0: Who's Watching -->
-        <NetflixWhoWatching
-            v-if="phase === 'who-watching'"
-            :guest-name="guestName"
-            @proceed="onWhoWatchingProceed"
-        />
-
-        <!-- Phase 1: Intro animation -->
-        <NetflixIntro
-            v-else-if="phase === 'intro'"
-            @done="onIntroDone"
-        />
-
-        <!-- Phase 2: Cover -->
-        <NetflixCover
-            v-else-if="phase === 'cover'"
-            :cover-url="coverPhotoUrl"
-            :groom-nick="groomNick"
-            :bride-nick="brideNick"
-            :subtitle="netflixSubtitle"
-            :event-date="firstEventDate"
-            :tags="netflixTags"
-            :music-playing="musicPlaying"
-            @open="onCoverOpen"
-            @toggle-music="toggleMusic"
-        />
+        <!-- Phase 0-2 with smooth fade transition -->
+        <Transition name="nf-phase" mode="out-in">
+            <NetflixWhoWatching
+                v-if="phase === 'who-watching'"
+                :guest-name="guestName"
+                @proceed="onWhoWatchingProceed"
+            />
+            <NetflixIntro
+                v-else-if="phase === 'intro'"
+                @done="onIntroDone"
+            />
+            <NetflixCover
+                v-else-if="phase === 'cover'"
+                :cover-url="effectiveCoverUrl"
+                :groom-nick="groomNick"
+                :bride-nick="brideNick"
+                :subtitle="netflixSubtitle"
+                :event-date="firstEventDate"
+                :tags="netflixTags"
+                :music-playing="musicPlaying"
+                @open="onCoverOpen"
+                @toggle-music="toggleMusic"
+            />
+        </Transition>
 
         <!-- Phase 3+: Full content -->
-        <template v-else>
+        <template v-if="phase === 'content'">
 
             <!-- Hero / Detail page -->
             <NetflixHero
                 v-if="sectionEnabled('opening')"
-                :cover-url="coverPhotoUrl"
+                :cover-url="effectiveHeroUrl"
                 :groom-name="groomName"
                 :bride-name="brideName"
                 :subtitle="netflixSubtitle"
@@ -140,17 +207,18 @@ const eventDateForHero = computed(() => {
                 :hero-quote="heroQuote"
                 :opening-text="openingText"
                 :quote-text="sectionData('quote').text ?? ''"
+                @remind="onRemindMe"
             />
 
             <!-- Breaking News (Opening) -->
-            <section v-if="sectionEnabled('opening')" class="nf-section">
-                <h2 class="nf-section-title">BREAKING NEWS</h2>
-                <img v-if="coverPhotoUrl" :src="coverPhotoUrl" alt="" class="nf-full-img"/>
+            <section v-if="sectionEnabled('opening')" class="nf-section nf-reveal" :ref="el => vReveal(el)">
+                <h2 class="nf-section-title">PROLOGUE</h2>
+                <img v-if="effectiveCoverUrl" :src="effectiveCoverUrl" alt="" class="nf-full-img"/>
                 <p class="nf-body-text">{{ openingText }}</p>
             </section>
 
             <!-- Bride & Groom -->
-            <section v-if="sectionEnabled('couple')" class="nf-section">
+            <section v-if="sectionEnabled('couple')" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">BRIDE &amp; GROOM</h2>
                 <div class="nf-couple-grid">
                     <div class="nf-person">
@@ -166,14 +234,14 @@ const eventDateForHero = computed(() => {
                         <p class="nf-person-parents">{{ brideParents }}</p>
                     </div>
                 </div>
-                <img v-if="coverPhotoUrl" :src="coverPhotoUrl" alt="" class="nf-full-img"/>
+                <img v-if="effectiveCoverUrl" :src="effectiveCoverUrl" alt="" class="nf-full-img"/>
             </section>
 
             <!-- Timeline & Location -->
-            <section v-if="sectionEnabled('events') && events.length" class="nf-section">
+            <section v-if="sectionEnabled('events') && events.length" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">TIMELINE &amp; LOCATION</h2>
                 <div v-for="event in events" :key="event.id" class="nf-event-card">
-                    <img v-if="coverPhotoUrl" :src="coverPhotoUrl" class="nf-event-thumb" alt=""/>
+                    <img v-if="effectiveCoverUrl" :src="effectiveCoverUrl" class="nf-event-thumb" alt=""/>
                     <div class="nf-event-body">
                         <span class="nf-event-badge">{{ event.event_name }}</span>
                         <p class="nf-event-date">{{ event.event_date_formatted }}</p>
@@ -193,7 +261,7 @@ const eventDateForHero = computed(() => {
             </section>
 
             <!-- Countdown -->
-            <section v-if="sectionEnabled('countdown') && targetDate && countdown.days >= 0" class="nf-section">
+            <section v-if="sectionEnabled('countdown') && targetDate && countdown.days >= 0" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <div class="nf-countdown">
                     <div v-for="(val, label) in { Hari: countdown.days, Jam: countdown.hours, Menit: countdown.minutes, Detik: countdown.seconds }" :key="label" class="nf-cd-unit">
                         <span class="nf-cd-num">{{ pad(val) }}</span>
@@ -203,7 +271,7 @@ const eventDateForHero = computed(() => {
             </section>
 
             <!-- Our Love Story -->
-            <section v-if="sectionEnabled('love_story') && loveStories.length" class="nf-section">
+            <section v-if="sectionEnabled('love_story') && loveStories.length" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">OUR LOVE STORY</h2>
                 <div v-for="(story, idx) in loveStories" :key="story.date ?? idx" class="nf-episode">
                     <div class="nf-episode-top">
@@ -219,20 +287,20 @@ const eventDateForHero = computed(() => {
             </section>
 
             <!-- Gallery -->
-            <section v-if="sectionEnabled('gallery') && galleries.length" class="nf-section">
+            <section v-if="sectionEnabled('gallery') && galleries.length" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">GALLERY</h2>
                 <div class="nf-gallery-grid">
                     <img
                         v-for="img in galleries" :key="img.id"
-                        :src="img.file_url" :alt="img.caption ?? ''"
+                        :src="img.image_url ?? img.file_url" :alt="img.caption ?? ''"
                         class="nf-gallery-img" loading="lazy"
-                        @click="lightboxUrl = img.file_url"
+                        @click="lightboxUrl = img.image_url ?? img.file_url"
                     />
                 </div>
             </section>
 
             <!-- RSVP -->
-            <section v-if="sectionEnabled('rsvp')" ref="rsvpRef" class="nf-section">
+            <section v-if="sectionEnabled('rsvp')" :ref="el => { rsvpRef.value = el; if (el) vReveal(el) }" class="nf-section nf-reveal">
                 <h2 class="nf-section-title">KONFIRMASI KEHADIRAN</h2>
                 <form class="nf-form" @submit.prevent="submitRsvp">
                     <input v-model="rsvpForm.guest_name" class="nf-input" placeholder="Nama lengkap" required/>
@@ -252,7 +320,7 @@ const eventDateForHero = computed(() => {
             </section>
 
             <!-- Gift / Rekening -->
-            <section v-if="sectionEnabled('gift') && sectionData('gift').accounts?.length" class="nf-section">
+            <section v-if="sectionEnabled('gift') && sectionData('gift').accounts?.length" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">AMPLOP DIGITAL</h2>
                 <div v-for="acc in sectionData('gift').accounts" :key="acc.account_number" class="nf-account-card">
                     <p class="nf-account-bank">{{ acc.bank }}</p>
@@ -265,7 +333,7 @@ const eventDateForHero = computed(() => {
             </section>
 
             <!-- Wishes / Buku Tamu -->
-            <section v-if="sectionEnabled('wishes')" class="nf-section">
+            <section v-if="sectionEnabled('wishes')" class="nf-section nf-reveal" :ref="el => vReveal(el)">
                 <h2 class="nf-section-title">UCAPAN &amp; DOA</h2>
                 <form class="nf-form" @submit.prevent="submitMessage">
                     <input v-model="msgForm.name" class="nf-input" placeholder="Nama" required/>
@@ -286,7 +354,7 @@ const eventDateForHero = computed(() => {
             <section v-if="sectionEnabled('closing')" class="nf-section nf-closing">
                 <h2 class="nf-closing-names">{{ groomName }} &amp; {{ brideName }}</h2>
                 <p class="nf-body-text nf-closing-text">{{ closingText }}</p>
-                <p class="nf-closing-brand">THEDAY</p>
+                <TheDayLogo class="nf-closing-brand" :height="28" muted/>
             </section>
 
         </template>
@@ -314,6 +382,21 @@ const eventDateForHero = computed(() => {
 
 <style scoped>
 .nf-section { padding: 32px 20px; border-bottom: 1px solid #1F1F1F; }
+.nf-reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.nf-reveal.nf-visible { opacity: 1; transform: translateY(0); }
+
+/* Phase transitions */
+.nf-phase-enter-active, .nf-phase-leave-active {
+    transition: opacity 0.5s ease;
+}
+.nf-phase-enter-from, .nf-phase-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nf-reveal { opacity: 1; transform: none; transition: none; }
+    .nf-phase-enter-active, .nf-phase-leave-active { transition: none; }
+}
 .nf-section-title { font-size: 28px; font-weight: 900; color: #fff; margin: 0 0 20px; letter-spacing: -0.5px; }
 .nf-body-text { color: #fff; font-size: 16px; line-height: 1.7; margin: 12px 0 0; }
 .nf-full-img { width: 100%; border-radius: 6px; margin: 16px 0 0; display: block; object-fit: cover; max-height: 300px; }
@@ -377,7 +460,7 @@ const eventDateForHero = computed(() => {
 .nf-closing { text-align: center; padding-bottom: 64px; }
 .nf-closing-names { color: #fff; font-size: 26px; font-weight: 700; margin: 0 0 16px; }
 .nf-closing-text { text-align: center; color: #808080; }
-.nf-closing-brand { margin-top: 32px; font-size: 24px; font-weight: 900; color: #333; letter-spacing: -1px; }
+.nf-closing-brand { margin-top: 32px; display: block; }
 
 .nf-float-music { position: fixed; bottom: 16px; right: 16px; z-index: 40; width: 48px; height: 48px; background: #E50914; border: none; border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
 

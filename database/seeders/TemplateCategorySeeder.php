@@ -30,6 +30,14 @@ class TemplateCategorySeeder extends Seeder
                 'is_active'   => true,
                 'sort_order'  => 2,
             ],
+            [
+                'name'        => 'Cinema',
+                'slug'        => 'cinema',
+                'description' => 'Template undangan bertema hiburan dan streaming — Netflix, Spotify, dan lainnya.',
+                'icon_url'    => null,
+                'is_active'   => true,
+                'sort_order'  => 3,
+            ],
         ];
 
         foreach ($categories as $category) {

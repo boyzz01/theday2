@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Self-hosted Helvetica Neue ────────────────────────────── */
+@font-face {
+    font-family: 'Helvetica Neue';
+    src: url('/fonts/neue/HelveticaNeueRoman.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Helvetica Neue';
+    src: url('/fonts/neue/HelveticaNeueMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Helvetica Neue';
+    src: url('/fonts/neue/HelveticaNeueBold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Helvetica Neue';
+    src: url('/fonts/neue/HelveticaNeueHeavy.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Helvetica Neue';
+    src: url('/fonts/neue/HelveticaNeueBlack.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ── TheDay Brand Design Tokens ────────────────────────────── */
 :root {
     /* Primary — Sage Green */

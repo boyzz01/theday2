@@ -1,19 +1,14 @@
 <script setup>
+import TheDayLogo from './TheDayLogo.vue'
 defineProps({ guestName: { type: String, default: 'Tamu Undangan' } })
 const emit = defineEmits(['proceed'])
 </script>
 
 <template>
     <div class="nfw-root" @click="emit('proceed')">
-        <div class="nfw-logo">THEDAY</div>
+        <TheDayLogo class="nfw-logo" :height="72"/>
         <p class="nfw-question">Who's watching?</p>
-        <div class="nfw-avatar">
-            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="21" cy="26" r="4" fill="white"/>
-                <circle cx="39" cy="26" r="4" fill="white"/>
-                <path d="M20 38 Q30 46 40 38" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
-            </svg>
-        </div>
+        <img class="nfw-avatar" src="/images/templates/netflix/guest.webp" alt="Guest avatar"/>
         <p class="nfw-name">{{ guestName }}</p>
         <button class="nfw-btn" @click.stop="emit('proceed')">OPEN INVITATION</button>
     </div>
@@ -26,12 +21,11 @@ const emit = defineEmits(['proceed'])
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 20px; cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .nfw-logo {
-    font-size: 48px; font-weight: 900;
-    color: #E50914; letter-spacing: -2px;
     margin-bottom: 8px;
+    display: block;
 }
 .nfw-question {
     font-size: 24px; color: #fff;
@@ -39,11 +33,10 @@ const emit = defineEmits(['proceed'])
 }
 .nfw-avatar {
     width: 120px; height: 120px;
-    background: linear-gradient(135deg, #E50914, #831010);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
+    border-radius: 16px;
+    object-fit: cover;
+    display: block;
 }
-.nfw-avatar svg { width: 70px; height: 70px; }
 .nfw-name {
     font-size: 18px; color: #E50914;
     font-weight: 600; margin: 0;

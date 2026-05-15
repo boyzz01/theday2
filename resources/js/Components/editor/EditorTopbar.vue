@@ -25,7 +25,7 @@ const saveStatusColor = {
 </script>
 
 <template>
-    <header class="flex-shrink-0 h-12 bg-white border-b border-stone-100 flex items-center gap-3 px-4 z-20">
+    <header class="flex-shrink-0 h-12 bg-white/70 backdrop-blur-md border-b border-stone-100 flex items-center gap-3 px-4 z-20">
 
         <!-- Back to dashboard -->
         <Link
