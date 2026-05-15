@@ -24,6 +24,20 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
+        $locale = $request->header('X-Locale')
+            ?? $request->cookie('locale')
+            ?? config('app.locale');
+
+        if (! in_array($locale, ['id', 'en'], true)) {
+            $locale = 'id';
+        }
+        app()->setLocale($locale);
+
+        $translationsPath = lang_path("{$locale}.json");
+        $translations = file_exists($translationsPath)
+            ? json_decode(file_get_contents($translationsPath), true) ?? []
+            : [];
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -71,10 +85,8 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
-            'translations' => [
-                'id' => require lang_path('id/auth.php'),
-                'en' => require lang_path('en/auth.php'),
-            ],
+            'locale' => $locale,
+            'translations' => $translations,
         ];
     }
 }
