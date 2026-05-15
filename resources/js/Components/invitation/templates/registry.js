@@ -4,6 +4,7 @@ import PearlTemplate     from './PearlTemplate.vue'
 import BeachTemplate     from './BeachTemplate.vue'
 import GardenTemplate    from './GardenTemplate.vue'
 import NightSkyTemplate  from './NightSkyTemplate.vue'
+import NetflixTemplate   from './NetflixTemplate.vue'
 
 export const TEMPLATE_MAP = {
     'nusantara': NusantaraTemplate,
@@ -11,4 +12,5 @@ export const TEMPLATE_MAP = {
     'beach':     BeachTemplate,
     'garden':    GardenTemplate,
     'night-sky': NightSkyTemplate,
+    'netflix':   NetflixTemplate,
 }
