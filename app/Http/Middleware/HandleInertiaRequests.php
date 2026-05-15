@@ -34,9 +34,11 @@ class HandleInertiaRequests extends Middleware
         app()->setLocale($locale);
 
         $translationsPath = lang_path("{$locale}.json");
-        $translations = file_exists($translationsPath)
-            ? json_decode(file_get_contents($translationsPath), true) ?? []
-            : [];
+        static $translationsCache = [];
+        $translations = $translationsCache[$locale] ??= (function () use ($translationsPath) {
+            if (! file_exists($translationsPath)) return [];
+            return json_decode(file_get_contents($translationsPath), true) ?? [];
+        })();
 
         return [
             ...parent::share($request),
