@@ -1577,7 +1577,7 @@ function sendLabel(guest) {
         <!-- ── Toast ──────────────────────────────────────────────── -->
         <Transition name="slide-up">
             <div v-if="toast"
-                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg whitespace-nowrap">
+                 class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg whitespace-nowrap">
                 {{ toast }}
             </div>
         </Transition>

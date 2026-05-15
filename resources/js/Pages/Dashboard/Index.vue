@@ -598,7 +598,7 @@ const priorityDot = {
         <!-- Duplicate success toast -->
         <Transition name="toast">
             <div v-if="duplicateSuccess"
-                 class="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-stone-100 p-4 flex items-start gap-3 max-w-xs">
+                 class="fixed bottom-20 lg:bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-stone-100 p-4 flex items-start gap-3 max-w-xs">
                 <div class="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -621,7 +621,7 @@ const priorityDot = {
         <!-- Duplicate error toast -->
         <Transition name="toast">
             <div v-if="duplicateError"
-                 class="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-red-100 p-4 flex items-start gap-3 max-w-xs">
+                 class="fixed bottom-20 lg:bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-red-100 p-4 flex items-start gap-3 max-w-xs">
                 <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

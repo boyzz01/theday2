@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import MobileBottomNav from '@/Components/dashboard/MobileBottomNav.vue';
+import MoreMenuPopover from '@/Components/dashboard/MoreMenuPopover.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -9,6 +11,7 @@ const plan = computed(() => page.props.auth.subscription);
 const flash = computed(() => page.props.flash);
 
 const sidebarOpen = ref(false);
+const moreMenuOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const expandedGroups = ref({});
 
@@ -349,13 +352,13 @@ const handleClickOutsideAvatar = (e) => {
         </aside>
 
         <!-- ── Main content ─────────────────────────────────────── -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
 
             <!-- Top bar -->
             <header class="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 lg:px-6 h-14 flex items-center gap-4">
-                <!-- Mobile hamburger -->
+                <!-- Mobile hamburger (HIDDEN — replaced by MobileBottomNav, kept for rollback) -->
                 <button
-                    class="lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors cursor-pointer"
+                    class="hidden lg:hidden p-2 -ml-1 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors cursor-pointer"
                     @click="sidebarOpen = !sidebarOpen"
                 >
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -536,6 +539,16 @@ const handleClickOutsideAvatar = (e) => {
             </div>
         </Transition>
     </Teleport>
+
+        <!-- Mobile bottom navigation -->
+        <MobileBottomNav
+            :more-open="moreMenuOpen"
+            @toggle-more="moreMenuOpen = !moreMenuOpen"
+        />
+        <MoreMenuPopover
+            :open="moreMenuOpen"
+            @close="moreMenuOpen = false"
+        />
 
     </div>
 </template>

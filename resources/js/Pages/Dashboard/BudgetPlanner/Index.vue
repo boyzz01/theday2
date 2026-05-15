@@ -989,7 +989,7 @@ async function archiveCategory(cat) {
         </div>
 
         <!-- ── Mobile FAB ──────────────────────────────────────────────────── -->
-        <div class="fixed bottom-6 right-4 sm:hidden z-20">
+        <div class="fixed bottom-20 right-4 sm:hidden z-20">
             <button @click="openAddItem()"
                 class="flex items-center gap-2 px-5 py-3 text-white text-sm font-semibold rounded-2xl shadow-lg transition-opacity hover:opacity-90"
                 style="background-color: #92A89C">
