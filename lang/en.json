@@ -32,7 +32,10 @@
     "paket": "Plans & Subscription",
     "transactions": "Payment History",
     "settings": "Account Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "pricing": "Pricing",
+    "login": "Login",
+    "register": "Register"
   },
   "validation": {
     "required": ":field is required",
@@ -1317,5 +1320,55 @@
     "confirm_placeholder": "Repeat password",
     "register_submit": "Create Free Account",
     "register_submitting": "Creating account…"
+  },
+  "public": {
+    "footer": {
+      "madeWith": "Made with ❤️ in Indonesia.",
+      "contact": "Contact",
+      "privacyPolicy": "Privacy Policy",
+      "termsConditions": "Terms & Conditions",
+      "cookiePolicy": "Cookie Policy"
+    },
+    "gallery": {
+      "heading": "Choose Your Invitation Template",
+      "subheading": "All templates are customizable in color, font, and content.",
+      "registerFree": "Register free",
+      "toStart": "to start creating your invitation.",
+      "all": "All",
+      "free": "Free",
+      "showing": "Showing",
+      "use": "Use",
+      "noTemplatesFound": "No templates found",
+      "noTemplatesHint": "Try changing the category or tier filter.",
+      "resetFilter": "Reset Filter"
+    },
+    "templateModal": {
+      "tierFree": "Free",
+      "weddingInvitation": "Wedding Invitation",
+      "dateLocation": "Date & Location",
+      "photoGallery": "Photo Gallery",
+      "confirmAttendance": "Confirm Attendance",
+      "madeWithTheDay": "Made with TheDay",
+      "defaultDescription": "An elegant template fully customizable to your needs.",
+      "colorPalette": "Color Palette",
+      "colorPrimary": "Primary",
+      "colorSecondary": "Secondary",
+      "colorAccent": "Accent",
+      "availableFeatures": "Available Features",
+      "viewFullDemo": "View Full Demo",
+      "useThisTemplate": "Use This Template",
+      "featStoryInteractiveWorld": "Interactive illustrated world",
+      "featStoryCssHotspots": "CSS animated hotspots",
+      "featStoryRsvpForm": "Interactive RSVP form",
+      "featStoryGuestbook": "Guestbook & wishes",
+      "featStoryGallery": "Lightbox photo gallery",
+      "featStoryWhatsapp": "Share via WhatsApp",
+      "featScrollAnimation": "Smooth scroll animation",
+      "featRsvpForm": "Interactive RSVP form",
+      "featGallery": "Lightbox photo gallery",
+      "featCountdown": "Event countdown timer",
+      "featGuestWishes": "Guest wishes & prayers",
+      "featWhatsapp": "Share via WhatsApp"
+    }
   }
 }

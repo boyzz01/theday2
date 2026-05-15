@@ -32,7 +32,10 @@
     "paket": "Paket & Langganan",
     "transactions": "Riwayat Pembayaran",
     "settings": "Pengaturan Akun",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "pricing": "Harga",
+    "login": "Masuk",
+    "register": "Daftar"
   },
   "validation": {
     "required": ":field wajib diisi",
@@ -1317,5 +1320,55 @@
     "confirm_placeholder": "Ulangi password",
     "register_submit": "Buat Akun Gratis",
     "register_submitting": "Mendaftar…"
+  },
+  "public": {
+    "footer": {
+      "madeWith": "Dibuat dengan ❤️ di Indonesia.",
+      "contact": "Kontak",
+      "privacyPolicy": "Kebijakan Privasi",
+      "termsConditions": "Syarat & Ketentuan",
+      "cookiePolicy": "Kebijakan Cookie"
+    },
+    "gallery": {
+      "heading": "Pilih Template Undanganmu",
+      "subheading": "Semua template bisa dikustomisasi warna, font, dan isinya.",
+      "registerFree": "Daftar gratis",
+      "toStart": "untuk mulai membuat undanganmu.",
+      "all": "Semua",
+      "free": "Gratis",
+      "showing": "Menampilkan",
+      "use": "Gunakan",
+      "noTemplatesFound": "Tidak ada template ditemukan",
+      "noTemplatesHint": "Coba ubah filter kategori atau tier.",
+      "resetFilter": "Reset Filter"
+    },
+    "templateModal": {
+      "tierFree": "Gratis",
+      "weddingInvitation": "Undangan Pernikahan",
+      "dateLocation": "Waktu & Lokasi",
+      "photoGallery": "Galeri Foto",
+      "confirmAttendance": "Konfirmasi Kehadiran",
+      "madeWithTheDay": "Dibuat dengan TheDay",
+      "defaultDescription": "Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.",
+      "colorPalette": "Palet Warna",
+      "colorPrimary": "Primer",
+      "colorSecondary": "Sekunder",
+      "colorAccent": "Aksen",
+      "availableFeatures": "Fitur Tersedia",
+      "viewFullDemo": "Lihat Demo Lengkap",
+      "useThisTemplate": "Gunakan Template Ini",
+      "featStoryInteractiveWorld": "Dunia ilustrasi interaktif",
+      "featStoryCssHotspots": "Hotspot animasi CSS",
+      "featStoryRsvpForm": "Formulir RSVP interaktif",
+      "featStoryGuestbook": "Buku tamu & ucapan",
+      "featStoryGallery": "Gallery foto lightbox",
+      "featStoryWhatsapp": "Berbagi via WhatsApp",
+      "featScrollAnimation": "Animasi scroll halus",
+      "featRsvpForm": "Formulir RSVP interaktif",
+      "featGallery": "Gallery foto lightbox",
+      "featCountdown": "Hitung mundur acara",
+      "featGuestWishes": "Ucapan & doa tamu",
+      "featWhatsapp": "Berbagi via WhatsApp"
+    }
   }
 }

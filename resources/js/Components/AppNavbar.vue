@@ -10,7 +10,7 @@ const auth = computed(() => page.props.auth);
 const user = computed(() => auth.value?.user ?? null);
 const isGuest = computed(() => auth.value?.isGuest ?? true);
 
-const { tLegacy } = useLocale();
+const { t } = useLocale();
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const { tLegacy } = useLocale();
             <!-- Nav links -->
             <div class="hidden md:flex items-center gap-6 text-sm text-stone-500">
                 <Link href="/templates" class="hover:text-stone-800 transition-colors">Template</Link>
-                <Link href="/#harga" class="hover:text-stone-800 transition-colors">{{ tLegacy('Harga', 'Pricing') }}</Link>
+                <Link href="/#harga" class="hover:text-stone-800 transition-colors">{{ t('nav.pricing') }}</Link>
             </div>
 
             <!-- Auth actions -->
@@ -48,13 +48,13 @@ const { tLegacy } = useLocale();
                         href="/login"
                         class="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors px-3 py-2"
                     >
-                        {{ tLegacy('Masuk', 'Login') }}
+                        {{ t('nav.login') }}
                     </Link>
                     <Link
                         href="/register"
                         class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all bg-brand-primary hover:bg-brand-primary-hover"
                     >
-                        {{ tLegacy('Daftar', 'Register') }}
+                        {{ t('nav.register') }}
                     </Link>
                 </template>
             </div>
