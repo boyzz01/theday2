@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class InertiaTranslationsShareTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,5 +58,17 @@ class InertiaTranslationsShareTest extends TestCase
         $props = $response->inertiaProps();
 
         $this->assertSame('id', $props['locale']);
+    }
+
+    public function test_falls_back_to_id_when_locale_is_unsupported(): void
+    {
+        $response = $this->withHeader('X-Locale', 'fr')->get('/dashboard/__inertia_share_test');
+
+        $response->assertOk();
+
+        $props = $response->inertiaProps();
+
+        $this->assertSame('id', $props['locale']);
+        $this->assertNotEmpty($props['translations']);
     }
 }
