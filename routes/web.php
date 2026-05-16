@@ -34,11 +34,13 @@ use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/maintenance', function () {
+Route::get('/maintenance', function (\Illuminate\Http\Request $request) {
     if (! config('app.maintenance_mode')) {
         return redirect()->route('home');
     }
-    return inertia('Maintenance');
+    return inertia('Maintenance', [
+        'detectedIp' => $request->ip(),
+    ]);
 })->name('maintenance');
 
 Route::get('/', function () {
