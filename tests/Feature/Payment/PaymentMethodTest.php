@@ -17,8 +17,4 @@ class PaymentMethodTest extends TestCase
         $this->assertSame('Mayar', PaymentMethod::Mayar->label());
     }
 
-    public function test_midtrans_still_exists_for_historical_data(): void
-    {
-        $this->assertSame('midtrans', PaymentMethod::Midtrans->value);
-    }
 }

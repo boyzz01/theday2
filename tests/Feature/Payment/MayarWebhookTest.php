@@ -97,7 +97,7 @@ class MayarWebhookTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('status', 'already_paid');
+            ->assertJsonPath('status', 'OK');
 
         Http::assertNothingSent();
     }

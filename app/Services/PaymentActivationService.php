@@ -25,6 +25,10 @@ class PaymentActivationService
             return true;
         }
 
+        if (empty($transaction->payment_gateway_id)) {
+            return false;
+        }
+
         try {
             $invoice       = $this->mayarService->getInvoice($transaction->payment_gateway_id);
             $invoiceStatus = $invoice['transactionStatus'] ?? $invoice['status'] ?? '';
