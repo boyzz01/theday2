@@ -35,7 +35,7 @@ use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/maintenance', function () {
-    if (!env('MAINTENANCE_MODE', false)) {
+    if (! config('app.maintenance_mode')) {
         return redirect()->route('home');
     }
     return inertia('Maintenance');
