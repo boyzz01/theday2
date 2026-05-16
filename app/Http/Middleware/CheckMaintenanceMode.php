@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckMaintenanceMode
@@ -15,7 +16,7 @@ class CheckMaintenanceMode
         }
 
         $allowedIps = config('app.maintenance_allowed_ips', []);
-        if (in_array($request->ip(), $allowedIps, true)) {
+        if ($allowedIps && IpUtils::checkIp($request->ip(), $allowedIps)) {
             return $next($request);
         }
 
