@@ -1,26 +1,30 @@
 <script setup>
+import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { useLocale } from '@/Composables/useLocale';
 
 const props = defineProps({
     invitations: { type: Array, default: () => [] },
 });
 
-const statusConfig = {
-    draft:     { label: 'Draft',        cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
-    published: { label: 'Aktif',        cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
-    archived:  { label: 'Diarsipkan',   cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
-};
+const { t } = useLocale();
+
+const statusConfig = computed(() => ({
+    draft:     { label: t('dashboard.bukuTamu.statusDraft'),    cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
+    published: { label: t('dashboard.bukuTamu.statusActive'),   cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+    archived:  { label: t('dashboard.bukuTamu.statusArchived'), cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+}));
 </script>
 
 <template>
-    <Head title="Buku Tamu" />
+    <Head :title="t('dashboard.bukuTamu.title')" />
 
     <DashboardLayout>
         <template #header>
             <div>
-                <h2 class="text-base font-semibold text-stone-800">Buku Tamu</h2>
-                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">Ucapan dan doa dari tamu undanganmu.</p>
+                <h2 class="text-base font-semibold text-stone-800">{{ t('dashboard.bukuTamu.title') }}</h2>
+                <p class="hidden sm:block text-sm text-stone-400 mt-0.5">{{ t('dashboard.bukuTamu.subtitle') }}</p>
             </div>
         </template>
 
@@ -33,13 +37,13 @@ const statusConfig = {
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
             </div>
-            <p class="text-sm font-medium text-stone-600 mb-1">Belum ada undangan</p>
-            <p class="text-xs text-stone-400 mb-5">Buat undangan terlebih dahulu untuk melihat Buku Tamu.</p>
+            <p class="text-sm font-medium text-stone-600 mb-1">{{ t('dashboard.bukuTamu.emptyTitle') }}</p>
+            <p class="text-xs text-stone-400 mb-5">{{ t('dashboard.bukuTamu.emptyHint') }}</p>
             <Link
                 :href="route('dashboard.templates')"
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
             >
-                Buat Undangan
+                {{ t('dashboard.bukuTamu.createInvitation') }}
             </Link>
         </div>
 
@@ -65,7 +69,7 @@ const statusConfig = {
                         <p class="text-3xl font-bold" :style="`color: ${inv.template_color}`">
                             {{ inv.total_messages }}
                         </p>
-                        <p class="text-xs text-stone-500 mt-0.5">ucapan masuk</p>
+                        <p class="text-xs text-stone-500 mt-0.5">{{ t('dashboard.bukuTamu.messagesReceived') }}</p>
                         <div class="w-8 h-px mx-auto mt-2" :style="`background-color: ${inv.template_color}`"/>
                     </div>
 
@@ -80,7 +84,7 @@ const statusConfig = {
                 <!-- Card body -->
                 <div class="p-4">
                     <p class="text-sm font-semibold text-stone-800 truncate mb-3">
-                        {{ inv.title || '(Tanpa judul)' }}
+                        {{ inv.title || t('dashboard.bukuTamu.untitled') }}
                     </p>
 
                     <!-- Mini stats -->
@@ -90,20 +94,20 @@ const statusConfig = {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
-                            {{ inv.visible_count }} tampil
+                            {{ t('dashboard.bukuTamu.visibleCount', { n: inv.visible_count }) }}
                         </span>
                         <span v-if="inv.hidden_count" class="flex items-center gap-1 text-stone-400">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
                             </svg>
-                            {{ inv.hidden_count }} tersembunyi
+                            {{ t('dashboard.bukuTamu.hiddenCount', { n: inv.hidden_count }) }}
                         </span>
                         <span v-if="inv.pinned_count" class="flex items-center gap-1 text-violet-600">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                             </svg>
-                            {{ inv.pinned_count }} pinned
+                            {{ t('dashboard.bukuTamu.pinnedCount', { n: inv.pinned_count }) }}
                         </span>
                     </div>
 
@@ -112,7 +116,7 @@ const statusConfig = {
                         :href="route('dashboard.buku-tamu.show', inv.id)"
                         class="block w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
                     >
-                        Lihat Buku Tamu
+                        {{ t('dashboard.bukuTamu.viewGuestBook') }}
                     </Link>
                 </div>
             </div>

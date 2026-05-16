@@ -2,6 +2,9 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     budget:            Object,
@@ -90,15 +93,15 @@ function catColor(cat, idx) {
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const statusConfig = {
-    aman:      { label: 'Aman',           bg: 'bg-emerald-100', text: 'text-emerald-700', dot: '#4CAF50', bar: '#34D399' },
-    mendekati: { label: 'Mendekati',      bg: 'bg-[#92A89C]/20',   text: 'text-[#73877C]',   dot: '#92A89C', bar: '#92A89C' },
-    melebihi:  { label: 'Melebihi',       bg: 'bg-rose-100',    text: 'text-rose-700',    dot: '#EF4444', bar: '#F87171' },
-    no_data:   { label: 'Belum ada data', bg: 'bg-stone-100',   text: 'text-stone-500',   dot: '#9CA3AF', bar: '#D1D5DB' },
-};
+const statusConfig = computed(() => ({
+    aman:      { label: t('dashboard.budget.status.aman'),    bg: 'bg-emerald-100', text: 'text-emerald-700', dot: '#4CAF50', bar: '#34D399' },
+    mendekati: { label: t('dashboard.budget.status.mendekati'), bg: 'bg-[#92A89C]/20',   text: 'text-[#73877C]',   dot: '#92A89C', bar: '#92A89C' },
+    melebihi:  { label: t('dashboard.budget.status.melebihi'),  bg: 'bg-rose-100',    text: 'text-rose-700',    dot: '#EF4444', bar: '#F87171' },
+    no_data:   { label: t('dashboard.budget.status.noData'),   bg: 'bg-stone-100',   text: 'text-stone-500',   dot: '#9CA3AF', bar: '#D1D5DB' },
+}));
 
 function statusCfg(status) {
-    return statusConfig[status] ?? statusConfig.no_data;
+    return statusConfig.value[status] ?? statusConfig.value.no_data;
 }
 
 // ─── Donut chart ──────────────────────────────────────────────────────────────
@@ -132,7 +135,7 @@ const donutSlices = computed(() => {
         }
     });
     if (othersTotal > 0) {
-        slices.push({ id: '__others__', name: 'Lainnya', value: othersTotal, color: '#D4C4A8' });
+        slices.push({ id: '__others__', name: t('dashboard.budget.chart.others'), value: othersTotal, color: '#D4C4A8' });
     }
 
     let cum = 0;
@@ -146,7 +149,7 @@ const donutSlices = computed(() => {
 
 const donutCenterLabel = computed(() => {
     const s = props.summary;
-    if (!s) return { primary: 'Budget', amount: 'Rp 0', secondary: null };
+    if (!s) return { primary: t('dashboard.budget.summary.totalBudget'), amount: 'Rp 0', secondary: null };
 
     if (selectedSlice.value) {
         const sl = donutSlices.value.find(x => x.id === selectedSlice.value);
@@ -161,14 +164,14 @@ const donutCenterLabel = computed(() => {
 
     if (s.has_budget) {
         return {
-            primary:   'Terpakai',
+            primary:   t('dashboard.budget.donut.used'),
             amount:    s.formatted.total_actual,
-            secondary: `dari ${s.formatted.total_budget}`,
+            secondary: t('dashboard.budget.donut.from', { total: s.formatted.total_budget }),
             overbudget: s.is_total_overbudget,
         };
     }
     return {
-        primary:   'Total Planned',
+        primary:   t('dashboard.budget.donut.totalPlanned'),
         amount:    s.formatted.total_planned,
         secondary: null,
     };
@@ -194,11 +197,11 @@ const progressColor = computed(() => {
     return '#92A89C';
 });
 
-const paymentStatusOptions = [
-    { value: 'unpaid', label: 'Belum Bayar' },
-    { value: 'dp',     label: 'DP Terbayar' },
-    { value: 'paid',   label: 'Lunas' },
-];
+const paymentStatusOptions = computed(() => [
+    { value: 'unpaid', label: t('dashboard.budget.payment.unpaid') },
+    { value: 'dp',     label: t('dashboard.budget.payment.dp') },
+    { value: 'paid',   label: t('dashboard.budget.payment.paid') },
+]);
 
 const paymentBadge = {
     unpaid: 'bg-stone-100 text-stone-600',
@@ -206,11 +209,11 @@ const paymentBadge = {
     paid:   'bg-emerald-100 text-emerald-700',
 };
 
-const paymentLabel = {
-    unpaid: 'Belum Bayar',
-    dp:     'DP Terbayar',
-    paid:   'Lunas',
-};
+const paymentLabel = computed(() => ({
+    unpaid: t('dashboard.budget.payment.unpaid'),
+    dp:     t('dashboard.budget.payment.dp'),
+    paid:   t('dashboard.budget.payment.paid'),
+}));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -293,10 +296,10 @@ async function saveBudget() {
             notes:        budgetForm.value.notes,
         });
         showSetBudget.value = false;
-        showToast('Total budget berhasil disimpan.');
+        showToast(t('dashboard.budget.toasts.budgetSaved'));
         router.reload({ preserveScroll: true });
     } catch {
-        showToast('Data belum bisa disimpan. Coba lagi.', 'error');
+        showToast(t('dashboard.budget.toasts.budgetError'), 'error');
     }
 }
 
@@ -375,11 +378,11 @@ async function saveItem() {
     try {
         if (editingItem.value) {
             await window.axios.patch(route('dashboard.budget-planner.items.update', editingItem.value.id), payload);
-            showToast('Pengeluaran berhasil diperbarui.');
+            showToast(t('dashboard.budget.toasts.itemUpdated'));
             showEditItem.value = false;
         } else {
             await window.axios.post(route('dashboard.budget-planner.items.store'), payload);
-            showToast('Pengeluaran berhasil disimpan.');
+            showToast(t('dashboard.budget.toasts.itemSaved'));
             showAddItem.value = false;
         }
         router.reload({ preserveScroll: true });
@@ -387,7 +390,7 @@ async function saveItem() {
         if (err.response?.status === 422) {
             itemErrors.value = err.response.data.errors ?? {};
         } else {
-            showToast('Data belum bisa disimpan. Coba lagi.', 'error');
+            showToast(t('dashboard.budget.toasts.itemError'), 'error');
         }
     }
 }
@@ -398,10 +401,10 @@ async function togglePayment(item, field) {
         await window.axios.patch(route('dashboard.budget-planner.items.payment', item.id), {
             [field]: newVal,
         });
-        showToast(newVal ? 'Pembayaran ditandai lunas.' : 'Pembayaran dibatalkan.');
+        showToast(newVal ? t('dashboard.budget.toasts.paymentMarkedPaid') : t('dashboard.budget.toasts.paymentCancelled'));
         router.reload({ preserveScroll: true });
     } catch {
-        showToast('Gagal memperbarui pembayaran.', 'error');
+        showToast(t('dashboard.budget.toasts.paymentError'), 'error');
     }
 }
 
@@ -416,10 +419,10 @@ async function archiveItem() {
         await window.axios.delete(route('dashboard.budget-planner.items.destroy', archivingItem.value.id));
         showConfirmArchive.value = false;
         archivingItem.value      = null;
-        showToast('Pengeluaran berhasil diarsipkan.');
+        showToast(t('dashboard.budget.toasts.itemArchived'));
         router.reload({ preserveScroll: true });
     } catch {
-        showToast('Gagal mengarsipkan. Coba lagi.', 'error');
+        showToast(t('dashboard.budget.toasts.itemArchiveError'), 'error');
     }
 }
 
@@ -430,20 +433,20 @@ async function addCategory() {
     try {
         await window.axios.post(route('dashboard.budget-planner.categories.store'), { name: categoryForm.value.name });
         categoryForm.value.name = '';
-        showToast('Kategori berhasil ditambahkan.');
+        showToast(t('dashboard.budget.toasts.categoryAdded'));
         router.reload({ preserveScroll: true });
     } catch {
-        showToast('Gagal menambah kategori.', 'error');
+        showToast(t('dashboard.budget.toasts.categoryAddError'), 'error');
     }
 }
 
 async function archiveCategory(cat) {
     try {
         await window.axios.delete(route('dashboard.budget-planner.categories.destroy', cat.id));
-        showToast('Kategori berhasil diarsipkan.');
+        showToast(t('dashboard.budget.toasts.categoryArchived'));
         router.reload({ preserveScroll: true });
     } catch (err) {
-        showToast(err.response?.data?.message ?? 'Gagal mengarsipkan kategori.', 'error');
+        showToast(err.response?.data?.message ?? t('dashboard.budget.toasts.categoryArchiveError'), 'error');
     }
 }
 </script>
@@ -451,7 +454,7 @@ async function archiveCategory(cat) {
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800 truncate">Budget Planner</h1>
+            <h1 class="text-base font-semibold text-stone-800 truncate">{{ t('dashboard.budget.header.title') }}</h1>
         </template>
 
         <div class="max-w-5xl mx-auto pb-28">
@@ -479,8 +482,8 @@ async function archiveCategory(cat) {
             <!-- ── Page Header ─────────────────────────────────────────────── -->
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
                 <div>
-                    <h2 class="text-xl font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Budget Planner</h2>
-                    <p class="text-sm text-stone-500 mt-0.5">Pantau rencana dan realisasi budget pernikahanmu.</p>
+                    <h2 class="text-xl font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.budget.header.title') }}</h2>
+                    <p class="text-sm text-stone-500 mt-0.5">{{ t('dashboard.budget.header.subtitle') }}</p>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <button @click="showManageCats = true"
@@ -488,7 +491,7 @@ async function archiveCategory(cat) {
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z"/>
                         </svg>
-                        Kelola Kategori
+                        {{ t('dashboard.budget.header.manageCategories') }}
                     </button>
                     <button @click="openAddItem()"
                         class="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white rounded-xl transition-opacity hover:opacity-90"
@@ -496,7 +499,7 @@ async function archiveCategory(cat) {
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Tambah Item
+                        {{ t('dashboard.budget.header.addItem') }}
                     </button>
                 </div>
             </div>
@@ -512,18 +515,18 @@ async function archiveCategory(cat) {
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-sm font-semibold text-stone-800">Mulai rencanakan budget pernikahanmu</h3>
-                        <p class="text-xs text-stone-500 mt-0.5">Set total budget dulu agar kamu bisa pantau pengeluaran dengan akurat.</p>
+                        <h3 class="text-sm font-semibold text-stone-800">{{ t('dashboard.budget.onboarding.title') }}</h3>
+                        <p class="text-xs text-stone-500 mt-0.5">{{ t('dashboard.budget.onboarding.subtitle') }}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <button @click="openAddItem()"
                             class="px-3 py-2 text-xs font-medium text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">
-                            Tambah Item Langsung
+                            {{ t('dashboard.budget.onboarding.addItemDirect') }}
                         </button>
                         <button @click="openSetBudget"
                             class="px-4 py-2 text-xs font-semibold text-white rounded-xl transition-opacity hover:opacity-90"
                             style="background-color: #92A89C">
-                            Atur Total Budget
+                            {{ t('dashboard.budget.onboarding.setBudget') }}
                         </button>
                     </div>
                 </div>
@@ -535,8 +538,8 @@ async function archiveCategory(cat) {
                 <svg class="w-4 h-4 text-[#92A89C] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                 </svg>
-                <span class="text-[#73877C]">Total budget belum diatur. Sisa budget tidak dapat dihitung.</span>
-                <button @click="openSetBudget" class="ml-auto font-semibold text-[#73877C] underline whitespace-nowrap">Atur sekarang</button>
+                <span class="text-[#73877C]">{{ t('dashboard.budget.noBudgetNotice.message') }}</span>
+                <button @click="openSetBudget" class="ml-auto font-semibold text-[#73877C] underline whitespace-nowrap">{{ t('dashboard.budget.noBudgetNotice.action') }}</button>
             </div>
 
             <!-- ── Donut Chart + Summary ───────────────────────────────────── -->
@@ -565,7 +568,7 @@ async function archiveCategory(cat) {
                             <!-- Center label -->
                             <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
                                 <template v-if="donutSlices.length === 0">
-                                    <span class="text-xs text-stone-400">Atur budget dulu</span>
+                                    <span class="text-xs text-stone-400">{{ t('dashboard.budget.chart.setBudgetFirst') }}</span>
                                 </template>
                                 <template v-else>
                                     <span class="text-xs text-stone-400 leading-tight">{{ donutCenterLabel.primary }}</span>
@@ -597,49 +600,49 @@ async function archiveCategory(cat) {
                     <div class="flex-1 grid grid-cols-2 gap-3">
                         <!-- Total Budget -->
                         <div class="bg-stone-50 rounded-xl p-3">
-                            <p class="text-xs text-stone-400 font-medium">Total Budget</p>
+                            <p class="text-xs text-stone-400 font-medium">{{ t('dashboard.budget.summary.totalBudget') }}</p>
                             <p class="text-base font-bold text-stone-800 mt-0.5 leading-tight">
                                 {{ summary.has_budget ? summary.formatted.total_budget : '—' }}
                             </p>
                             <button @click="openSetBudget" class="mt-1 text-xs font-medium transition-colors" style="color: #92A89C">
-                                {{ summary.has_budget ? 'Ubah' : 'Atur budget' }}
+                                {{ summary.has_budget ? t('dashboard.budget.summary.changeBudget') : t('dashboard.budget.summary.setBudget') }}
                             </button>
                         </div>
 
                         <!-- Total Planned -->
                         <div class="bg-stone-50 rounded-xl p-3">
-                            <p class="text-xs text-stone-400 font-medium">Total Planned</p>
+                            <p class="text-xs text-stone-400 font-medium">{{ t('dashboard.budget.summary.totalPlanned') }}</p>
                             <p class="text-base font-bold text-stone-800 mt-0.5 leading-tight">
                                 {{ summary.formatted.total_planned }}
                             </p>
-                            <p class="mt-1 text-xs text-stone-400">Dari semua item</p>
+                            <p class="mt-1 text-xs text-stone-400">{{ t('dashboard.budget.summary.fromAllItems') }}</p>
                         </div>
 
-                        <!-- Terpakai -->
+                        <!-- Used -->
                         <div class="bg-stone-50 rounded-xl p-3">
-                            <p class="text-xs text-stone-400 font-medium">Terpakai</p>
+                            <p class="text-xs text-stone-400 font-medium">{{ t('dashboard.budget.summary.used') }}</p>
                             <p class="text-base font-bold mt-0.5 leading-tight"
                                :class="summary.is_total_overbudget ? 'text-rose-600' : 'text-stone-800'">
                                 {{ summary.formatted.total_actual }}
                             </p>
                             <p v-if="summary.is_total_overbudget" class="mt-1 text-xs text-rose-500 font-medium">
-                                Melebihi budget
+                                {{ t('dashboard.budget.summary.overBudget') }}
                             </p>
-                            <p v-else class="mt-1 text-xs text-stone-400">Sudah dicatat</p>
+                            <p v-else class="mt-1 text-xs text-stone-400">{{ t('dashboard.budget.summary.recorded') }}</p>
                         </div>
 
-                        <!-- Sisa -->
+                        <!-- Remaining -->
                         <div class="bg-stone-50 rounded-xl p-3">
-                            <p class="text-xs text-stone-400 font-medium">Sisa Budget</p>
+                            <p class="text-xs text-stone-400 font-medium">{{ t('dashboard.budget.summary.remaining') }}</p>
                             <p class="text-base font-bold mt-0.5 leading-tight"
                                :class="summary.remaining_budget < 0 ? 'text-rose-600' : 'text-stone-800'">
                                 {{ summary.has_budget ? summary.formatted.remaining_budget : '—' }}
                             </p>
                             <p v-if="summary.overbudget_categories_count > 0" class="mt-1 text-xs text-[#73877C]">
-                                {{ summary.overbudget_categories_count }} kategori melebihi
+                                {{ t('dashboard.budget.summary.categoriesOver', { count: summary.overbudget_categories_count }) }}
                             </p>
                             <p v-else class="mt-1 text-xs text-stone-400">
-                                {{ summary.has_budget ? 'Dana tersisa' : 'Atur budget dulu' }}
+                                {{ summary.has_budget ? t('dashboard.budget.summary.fundsLeft') : t('dashboard.budget.summary.setBudgetFirst') }}
                             </p>
                         </div>
                     </div>
@@ -648,10 +651,10 @@ async function archiveCategory(cat) {
                 <!-- Progress bar (only when budget set) -->
                 <div v-if="hasBudget" class="mt-4 pt-4 border-t border-stone-100">
                     <div class="flex items-center justify-between mb-1.5">
-                        <p class="text-xs text-stone-500">Budget terpakai</p>
+                        <p class="text-xs text-stone-500">{{ t('dashboard.budget.summary.budgetUsed') }}</p>
                         <div class="flex items-center gap-2">
                             <span v-if="summary.is_total_overbudget"
-                                  class="text-xs font-semibold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">Overbudget</span>
+                                  class="text-xs font-semibold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">{{ t('dashboard.budget.summary.overbudgetBadge') }}</span>
                             <span class="text-xs font-bold text-stone-700">{{ progressPct }}%</span>
                         </div>
                     </div>
@@ -667,11 +670,11 @@ async function archiveCategory(cat) {
                 <button
                     @click="activeView = 'category'"
                     :class="['px-4 py-1.5 text-sm font-medium rounded-lg transition-all', activeView === 'category' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700']"
-                >Kategori</button>
+                >{{ t('dashboard.budget.view.byCategory') }}</button>
                 <button
                     @click="activeView = 'item'"
                     :class="['px-4 py-1.5 text-sm font-medium rounded-lg transition-all', activeView === 'item' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700']"
-                >Daftar Item</button>
+                >{{ t('dashboard.budget.view.byItem') }}</button>
             </div>
 
             <!-- ═══════════════ CATEGORY VIEW ═══════════════════════════════ -->
@@ -682,9 +685,9 @@ async function archiveCategory(cat) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z"/>
                         </svg>
                     </div>
-                    <p class="text-sm font-medium text-stone-600">Kategori default sudah siap</p>
-                    <p class="text-xs text-stone-400 mt-1">Mulai tambah pengeluaran untuk melihat breakdown kategori.</p>
-                    <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">Tambah pengeluaran pertama →</button>
+                    <p class="text-sm font-medium text-stone-600">{{ t('dashboard.budget.category.emptyTitle') }}</p>
+                    <p class="text-xs text-stone-400 mt-1">{{ t('dashboard.budget.category.emptySubtitle') }}</p>
+                    <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">{{ t('dashboard.budget.category.emptyAction') }}</button>
                 </div>
 
                 <div v-else class="space-y-2">
@@ -725,17 +728,17 @@ async function archiveCategory(cat) {
                                 <!-- Desktop amount row -->
                                 <div class="hidden sm:grid grid-cols-3 gap-2 text-xs mt-2">
                                     <div>
-                                        <p class="text-stone-400">Planned</p>
+                                        <p class="text-stone-400">{{ t('dashboard.budget.item.planned') }}</p>
                                         <p class="font-semibold text-stone-700">{{ cat.formatted.planned_total }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-stone-400">Terpakai</p>
+                                        <p class="text-stone-400">{{ t('dashboard.budget.item.used') }}</p>
                                         <p class="font-semibold" :class="cat.status === 'melebihi' ? 'text-rose-600' : 'text-stone-700'">
                                             {{ cat.formatted.actual_total }}
                                         </p>
                                     </div>
                                     <div>
-                                        <p class="text-stone-400">Sisa</p>
+                                        <p class="text-stone-400">{{ t('dashboard.budget.item.remaining') }}</p>
                                         <p class="font-semibold" :class="cat.remaining < 0 ? 'text-rose-600' : 'text-stone-700'">
                                             {{ cat.formatted.remaining }}
                                         </p>
@@ -759,9 +762,9 @@ async function archiveCategory(cat) {
                             <div v-if="expandedCats.has(cat.id)" class="border-t border-stone-100">
                                 <!-- Empty state for category -->
                                 <div v-if="!cat.items?.length" class="px-4 py-5 text-center">
-                                    <p class="text-xs text-stone-400">Belum ada item di kategori ini.</p>
+                                    <p class="text-xs text-stone-400">{{ t('dashboard.budget.category.noItems') }}</p>
                                     <button @click="openAddItem(cat.id)" class="mt-2 text-xs font-medium" style="color: #92A89C">
-                                        + Tambah item
+                                        {{ t('dashboard.budget.category.addItem') }}
                                     </button>
                                 </div>
 
@@ -779,11 +782,11 @@ async function archiveCategory(cat) {
                                                     <!-- Due date warning -->
                                                     <span v-if="item.due_date_warning === 'overdue'"
                                                           class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
-                                                        Overdue
+                                                        {{ t('dashboard.budget.item.overdue') }}
                                                     </span>
                                                     <span v-else-if="item.due_date_warning === 'soon'"
                                                           class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]">
-                                                        Segera
+                                                        {{ t('dashboard.budget.item.soon') }}
                                                     </span>
                                                 </div>
 
@@ -792,13 +795,13 @@ async function archiveCategory(cat) {
                                                 <!-- Amounts -->
                                                 <div class="flex items-center gap-3 text-xs mt-1.5 flex-wrap">
                                                     <span class="text-stone-400">
-                                                        Planned: <span class="text-stone-600 font-medium">{{ item.formatted.planned_amount }}</span>
+                                                        {{ t('dashboard.budget.item.planned') }}: <span class="text-stone-600 font-medium">{{ item.formatted.planned_amount }}</span>
                                                     </span>
                                                     <span class="text-stone-400">
-                                                        Terpakai: <span :class="['font-medium', item.sisa < 0 ? 'text-rose-600' : 'text-stone-600']">{{ item.formatted.terpakai }}</span>
+                                                        {{ t('dashboard.budget.item.used') }}: <span :class="['font-medium', item.sisa < 0 ? 'text-rose-600' : 'text-stone-600']">{{ item.formatted.terpakai }}</span>
                                                     </span>
                                                     <span class="text-stone-400">
-                                                        Sisa: <span :class="['font-medium', item.sisa < 0 ? 'text-rose-600' : 'text-stone-600']">
+                                                        {{ t('dashboard.budget.item.remaining') }}: <span :class="['font-medium', item.sisa < 0 ? 'text-rose-600' : 'text-stone-600']">
                                                             {{ item.sisa < 0 ? '-' : '' }}{{ item.formatted.sisa }}
                                                         </span>
                                                     </span>
@@ -816,7 +819,7 @@ async function archiveCategory(cat) {
                                                             <path v-if="item.dp_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                                         </svg>
-                                                        DP {{ item.formatted.dp_amount }}
+                                                        {{ t('dashboard.budget.item.dp', { amount: item.formatted.dp_amount }) }}
                                                     </button>
                                                     <button
                                                         v-if="item.final_amount !== null"
@@ -828,13 +831,13 @@ async function archiveCategory(cat) {
                                                             <path v-if="item.final_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                                         </svg>
-                                                        Pelunasan {{ item.formatted.final_amount }}
+                                                        {{ t('dashboard.budget.item.settlement', { amount: item.formatted.final_amount }) }}
                                                     </button>
                                                 </div>
 
                                                 <!-- Due date -->
                                                 <p v-if="item.due_date_label" class="text-xs text-stone-400 mt-1">
-                                                    📅 Jatuh tempo: {{ item.due_date_label }}
+                                                    📅 {{ t('dashboard.budget.item.dueDate', { date: item.due_date_label }) }}
                                                 </p>
                                             </div>
 
@@ -842,14 +845,14 @@ async function archiveCategory(cat) {
                                             <div class="flex items-center gap-1 flex-shrink-0">
                                                 <button @click="openEditItem(item)"
                                                     class="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
-                                                    title="Edit">
+                                                    :title="t('dashboard.budget.modal.addItem.titleEdit')">
                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </button>
                                                 <button @click="confirmArchiveItem(item)"
                                                     class="p-1.5 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                                                    title="Arsipkan">
+                                                    :title="t('dashboard.budget.modal.confirmArchive.confirm')">
                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                                                     </svg>
@@ -867,7 +870,7 @@ async function archiveCategory(cat) {
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                                         </svg>
-                                        Tambah item ke {{ cat.name }}
+                                        {{ t('dashboard.budget.category.addItemTo', { name: cat.name }) }}
                                     </button>
                                 </div>
                             </div>
@@ -884,7 +887,7 @@ async function archiveCategory(cat) {
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                        <input v-model="searchQuery" type="search" placeholder="Cari item atau vendor"
+                        <input v-model="searchQuery" type="search" :placeholder="t('dashboard.budget.itemList.searchPlaceholder')"
                             class="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                             style="--tw-ring-color: #92A89C" />
                     </div>
@@ -897,7 +900,7 @@ async function archiveCategory(cat) {
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
                         </svg>
-                        Filter
+                        {{ t('dashboard.budget.itemList.filter') }}
                     </button>
                 </div>
 
@@ -909,14 +912,14 @@ async function archiveCategory(cat) {
                         </svg>
                     </div>
                     <template v-if="searchQuery || filterStatus !== 'all' || filterCategory">
-                        <p class="text-sm font-medium text-stone-600">Tidak ada hasil yang cocok.</p>
-                        <p class="text-xs text-stone-400 mt-1">Coba kata kunci atau filter lain.</p>
-                        <button @click="clearFilters" class="mt-3 text-sm font-medium" style="color: #92A89C">Reset filter →</button>
+                        <p class="text-sm font-medium text-stone-600">{{ t('dashboard.budget.itemList.emptyNoMatch') }}</p>
+                        <p class="text-xs text-stone-400 mt-1">{{ t('dashboard.budget.itemList.emptyNoMatchHint') }}</p>
+                        <button @click="clearFilters" class="mt-3 text-sm font-medium" style="color: #92A89C">{{ t('dashboard.budget.itemList.resetFilter') }}</button>
                     </template>
                     <template v-else>
-                        <p class="text-sm font-medium text-stone-600">Belum ada pengeluaran tercatat.</p>
-                        <p class="text-xs text-stone-400 mt-1">Mulai catat pengeluaran pertamamu.</p>
-                        <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">Tambah pengeluaran →</button>
+                        <p class="text-sm font-medium text-stone-600">{{ t('dashboard.budget.itemList.emptyTitle') }}</p>
+                        <p class="text-xs text-stone-400 mt-1">{{ t('dashboard.budget.itemList.emptySubtitle') }}</p>
+                        <button @click="openAddItem()" class="mt-3 text-sm font-medium" style="color: #92A89C">{{ t('dashboard.budget.itemList.emptyAction') }}</button>
                     </template>
                 </div>
 
@@ -931,17 +934,17 @@ async function archiveCategory(cat) {
                                         {{ paymentLabel[item.payment_status] }}
                                     </span>
                                     <span v-if="item.due_date_warning === 'overdue'"
-                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Overdue</span>
+                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">{{ t('dashboard.budget.item.overdue') }}</span>
                                     <span v-else-if="item.due_date_warning === 'soon'"
-                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]">Segera</span>
+                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#92A89C]/20 text-[#73877C]">{{ t('dashboard.budget.item.soon') }}</span>
                                 </div>
                                 <p class="text-xs text-stone-400 mb-2">
                                     {{ item.category?.name }}
                                     <span v-if="item.vendor_name"> · {{ item.vendor_name }}</span>
                                 </p>
                                 <div class="flex items-center gap-4 text-xs flex-wrap">
-                                    <span class="text-stone-400">Planned: <span class="font-semibold text-stone-700">{{ item.formatted.planned_amount }}</span></span>
-                                    <span class="text-stone-400">Terpakai: <span :class="['font-semibold', item.sisa < 0 ? 'text-rose-600' : 'text-stone-700']">{{ item.formatted.terpakai }}</span></span>
+                                    <span class="text-stone-400">{{ t('dashboard.budget.item.planned') }}: <span class="font-semibold text-stone-700">{{ item.formatted.planned_amount }}</span></span>
+                                    <span class="text-stone-400">{{ t('dashboard.budget.item.used') }}: <span :class="['font-semibold', item.sisa < 0 ? 'text-rose-600' : 'text-stone-700']">{{ item.formatted.terpakai }}</span></span>
                                 </div>
                                 <!-- DP / final inline -->
                                 <div v-if="item.dp_amount !== null || item.final_amount !== null" class="flex gap-2 mt-1.5 text-xs flex-wrap">
@@ -953,7 +956,7 @@ async function archiveCategory(cat) {
                                             <path v-if="item.dp_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
-                                        DP {{ item.formatted.dp_amount }}
+                                        {{ t('dashboard.budget.item.dp', { amount: item.formatted.dp_amount }) }}
                                     </button>
                                     <button v-if="item.final_amount !== null"
                                         @click="togglePayment(item, 'final_paid')"
@@ -963,20 +966,20 @@ async function archiveCategory(cat) {
                                             <path v-if="item.final_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
-                                        Pelunasan {{ item.formatted.final_amount }}
+                                        {{ t('dashboard.budget.item.settlement', { amount: item.formatted.final_amount }) }}
                                     </button>
                                 </div>
-                                <p v-if="item.due_date_label" class="text-xs text-stone-400 mt-1">📅 {{ item.due_date_label }}</p>
+                                <p v-if="item.due_date_label" class="text-xs text-stone-400 mt-1">📅 {{ t('dashboard.budget.item.dueDate', { date: item.due_date_label }) }}</p>
                             </div>
                             <div class="flex items-center gap-1 flex-shrink-0">
                                 <button @click="openEditItem(item)"
-                                    class="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors" title="Edit">
+                                    class="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors" :title="t('dashboard.budget.modal.addItem.titleEdit')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                 </button>
                                 <button @click="confirmArchiveItem(item)"
-                                    class="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Arsipkan">
+                                    class="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" :title="t('dashboard.budget.modal.confirmArchive.confirm')">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                                     </svg>
@@ -989,14 +992,14 @@ async function archiveCategory(cat) {
         </div>
 
         <!-- ── Mobile FAB ──────────────────────────────────────────────────── -->
-        <div class="fixed bottom-6 right-4 sm:hidden z-20">
+        <div class="fixed bottom-20 right-4 sm:hidden z-20">
             <button @click="openAddItem()"
                 class="flex items-center gap-2 px-5 py-3 text-white text-sm font-semibold rounded-2xl shadow-lg transition-opacity hover:opacity-90"
                 style="background-color: #92A89C">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                 </svg>
-                Tambah Item
+                {{ t('dashboard.budget.header.addItem') }}
             </button>
         </div>
 
@@ -1007,10 +1010,10 @@ async function archiveCategory(cat) {
             <div v-if="showSetBudget" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/40" @click="showSetBudget = false"/>
                 <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-                    <h3 class="text-base font-semibold text-stone-800 mb-4">Atur Total Budget</h3>
+                    <h3 class="text-base font-semibold text-stone-800 mb-4">{{ t('dashboard.budget.modal.setBudget.title') }}</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Total Budget</label>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.setBudget.labelBudget') }}</label>
                             <input
                                 :value="formatRupiah(budgetForm.total_budget)"
                                 @input="budgetForm.total_budget = $event.target.value.replace(/\D/g, '')"
@@ -1019,15 +1022,15 @@ async function archiveCategory(cat) {
                                 style="--tw-ring-color: #92A89C" />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Catatan (opsional)</label>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.setBudget.labelNotes') }}</label>
                             <textarea v-model="budgetForm.notes" rows="2"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent resize-none"
                                 style="--tw-ring-color: #92A89C" />
                         </div>
                     </div>
                     <div class="flex gap-2 mt-5">
-                        <button @click="showSetBudget = false" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Batal</button>
-                        <button @click="saveBudget" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">Simpan</button>
+                        <button @click="showSetBudget = false" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">{{ t('dashboard.budget.modal.setBudget.cancel') }}</button>
+                        <button @click="saveBudget" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">{{ t('dashboard.budget.modal.setBudget.save') }}</button>
                     </div>
                 </div>
             </div>
@@ -1039,7 +1042,7 @@ async function archiveCategory(cat) {
                 <div class="absolute inset-0 bg-black/40" @click="showAddItem = showEditItem = false"/>
                 <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
                     <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-                        <h3 class="text-base font-semibold text-stone-800">{{ editingItem ? 'Edit Pengeluaran' : 'Tambah Pengeluaran' }}</h3>
+                        <h3 class="text-base font-semibold text-stone-800">{{ editingItem ? t('dashboard.budget.modal.addItem.titleEdit') : t('dashboard.budget.modal.addItem.titleAdd') }}</h3>
                         <button @click="showAddItem = showEditItem = false" class="p-1 text-stone-400 hover:text-stone-600 rounded-lg">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1050,8 +1053,8 @@ async function archiveCategory(cat) {
                     <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                         <!-- Nama item -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Nama Item <span class="text-rose-400">*</span></label>
-                            <input v-model="itemForm.title" type="text" placeholder="Contoh: Gedung Akad"
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelName') }} <span class="text-rose-400">*</span></label>
+                            <input v-model="itemForm.title" type="text" :placeholder="t('dashboard.budget.modal.addItem.namePlaceholder')"
                                 class="w-full px-3 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                                 :class="itemErrors.title ? 'border-rose-300' : 'border-stone-200'"
                                 style="--tw-ring-color: #92A89C" />
@@ -1060,12 +1063,12 @@ async function archiveCategory(cat) {
 
                         <!-- Kategori -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Kategori <span class="text-rose-400">*</span></label>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelCategory') }} <span class="text-rose-400">*</span></label>
                             <select v-model="itemForm.category_id"
                                 class="w-full px-3 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
                                 :class="itemErrors.category_id ? 'border-rose-300' : 'border-stone-200'"
                                 style="--tw-ring-color: #92A89C">
-                                <option value="" disabled>Pilih kategori</option>
+                                <option value="" disabled>{{ t('dashboard.budget.modal.addItem.selectCategory') }}</option>
                                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                             </select>
                             <p v-if="itemErrors.category_id" class="mt-1 text-xs text-rose-500">{{ itemErrors.category_id[0] }}</p>
@@ -1073,7 +1076,7 @@ async function archiveCategory(cat) {
 
                         <!-- Planned amount -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Planned Amount</label>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelPlannedAmount') }}</label>
                             <input
                                 :value="itemForm.planned_amount ? formatRupiah(itemForm.planned_amount) : ''"
                                 @input="itemForm.planned_amount = $event.target.value.replace(/\D/g, '')"
@@ -1084,7 +1087,7 @@ async function archiveCategory(cat) {
 
                         <!-- Payment tracking mode toggle -->
                         <div class="flex items-center justify-between">
-                            <label class="text-xs font-medium text-stone-600">Tracking DP & Pelunasan</label>
+                            <label class="text-xs font-medium text-stone-600">{{ t('dashboard.budget.modal.addItem.labelDpTracking') }}</label>
                             <button
                                 @click="itemForm.use_dp_tracking = !itemForm.use_dp_tracking"
                                 :class="['relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
@@ -1099,17 +1102,17 @@ async function archiveCategory(cat) {
                         <!-- Simple payment mode -->
                         <template v-if="!itemForm.use_dp_tracking">
                             <div>
-                                <label class="block text-xs font-medium text-stone-600 mb-1">Jumlah Terbayar</label>
+                                <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelAmountPaid') }}</label>
                                 <input
                                     :value="itemForm.actual_amount !== '' ? formatRupiah(itemForm.actual_amount) : ''"
                                     @input="itemForm.actual_amount = $event.target.value.replace(/\D/g, '')"
-                                    type="text" inputmode="numeric" placeholder="Belum ada"
+                                    type="text" inputmode="numeric" :placeholder="t('dashboard.budget.modal.addItem.amountPaidPlaceholder')"
                                     class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                                     style="--tw-ring-color: #92A89C" />
-                                <p class="mt-1 text-xs text-stone-400">Kosongkan jika belum ada pembayaran.</p>
+                                <p class="mt-1 text-xs text-stone-400">{{ t('dashboard.budget.modal.addItem.amountPaidHint') }}</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-stone-600 mb-1">Status Pembayaran</label>
+                                <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelPaymentStatus') }}</label>
                                 <div class="flex gap-2">
                                     <button v-for="opt in paymentStatusOptions" :key="opt.value"
                                         @click="itemForm.payment_status = opt.value"
@@ -1121,12 +1124,12 @@ async function archiveCategory(cat) {
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-stone-600 mb-1">Tanggal Pembayaran</label>
+                                <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelPaymentDate') }}</label>
                                 <div class="flex items-center gap-1.5">
                                     <button type="button" @click="openDatePicker('payment_date')"
                                             class="flex-1 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-left transition-colors hover:border-[#92A89C]/50">
                                         <span v-if="itemForm.payment_date" class="text-stone-800">{{ calDisplayDate(itemForm.payment_date) }}</span>
-                                        <span v-else class="text-stone-400">Pilih tanggal</span>
+                                        <span v-else class="text-stone-400">{{ t('dashboard.budget.modal.addItem.pickDate') }}</span>
                                     </button>
                                     <button v-if="itemForm.payment_date" type="button" @click="itemForm.payment_date = ''"
                                             class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
@@ -1141,13 +1144,13 @@ async function archiveCategory(cat) {
                         <!-- DP + Pelunasan tracking mode -->
                         <template v-else>
                             <div class="space-y-3 bg-stone-50 rounded-xl p-3">
-                                <p class="text-xs font-medium text-stone-500">DP (Uang Muka)</p>
+                                <p class="text-xs font-medium text-stone-500">{{ t('dashboard.budget.modal.addItem.dpSection') }}</p>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1">
                                         <input
                                             :value="itemForm.dp_amount !== '' ? formatRupiah(itemForm.dp_amount) : ''"
                                             @input="itemForm.dp_amount = $event.target.value.replace(/\D/g, '')"
-                                            type="text" inputmode="numeric" placeholder="Rp 0 (opsional)"
+                                            type="text" inputmode="numeric" :placeholder="t('dashboard.budget.modal.addItem.dpPlaceholder')"
                                             class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
                                             style="--tw-ring-color: #92A89C" />
                                     </div>
@@ -1159,18 +1162,18 @@ async function archiveCategory(cat) {
                                             <path v-if="itemForm.dp_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
-                                        {{ itemForm.dp_paid ? 'Terbayar' : 'Belum' }}
+                                        {{ itemForm.dp_paid ? t('dashboard.budget.modal.addItem.paid') : t('dashboard.budget.modal.addItem.notPaid') }}
                                     </button>
                                 </div>
                             </div>
                             <div class="space-y-3 bg-stone-50 rounded-xl p-3">
-                                <p class="text-xs font-medium text-stone-500">Pelunasan</p>
+                                <p class="text-xs font-medium text-stone-500">{{ t('dashboard.budget.modal.addItem.settlementSection') }}</p>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1">
                                         <input
                                             :value="itemForm.final_amount !== '' ? formatRupiah(itemForm.final_amount) : ''"
                                             @input="itemForm.final_amount = $event.target.value.replace(/\D/g, '')"
-                                            type="text" inputmode="numeric" placeholder="Rp 0 (opsional)"
+                                            type="text" inputmode="numeric" :placeholder="t('dashboard.budget.modal.addItem.dpPlaceholder')"
                                             class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent bg-white"
                                             style="--tw-ring-color: #92A89C" />
                                     </div>
@@ -1182,7 +1185,7 @@ async function archiveCategory(cat) {
                                             <path v-if="itemForm.final_paid" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                             <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
-                                        {{ itemForm.final_paid ? 'Terbayar' : 'Belum' }}
+                                        {{ itemForm.final_paid ? t('dashboard.budget.modal.addItem.paid') : t('dashboard.budget.modal.addItem.notPaid') }}
                                     </button>
                                 </div>
                             </div>
@@ -1190,12 +1193,12 @@ async function archiveCategory(cat) {
 
                         <!-- Jatuh tempo -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Jatuh Tempo (opsional)</label>
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelDueDate') }}</label>
                             <div class="flex items-center gap-1.5">
                                 <button type="button" @click="openDatePicker('due_date')"
                                         class="flex-1 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-left transition-colors hover:border-[#92A89C]/50">
                                     <span v-if="itemForm.due_date" class="text-stone-800">{{ calDisplayDate(itemForm.due_date) }}</span>
-                                    <span v-else class="text-stone-400">Pilih tanggal</span>
+                                    <span v-else class="text-stone-400">{{ t('dashboard.budget.modal.addItem.pickDate') }}</span>
                                 </button>
                                 <button v-if="itemForm.due_date" type="button" @click="itemForm.due_date = ''"
                                         class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
@@ -1208,16 +1211,16 @@ async function archiveCategory(cat) {
 
                         <!-- Vendor -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Vendor (opsional)</label>
-                            <input v-model="itemForm.vendor_name" type="text" placeholder="Nama vendor"
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelVendor') }}</label>
+                            <input v-model="itemForm.vendor_name" type="text" :placeholder="t('dashboard.budget.modal.addItem.vendorPlaceholder')"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                                 style="--tw-ring-color: #92A89C" />
                         </div>
 
                         <!-- Notes -->
                         <div>
-                            <label class="block text-xs font-medium text-stone-600 mb-1">Catatan (opsional)</label>
-                            <textarea v-model="itemForm.notes" rows="2" placeholder="Catatan tambahan"
+                            <label class="block text-xs font-medium text-stone-600 mb-1">{{ t('dashboard.budget.modal.addItem.labelNotes') }}</label>
+                            <textarea v-model="itemForm.notes" rows="2" :placeholder="t('dashboard.budget.modal.addItem.notesPlaceholder')"
                                 class="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent resize-none"
                                 style="--tw-ring-color: #92A89C" />
                         </div>
@@ -1225,10 +1228,10 @@ async function archiveCategory(cat) {
 
                     <div class="px-5 py-4 border-t border-stone-100 flex gap-2">
                         <button @click="showAddItem = showEditItem = false"
-                            class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Batal</button>
+                            class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">{{ t('dashboard.budget.modal.addItem.cancel') }}</button>
                         <button @click="saveItem"
                             class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90"
-                            style="background-color: #92A89C">Simpan</button>
+                            style="background-color: #92A89C">{{ t('dashboard.budget.modal.addItem.save') }}</button>
                     </div>
                 </div>
             </div>
@@ -1240,12 +1243,12 @@ async function archiveCategory(cat) {
                 <div class="absolute inset-0 bg-black/40" @click="showFilterSheet = false"/>
                 <div class="relative bg-white rounded-t-3xl shadow-xl w-full max-w-lg p-5 pb-8">
                     <div class="w-10 h-1 bg-stone-200 rounded-full mx-auto mb-4"/>
-                    <h3 class="text-base font-semibold text-stone-800 mb-4">Filter & Urutkan</h3>
+                    <h3 class="text-base font-semibold text-stone-800 mb-4">{{ t('dashboard.budget.filter.title') }}</h3>
 
                     <div class="mb-4">
-                        <p class="text-xs font-medium text-stone-500 mb-2">Status Pembayaran</p>
+                        <p class="text-xs font-medium text-stone-500 mb-2">{{ t('dashboard.budget.filter.paymentStatus') }}</p>
                         <div class="flex flex-wrap gap-2">
-                            <button v-for="opt in [{ value: 'all', label: 'Semua' }, ...paymentStatusOptions]" :key="opt.value"
+                            <button v-for="opt in [{ value: 'all', label: t('dashboard.budget.payment.allStatus') }, ...paymentStatusOptions]" :key="opt.value"
                                 @click="filterStatus = opt.value"
                                 :class="['px-3 py-1.5 text-xs font-medium rounded-xl border transition-colors',
                                     filterStatus === opt.value ? 'border-transparent text-white' : 'border-stone-200 text-stone-600 hover:bg-stone-50']"
@@ -1256,28 +1259,28 @@ async function archiveCategory(cat) {
                     </div>
 
                     <div class="mb-4">
-                        <p class="text-xs font-medium text-stone-500 mb-2">Kategori</p>
+                        <p class="text-xs font-medium text-stone-500 mb-2">{{ t('dashboard.budget.filter.category') }}</p>
                         <select v-model="filterCategory" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none bg-white">
-                            <option value="">Semua Kategori</option>
+                            <option value="">{{ t('dashboard.budget.filter.allCategories') }}</option>
                             <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                         </select>
                     </div>
 
                     <div class="mb-5">
-                        <p class="text-xs font-medium text-stone-500 mb-2">Urutkan</p>
+                        <p class="text-xs font-medium text-stone-500 mb-2">{{ t('dashboard.budget.filter.sort') }}</p>
                         <select v-model="sortBy" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none bg-white">
-                            <option value="newest">Terbaru</option>
-                            <option value="amount_desc">Nominal terbesar</option>
-                            <option value="amount_asc">Nominal terkecil</option>
-                            <option value="date_desc">Tanggal terbaru</option>
-                            <option value="category">Kategori</option>
-                            <option value="payment_status">Status pembayaran</option>
+                            <option value="newest">{{ t('dashboard.budget.filter.sortNewest') }}</option>
+                            <option value="amount_desc">{{ t('dashboard.budget.filter.sortAmountDesc') }}</option>
+                            <option value="amount_asc">{{ t('dashboard.budget.filter.sortAmountAsc') }}</option>
+                            <option value="date_desc">{{ t('dashboard.budget.filter.sortDateDesc') }}</option>
+                            <option value="category">{{ t('dashboard.budget.filter.sortCategory') }}</option>
+                            <option value="payment_status">{{ t('dashboard.budget.filter.sortPaymentStatus') }}</option>
                         </select>
                     </div>
 
                     <div class="flex gap-2">
-                        <button @click="clearFilters" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Reset</button>
-                        <button @click="applyFilters" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">Terapkan</button>
+                        <button @click="clearFilters" class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">{{ t('dashboard.budget.filter.reset') }}</button>
+                        <button @click="applyFilters" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-opacity hover:opacity-90" style="background-color: #92A89C">{{ t('dashboard.budget.filter.apply') }}</button>
                     </div>
                 </div>
             </div>
@@ -1289,7 +1292,7 @@ async function archiveCategory(cat) {
                 <div class="absolute inset-0 bg-black/40" @click="showManageCats = false"/>
                 <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
                     <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-                        <h3 class="text-base font-semibold text-stone-800">Kelola Kategori</h3>
+                        <h3 class="text-base font-semibold text-stone-800">{{ t('dashboard.budget.modal.manageCategories.title') }}</h3>
                         <button @click="showManageCats = false" class="p-1 text-stone-400 hover:text-stone-600 rounded-lg">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1298,13 +1301,13 @@ async function archiveCategory(cat) {
                     </div>
                     <div class="flex-1 overflow-y-auto px-5 py-4">
                         <div class="flex gap-2 mb-4">
-                            <input v-model="categoryForm.name" type="text" placeholder="Nama kategori baru"
+                            <input v-model="categoryForm.name" type="text" :placeholder="t('dashboard.budget.modal.manageCategories.newCategoryPlaceholder')"
                                 @keyup.enter="addCategory"
                                 class="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                                 style="--tw-ring-color: #92A89C" />
                             <button @click="addCategory"
                                 class="px-4 py-2 text-sm font-medium text-white rounded-xl transition-opacity hover:opacity-90"
-                                style="background-color: #92A89C">Tambah</button>
+                                style="background-color: #92A89C">{{ t('dashboard.budget.modal.manageCategories.add') }}</button>
                         </div>
                         <div class="space-y-2">
                             <div v-for="cat in categoryBreakdown" :key="cat.id"
@@ -1312,10 +1315,10 @@ async function archiveCategory(cat) {
                                 <div class="flex items-center gap-2">
                                     <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: cat.color || '#92A89C' }"/>
                                     <span class="text-sm text-stone-700 font-medium">{{ cat.name }}</span>
-                                    <span v-if="cat.type === 'custom'" class="text-xs text-[#73877C] bg-[#92A89C]/10 px-1.5 py-0.5 rounded">Custom</span>
+                                    <span v-if="cat.type === 'custom'" class="text-xs text-[#73877C] bg-[#92A89C]/10 px-1.5 py-0.5 rounded">{{ t('dashboard.budget.modal.manageCategories.customBadge') }}</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs text-stone-400">{{ cat.items_count }} item</span>
+                                    <span class="text-xs text-stone-400">{{ t('dashboard.budget.modal.manageCategories.itemCount', { count: cat.items_count }) }}</span>
                                     <button v-if="cat.type === 'custom'" @click="archiveCategory(cat)"
                                         class="p-1.5 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1325,7 +1328,7 @@ async function archiveCategory(cat) {
                                 </div>
                             </div>
                         </div>
-                        <p class="text-xs text-stone-400 mt-3">Kategori default tidak bisa diarsipkan. Kategori custom bisa diarsipkan jika tidak memiliki item aktif.</p>
+                        <p class="text-xs text-stone-400 mt-3">{{ t('dashboard.budget.modal.manageCategories.hint') }}</p>
                     </div>
                 </div>
             </div>
@@ -1341,13 +1344,13 @@ async function archiveCategory(cat) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                         </svg>
                     </div>
-                    <h3 class="text-base font-semibold text-stone-800 mb-1">Arsipkan item ini?</h3>
-                    <p class="text-sm text-stone-500">"<strong>{{ archivingItem?.title }}</strong>" tidak akan dihitung dalam ringkasan aktif.</p>
+                    <h3 class="text-base font-semibold text-stone-800 mb-1">{{ t('dashboard.budget.modal.confirmArchive.title') }}</h3>
+                    <p class="text-sm text-stone-500">{{ t('dashboard.budget.modal.confirmArchive.body', { title: archivingItem?.title }) }}</p>
                     <div class="flex gap-2 mt-5">
                         <button @click="showConfirmArchive = false; archivingItem = null"
-                            class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">Batal</button>
+                            class="flex-1 py-2.5 text-sm text-stone-600 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors">{{ t('dashboard.budget.modal.confirmArchive.cancel') }}</button>
                         <button @click="archiveItem"
-                            class="flex-1 py-2.5 text-sm font-semibold text-white bg-rose-500 rounded-xl hover:bg-rose-600 transition-colors">Arsipkan</button>
+                            class="flex-1 py-2.5 text-sm font-semibold text-white bg-rose-500 rounded-xl hover:bg-rose-600 transition-colors">{{ t('dashboard.budget.modal.confirmArchive.confirm') }}</button>
                     </div>
                 </div>
             </div>
@@ -1364,7 +1367,7 @@ async function archiveCategory(cat) {
                         </div>
                         <div class="flex items-center justify-between px-5 py-4">
                             <div>
-                                <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                                <p class="text-sm font-bold text-stone-800">{{ t('dashboard.budget.modal.datePicker.title') }}</p>
                                 <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
                             </div>
                             <button type="button" @click="closeDatePicker"
@@ -1408,8 +1411,8 @@ async function archiveCategory(cat) {
                             <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
                                     class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
                                     style="background-color:#92A89C">
-                                <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
-                                <span v-else>Pilih tanggal dulu</span>
+                                <span v-if="currentPickerDate">{{ t('dashboard.budget.modal.datePicker.confirmWithDate', { date: calDisplayDate(currentPickerDate) }) }}</span>
+                                <span v-else>{{ t('dashboard.budget.modal.datePicker.pickFirst') }}</span>
                             </button>
                         </div>
                     </div>

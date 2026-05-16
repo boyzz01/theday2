@@ -1,30 +1,95 @@
 <script setup>
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import TemplatePicker from '@/Components/Wizard/TemplatePicker.vue';
+import { Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, ref } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
-    stats:           Object,
+    stats:             Object,
     recentInvitations: Array,
-    activePlan:      Object,
-    budgetWidget:    Object,
-    checklistWidget: Object,
+    activePlan:        Object,
+    budgetWidget:      Object,
+    checklistWidget:   Object,
+    templates:         { type: Array,   default: () => [] },
+    canUsePremium:     { type: Boolean, default: false },
 });
+
+// ── Delete ────────────────────────────────────────────────────────────
+const confirmTarget = ref(null);
+function confirmDelete(inv) { confirmTarget.value = inv; }
+function cancelDelete()     { confirmTarget.value = null; }
+function doDelete() {
+    if (!confirmTarget.value) return;
+    router.delete(route('dashboard.invitations.destroy', confirmTarget.value.id), {
+        onFinish: () => { confirmTarget.value = null; },
+    });
+}
+
+// ── Template picker ───────────────────────────────────────────────────
+const pickerTarget = ref(null);
+function openPicker(inv) { pickerTarget.value = inv; }
+function onTemplateChanged(newTemplate) {
+    if (!pickerTarget.value) return;
+    pickerTarget.value.template = {
+        id:             newTemplate.id,
+        name:           newTemplate.name,
+        thumbnail_url:  newTemplate.thumbnail_url,
+        default_config: newTemplate.default_config ?? {},
+    };
+    pickerTarget.value = null;
+}
+
+// ── Duplicate ─────────────────────────────────────────────────────────
+const duplicateTarget  = ref(null);
+const isDuplicating    = ref(false);
+const duplicateSuccess = ref(null);
+const duplicateError   = ref(null);
+function confirmDuplicate(inv) { duplicateTarget.value = inv; }
+function cancelDuplicate()     { duplicateTarget.value = null; }
+async function doDuplicate() {
+    if (!duplicateTarget.value) return;
+    isDuplicating.value = true;
+    try {
+        const { data } = await axios.post(
+            route('dashboard.invitations.duplicate', duplicateTarget.value.id)
+        );
+        duplicateTarget.value = null;
+        duplicateSuccess.value = { title: data.title, editUrl: data.edit_url };
+        router.reload({ only: ['recentInvitations'] });
+        setTimeout(() => { duplicateSuccess.value = null; }, 6000);
+    } catch (err) {
+        const error = err.response?.data?.error;
+        duplicateError.value = error === 'invitation_limit_reached'
+            ? t('dashboard.index.duplicateError.limitReached')
+            : t('dashboard.index.duplicateError.generic');
+        duplicateTarget.value = null;
+        setTimeout(() => { duplicateError.value = null; }, 5000);
+    } finally {
+        isDuplicating.value = false;
+    }
+}
 
 const statCards = computed(() => [
     {
-        label: 'Total Undangan',
+        label: t('dashboard.index.stats.totalInvitations'),
         value: props.stats.total_invitations,
-        sub: `${props.stats.draft_count} draft · ${props.stats.published_count} aktif`,
+        sub: t('dashboard.index.stats.totalInvitationsSub', {
+            draft: props.stats.draft_count,
+            published: props.stats.published_count,
+        }),
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
         bg: '#EFF2F0',
         iconColor: '#73877C',
     },
     {
-        label: 'Total Dilihat',
+        label: t('dashboard.index.stats.totalViews'),
         value: props.stats.total_views.toLocaleString('id-ID'),
-        sub: 'Semua undangan',
+        sub: t('dashboard.index.stats.totalViewsSub'),
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -33,18 +98,20 @@ const statCards = computed(() => [
         iconColor: '#7C3AED',
     },
     {
-        label: 'Total RSVP',
+        label: t('dashboard.index.stats.totalRsvp'),
         value: props.stats.total_rsvps.toLocaleString('id-ID'),
-        sub: 'Konfirmasi kehadiran',
+        sub: t('dashboard.index.stats.totalRsvpSub'),
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`,
         bg: '#D1FAE5',
         iconColor: '#059669',
     },
     {
-        label: 'Paket Aktif',
+        label: t('dashboard.index.stats.activePlan'),
         value: props.activePlan.name,
-        sub: `Maks ${props.activePlan.max_invitations === 9999 ? '∞' : props.activePlan.max_invitations} undangan`,
+        sub: props.activePlan.max_invitations === 9999
+            ? t('dashboard.index.stats.activePlanSubUnlimited')
+            : t('dashboard.index.stats.activePlanSub', { max: props.activePlan.max_invitations }),
         icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>`,
         bg: '#FEE2E2',
@@ -52,15 +119,21 @@ const statCards = computed(() => [
     },
 ]);
 
-const statusConfig = {
-    draft:    { label: 'Draft',      bg: '#F3F4F6', color: '#6B7280' },
-    published:{ label: 'Aktif',      bg: '#D1FAE5', color: '#059669' },
-    archived: { label: 'Diarsipkan', bg: '#FEE2E2', color: '#DC2626' },
-};
+const statusConfig = computed(() => ({
+    draft:    { label: t('dashboard.index.status.draft'),    bg: '#F3F4F6', color: '#6B7280' },
+    published:{ label: t('dashboard.index.status.published'), bg: '#D1FAE5', color: '#059669' },
+    archived: { label: t('dashboard.index.status.archived'), bg: '#FEE2E2', color: '#DC2626' },
+}));
 
-const eventTypeLabel = {
-    pernikahan: '💍 Pernikahan',
-};
+const eventTypeLabel = computed(() => ({
+    pernikahan: t('dashboard.index.eventType.pernikahan'),
+}));
+
+const tips = computed(() => [
+    { icon: '🎨', title: t('dashboard.index.tips.tip1.title'), desc: t('dashboard.index.tips.tip1.desc') },
+    { icon: '✏️', title: t('dashboard.index.tips.tip2.title'), desc: t('dashboard.index.tips.tip2.desc') },
+    { icon: '🚀', title: t('dashboard.index.tips.tip3.title'), desc: t('dashboard.index.tips.tip3.desc') },
+]);
 
 const templateColor = (inv) => inv.template?.default_config?.primary_color ?? '#92A89C';
 
@@ -74,7 +147,7 @@ const priorityDot = {
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800 truncate">Dashboard</h1>
+            <h1 class="text-base font-semibold text-stone-800 truncate">{{ t('dashboard.index.pageTitle') }}</h1>
         </template>
 
         <div class="max-w-6xl mx-auto space-y-6">
@@ -83,10 +156,10 @@ const priorityDot = {
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-stone-800">
-                        Selamat datang kembali
+                        {{ t('dashboard.index.greeting') }}
                     </h2>
-                    <p class="text-sm text-stone-400 mt-0.5">
-                        Kelola undangan digitalmu dari sini.
+                    <p class="hidden sm:block text-sm text-stone-400 mt-0.5">
+                        {{ t('dashboard.index.greetingSubtitle') }}
                     </p>
                 </div>
                 <Link
@@ -97,7 +170,7 @@ const priorityDot = {
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Buat Undangan Baru
+                    {{ t('dashboard.index.createNew') }}
                 </Link>
             </div>
 
@@ -134,19 +207,19 @@ const priorityDot = {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                             </svg>
                         </div>
-                        <p class="text-sm font-semibold text-stone-700">Budget Planner</p>
+                        <p class="text-sm font-semibold text-stone-700">{{ t('dashboard.index.budget.title') }}</p>
                     </div>
-                    <span class="text-xs font-medium" style="color: #92A89C">Lihat budget →</span>
+                    <span class="text-xs font-medium" style="color: #92A89C">{{ t('dashboard.index.budget.viewLink') }}</span>
                 </div>
 
                 <template v-if="budgetWidget.has_budget">
                     <div class="flex items-end justify-between mb-2">
                         <div>
-                            <p class="text-xs text-stone-400">Terpakai</p>
+                            <p class="text-xs text-stone-400">{{ t('dashboard.index.budget.used') }}</p>
                             <p class="text-xl font-bold text-stone-800">{{ budgetWidget.formatted.total_actual }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-xs text-stone-400">dari</p>
+                            <p class="text-xs text-stone-400">{{ t('dashboard.index.budget.from') }}</p>
                             <p class="text-sm font-semibold text-stone-600">{{ budgetWidget.formatted.total_budget }}</p>
                         </div>
                     </div>
@@ -160,14 +233,14 @@ const priorityDot = {
                         />
                     </div>
                     <div class="flex items-center justify-between text-xs text-stone-400">
-                        <span>{{ budgetWidget.usage_percentage ?? 0 }}% terpakai</span>
+                        <span>{{ t('dashboard.index.budget.usagePercent', { percent: budgetWidget.usage_percentage ?? 0 }) }}</span>
                         <span v-if="budgetWidget.overbudget_categories_count > 0" class="text-[#73877C] font-medium">
-                            {{ budgetWidget.overbudget_categories_count }} kategori overbudget
+                            {{ t('dashboard.index.budget.overbudgetCategories', { count: budgetWidget.overbudget_categories_count }) }}
                         </span>
                     </div>
                 </template>
                 <template v-else>
-                    <p class="text-sm text-stone-500">Atur budget pertamamu untuk mulai memantau pengeluaran pernikahan.</p>
+                    <p class="text-sm text-stone-500">{{ t('dashboard.index.budget.empty') }}</p>
                 </template>
             </Link>
 
@@ -185,22 +258,22 @@ const priorityDot = {
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
                         </div>
-                        <p class="text-sm font-semibold text-stone-700">Wedding Planner</p>
+                        <p class="text-sm font-semibold text-stone-700">{{ t('dashboard.index.checklist.title') }}</p>
                     </div>
-                    <span class="text-xs font-medium" style="color: #92A89C">Lihat semua →</span>
+                    <span class="text-xs font-medium" style="color: #92A89C">{{ t('dashboard.index.checklist.viewLink') }}</span>
                 </div>
 
                 <template v-if="!checklistWidget.initialized">
-                    <p class="text-sm text-stone-500">Wedding Planner belum diinisialisasi. Klik untuk mulai.</p>
+                    <p class="text-sm text-stone-500">{{ t('dashboard.index.checklist.notInitialized') }}</p>
                 </template>
                 <template v-else-if="checklistWidget.total === 0">
-                    <p class="text-sm text-stone-500">Belum ada task. Tambahkan task pertamamu.</p>
+                    <p class="text-sm text-stone-500">{{ t('dashboard.index.checklist.noTasks') }}</p>
                 </template>
                 <template v-else>
                     <!-- Progress bar -->
                     <div class="flex items-end justify-between mb-2">
                         <div>
-                            <p class="text-xs text-stone-400">Selesai</p>
+                            <p class="text-xs text-stone-400">{{ t('dashboard.index.checklist.done') }}</p>
                             <p class="text-xl font-bold text-stone-800">
                                 {{ checklistWidget.done }}
                                 <span class="text-sm font-normal text-stone-400">/ {{ checklistWidget.total }}</span>
@@ -224,7 +297,7 @@ const priorityDot = {
 
                     <!-- Upcoming tasks -->
                     <div v-if="checklistWidget.upcoming_tasks?.length" class="space-y-1.5">
-                        <p class="text-xs font-medium text-stone-400 mb-2">Segera dikerjakan</p>
+                        <p class="text-xs font-medium text-stone-400 mb-2">{{ t('dashboard.index.checklist.upcomingTasks') }}</p>
                         <div
                             v-for="task in checklistWidget.upcoming_tasks"
                             :key="task.id"
@@ -238,10 +311,10 @@ const priorityDot = {
                         </div>
                     </div>
                     <p v-else-if="checklistWidget.todo === 0" class="text-xs text-emerald-600 font-medium">
-                        🎉 Semua task sudah selesai!
+                        {{ t('dashboard.index.checklist.allDone') }}
                     </p>
                     <p v-else class="text-xs text-stone-400">
-                        {{ checklistWidget.todo }} task belum selesai
+                        {{ t('dashboard.index.checklist.todoRemaining', { count: checklistWidget.todo }) }}
                     </p>
                 </template>
             </Link>
@@ -249,11 +322,11 @@ const priorityDot = {
             <!-- ── Recent Invitations ─────────────────────────────── -->
             <div>
                 <div class="flex items-center justify-between mb-4 px-5">
-                    <h3 class="text-sm font-semibold text-stone-700">Undangan Terbaru</h3>
+                    <h3 class="text-sm font-semibold text-stone-700">{{ t('dashboard.index.recentInvitations.title') }}</h3>
                     <Link :href="route('dashboard.invitations.index')"
                           class="text-xs font-medium transition-colors hover:opacity-80"
                           style="color: #92A89C">
-                        Lihat semua →
+                        {{ t('dashboard.index.recentInvitations.viewAll') }}
                     </Link>
                 </div>
 
@@ -267,8 +340,8 @@ const priorityDot = {
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <p class="text-sm font-medium text-stone-600 mb-1">Belum ada undangan</p>
-                    <p class="text-xs text-stone-400 mb-5">Buat undangan pertamamu sekarang!</p>
+                    <p class="text-sm font-medium text-stone-600 mb-1">{{ t('dashboard.index.recentInvitations.emptyTitle') }}</p>
+                    <p class="text-xs text-stone-400 mb-5">{{ t('dashboard.index.recentInvitations.emptySubtitle') }}</p>
                     <Link
                         :href="route('dashboard.templates')"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -277,12 +350,12 @@ const priorityDot = {
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Buat Sekarang
+                        {{ t('dashboard.index.recentInvitations.createNow') }}
                     </Link>
                 </div>
 
                 <!-- Invitation cards -->
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div
                         v-for="inv in recentInvitations"
                         :key="inv.id"
@@ -324,7 +397,7 @@ const priorityDot = {
                         <div class="p-4">
                             <p class="text-sm font-semibold text-stone-800 truncate mb-1">{{ inv.title }}</p>
                             <p class="text-xs text-stone-400 mb-3" v-if="inv.template">
-                                Template: {{ inv.template.name }}
+                                {{ t('dashboard.index.recentInvitations.template', { name: inv.template.name }) }}
                             </p>
 
                             <!-- Stats row -->
@@ -346,35 +419,75 @@ const priorityDot = {
                                     {{ inv.rsvps_count }} RSVP
                                 </span>
                                 <span v-if="inv.expires_at" class="ml-auto">
-                                    Exp {{ inv.expires_at }}
+                                    {{ t('dashboard.index.recentInvitations.exp', { date: inv.expires_at }) }}
                                 </span>
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex gap-2">
-                                <Link
-                                    :href="route('dashboard.invitations.edit', inv.id)"
-                                    class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
-                                >
-                                    Edit
-                                </Link>
-                                <a
-                                    :href="inv.status === 'draft'
-                                        ? route('dashboard.invitations.preview', inv.id)
-                                        : `/${inv.slug}`"
-                                    target="_blank"
-                                    class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
-                                    style="background-color: #92A89C"
-                                >
-                                    {{ inv.status === 'draft' ? 'Preview' : 'Lihat' }}
-                                </a>
+                            <div class="space-y-2">
+                                <!-- Row 1: primary -->
+                                <div class="flex gap-2">
+                                    <Link
+                                        :href="route('dashboard.invitations.edit', inv.id)"
+                                        class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        {{ t('dashboard.index.recentInvitations.edit') }}
+                                    </Link>
+                                    <a
+                                        :href="inv.status === 'draft'
+                                            ? route('dashboard.invitations.preview', inv.id)
+                                            : `/${inv.slug}`"
+                                        target="_blank"
+                                        class="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
+                                        style="background-color: #92A89C"
+                                    >
+                                        {{ inv.status === 'draft' ? t('dashboard.index.recentInvitations.preview') : t('dashboard.index.recentInvitations.view') }}
+                                    </a>
+                                </div>
+                                <!-- Row 2: secondary -->
+                                <div class="flex gap-2">
+                                    <Link
+                                        :href="route('dashboard.invitations.customize', inv.id)"
+                                        class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-[#92A89C]/50 text-[#73877C] hover:bg-[#92A89C]/10 transition-colors"
+                                        :title="t('dashboard.index.recentInvitations.customizeTitle')"
+                                    >
+                                        {{ t('dashboard.index.recentInvitations.customize') }}
+                                    </Link>
+                                    <button
+                                        @click="openPicker(inv)"
+                                        class="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-[#B8C7BF] text-[#73877C] hover:bg-[#92A89C]/10 transition-colors"
+                                        :title="t('dashboard.index.recentInvitations.templateTitle')"
+                                    >
+                                        {{ t('dashboard.index.recentInvitations.template_btn') }}
+                                    </button>
+                                    <button
+                                        @click="confirmDuplicate(inv)"
+                                        class="px-3 py-2 rounded-xl text-xs font-semibold border border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors"
+                                        :title="t('dashboard.index.recentInvitations.duplicateTitle')"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        @click="confirmDelete(inv)"
+                                        class="px-3 py-2 rounded-xl text-xs font-semibold border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                        :title="t('dashboard.index.recentInvitations.deleteTitle')"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- "Buat baru" placeholder card (jika < 3 undangan) -->
                     <Link
-                        v-if="recentInvitations.length < 3"
+                        v-if="recentInvitations.length < 2"
                         :href="route('dashboard.templates')"
                         class="flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-stone-200 p-8 text-center hover:border-[#92A89C]/50 hover:bg-[#92A89C]/8 transition-all group min-h-[220px]"
                     >
@@ -385,7 +498,7 @@ const priorityDot = {
                             </svg>
                         </div>
                         <p class="text-sm font-medium text-stone-500 group-hover:text-stone-700 transition-colors">
-                            Buat Undangan Baru
+                            {{ t('dashboard.index.recentInvitations.createNewCard') }}
                         </p>
                     </Link>
                 </div>
@@ -395,11 +508,7 @@ const priorityDot = {
             <div v-if="!recentInvitations.length"
                  class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div
-                    v-for="(tip, i) in [
-                        { icon: '🎨', title: 'Pilih Template', desc: 'Pilih dari 50+ template undangan pernikahan yang elegan.' },
-                        { icon: '✏️', title: 'Isi Detail Acara', desc: 'Masukkan nama, tanggal, lokasi, dan foto acaramu.' },
-                        { icon: '🚀', title: 'Bagikan ke Tamu', desc: 'Publikasikan dan bagikan link via WhatsApp dalam detik.' },
-                    ]"
+                    v-for="(tip, i) in tips"
                     :key="i"
                     class="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm"
                 >
@@ -410,5 +519,140 @@ const priorityDot = {
             </div>
 
         </div>
+
+        <!-- Template Picker -->
+        <Teleport to="body">
+            <TemplatePicker
+                v-if="pickerTarget"
+                :invitation-id="pickerTarget.id"
+                :current-template-id="pickerTarget.template?.id ?? ''"
+                :templates="templates"
+                :can-use-premium="canUsePremium"
+                :invitation-status="pickerTarget.status"
+                @changed="onTemplateChanged"
+                @close="pickerTarget = null"
+            />
+        </Teleport>
+
+        <!-- Delete confirm modal -->
+        <Transition name="fade">
+            <div v-if="confirmTarget"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 @click.self="cancelDelete">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">{{ t('dashboard.index.deleteModal.title') }}</h3>
+                    <p class="text-sm text-stone-500 text-center mb-6">
+                        "<span class="font-medium text-stone-700">{{ confirmTarget.title || t('dashboard.index.deleteModal.untitled') }}</span>"
+                        {{ t('dashboard.index.deleteModal.willBeDeleted') }}
+                    </p>
+                    <div class="flex gap-3">
+                        <button @click="cancelDelete"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">
+                            {{ t('dashboard.index.deleteModal.cancel') }}
+                        </button>
+                        <button @click="doDelete"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors">
+                            {{ t('dashboard.index.deleteModal.confirm') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Duplicate confirm modal -->
+        <Transition name="fade">
+            <div v-if="duplicateTarget"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 @click.self="cancelDuplicate">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-[#92A89C]/10 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6" style="color: #92A89C" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 text-center mb-1">{{ t('dashboard.index.duplicateModal.title') }}</h3>
+                    <p class="text-sm text-stone-500 text-center mb-6">
+                        {{ t('dashboard.index.duplicateModal.body', { title: duplicateTarget.title || t('dashboard.index.deleteModal.untitled') }) }}
+                    </p>
+                    <div class="flex gap-3">
+                        <button @click="cancelDuplicate"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">
+                            {{ t('dashboard.index.duplicateModal.cancel') }}
+                        </button>
+                        <button @click="doDuplicate" :disabled="isDuplicating"
+                                class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
+                                style="background-color: #92A89C">
+                            <span v-if="isDuplicating" class="flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                {{ t('dashboard.index.duplicateModal.duplicating') }}
+                            </span>
+                            <span v-else>{{ t('dashboard.index.duplicateModal.confirm') }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Duplicate success toast -->
+        <Transition name="toast">
+            <div v-if="duplicateSuccess"
+                 class="fixed bottom-20 lg:bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-stone-100 p-4 flex items-start gap-3 max-w-xs">
+                <div class="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-stone-800">{{ t('dashboard.index.duplicateSuccess.message') }}</p>
+                    <a :href="duplicateSuccess.editUrl" class="text-xs font-medium hover:underline" style="color: #92A89C">
+                        {{ t('dashboard.index.duplicateSuccess.open') }}
+                    </a>
+                </div>
+                <button @click="duplicateSuccess = null" class="text-stone-300 hover:text-stone-500 flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </Transition>
+
+        <!-- Duplicate error toast -->
+        <Transition name="toast">
+            <div v-if="duplicateError"
+                 class="fixed bottom-20 lg:bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-red-100 p-4 flex items-start gap-3 max-w-xs">
+                <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-stone-700">{{ duplicateError }}</p>
+                </div>
+                <button @click="duplicateError = null" class="text-stone-300 hover:text-stone-500 flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </Transition>
     </DashboardLayout>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.2s; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(8px); }
+</style>

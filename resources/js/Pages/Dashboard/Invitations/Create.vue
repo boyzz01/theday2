@@ -3,52 +3,63 @@ import { computed, reactive, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { useInvitationEditor } from '@/Composables/useInvitationEditor.js';
-import StepInformasi  from './Steps/StepInformasi.vue';
-import StepAcara      from './Steps/StepAcara.vue';
-import StepMedia      from './Steps/StepMedia.vue';
-import StepInteraksi  from './Steps/StepInteraksi.vue';
-import StepTampilan   from './Steps/StepTampilan.vue';
-import StepPublikasi  from './Steps/StepPublikasi.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
+import StepInformasi from './Steps/StepInformasi.vue';
+import StepTampilan  from './Steps/StepTampilan.vue';
+import StepPublikasi from './Steps/StepPublikasi.vue';
 
 const props = defineProps({
-    template:          { type: Object,  required: true },
-    invitation:        { type: Object,  default: null },
-    defaultMusic:      { type: Array,   default: () => [] },
-    fonts:             { type: Array,   default: () => [] },
-    templates:         { type: Array,   default: () => [] },
-    canUsePremium:     { type: Boolean, default: false },
-    maxGalleryPhotos:  { type: Number,  default: 5 },
-    canUseCustomMusic: { type: Boolean, default: false },
+    template:      { type: Object,  required: true },
+    invitation:    { type: Object,  default: null },
+    templates:     { type: Array,   default: () => [] },
+    canUsePremium: { type: Boolean, default: false },
 });
 
 const editor = reactive(useInvitationEditor(props.template, props.invitation));
 
-// Local reactive template — updated when user changes template
+// Clamp currentStep to max 3
+if (editor.currentStep > 3) editor.currentStep = 3;
+
+const step1Errors = reactive({});
+
+function validateStep1() {
+    for (const k of Object.keys(step1Errors)) delete step1Errors[k];
+
+    if (editor.details.groom_nickname?.length > 50)   step1Errors.groom_nickname  = t('dashboard.invitations.create.maxChar50');
+    if (editor.details.groom_instagram?.length > 100)  step1Errors.groom_instagram = t('dashboard.invitations.create.maxChar100');
+    if (editor.details.bride_nickname?.length > 50)    step1Errors.bride_nickname  = t('dashboard.invitations.create.maxChar50');
+    if (editor.details.bride_instagram?.length > 100)  step1Errors.bride_instagram = t('dashboard.invitations.create.maxChar100');
+
+    return Object.keys(step1Errors).length === 0;
+}
+
 const currentTemplate = ref({ ...props.template });
 
 function onTemplateChanged(newTemplate) {
     currentTemplate.value = newTemplate;
 }
 
-const steps = [
-    { number: 1, label: 'Informasi',  key: 'informasi' },
-    { number: 2, label: 'Acara',      key: 'acara' },
-    { number: 3, label: 'Media',      key: 'media' },
-    { number: 4, label: 'Interaksi',  key: 'interaksi' },
-    { number: 5, label: 'Tampilan',   key: 'tampilan' },
-    { number: 6, label: 'Publikasi',  key: 'publikasi' },
-];
+const steps = computed(() => [
+    { number: 1, label: t('dashboard.invitations.create.stepInformasi'), key: 'informasi' },
+    { number: 2, label: t('dashboard.invitations.create.stepTampilan'),  key: 'tampilan'  },
+    { number: 3, label: t('dashboard.invitations.create.stepPublikasi'), key: 'publikasi' },
+]);
+
+const currentStepKey = computed(() =>
+    steps.value.find(s => s.number === editor.currentStep)?.key
+);
 
 const stepSaveMap = {
-    1: () => editor.saveStep1(),
-    2: () => editor.saveStep2(),
-    3: () => editor.saveStep3(),
-    4: () => editor.saveStep4(),
-    5: () => editor.saveStep5(),
+    informasi: () => editor.saveStep1(),
+    tampilan:  () => editor.saveStep2(),
 };
 
 async function next() {
-    const save = stepSaveMap[editor.currentStep];
+    if (currentStepKey.value === 'informasi' && !validateStep1()) return;
+
+    const save = stepSaveMap[currentStepKey.value];
     if (save) {
         try {
             await save();
@@ -56,7 +67,7 @@ async function next() {
             return;
         }
     }
-    if (editor.currentStep < 6) editor.currentStep++;
+    if (editor.currentStep < 3) editor.currentStep++;
 }
 
 function back() {
@@ -69,16 +80,18 @@ function goTo(n) {
     }
 }
 
-const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5) * 100));
+const progressPercent = computed(() =>
+    Math.round(((editor.currentStep - 1) / 2) * 100)
+);
 </script>
 
 <template>
-    <Head title="Buat Undangan" />
+    <Head :title="t('dashboard.invitations.create.pageTitle')" />
 
     <DashboardLayout>
         <template #header>
             <div class="flex items-center gap-2">
-                <span class="text-sm text-stone-400">Buat Undangan</span>
+                <span class="text-sm text-stone-400">{{ t('dashboard.invitations.create.breadcrumb') }}</span>
                 <span class="text-stone-300">/</span>
                 <span class="text-sm font-medium text-stone-700 truncate max-w-xs">{{ currentTemplate.name }}</span>
             </div>
@@ -88,7 +101,6 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
 
             <!-- ── Step indicator ──────────────────────────────── -->
             <div class="mb-6">
-                <!-- Progress bar -->
                 <div class="h-1.5 bg-stone-100 rounded-full mb-4 overflow-hidden">
                     <div
                         class="h-full rounded-full transition-all duration-500"
@@ -97,7 +109,6 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                     />
                 </div>
 
-                <!-- Step dots -->
                 <div class="flex items-center justify-between">
                     <button
                         v-for="step in steps"
@@ -139,7 +150,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
 
                 <!-- Error banner -->
                 <Transition name="slide-down">
-                    <div v-if="editor.saveError && editor.currentStep !== 6"
+                    <div v-if="editor.saveError && currentStepKey !== 'publikasi'"
                          class="bg-red-50 border-b border-red-100 px-6 py-3 flex items-center gap-2 text-sm text-red-700">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -152,69 +163,36 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                 <!-- Step panels -->
                 <Transition name="step-fade" mode="out-in">
                     <StepInformasi
-                        v-if="editor.currentStep === 1"
+                        v-if="currentStepKey === 'informasi'"
                         :basic="editor.basic"
                         :details="editor.details"
                         :sections="editor.sections"
+                        :errors="step1Errors"
                         :upload-photo-field="editor.uploadPhotoField"
                         :delete-photo-field="editor.deletePhotoField"
                         :on-toggle-section="editor.toggleSection"
                         :can-use-premium="canUsePremium"
                     />
-                    <StepAcara
-                        v-else-if="editor.currentStep === 2"
-                        :events="editor.events"
-                        :sections="editor.sections"
-                        :add-event="editor.addEvent"
-                        :remove-event="editor.removeEvent"
-                        :move-event="editor.moveEvent"
-                        :on-toggle-section="editor.toggleSection"
-                        :can-use-premium="canUsePremium"
-                    />
-                    <StepMedia
-                        v-else-if="editor.currentStep === 3"
-                        :galleries="editor.galleries"
-                        :sections="editor.sections"
-                        :invitation-id="editor.invitationId"
-                        :upload-gallery-file="editor.uploadGalleryFile"
-                        :remove-gallery="editor.removeGallery"
-                        :move-gallery="editor.moveGallery"
-                        :on-toggle-section="editor.toggleSection"
-                        :can-use-premium="canUsePremium"
-                        :max-gallery-photos="maxGalleryPhotos"
-                    />
-                    <StepInteraksi
-                        v-else-if="editor.currentStep === 4"
-                        :sections="editor.sections"
-                        :on-toggle-section="editor.toggleSection"
-                        :can-use-premium="canUsePremium"
-                    />
                     <StepTampilan
-                        v-else-if="editor.currentStep === 5"
+                        v-else-if="currentStepKey === 'tampilan'"
                         :custom-config="editor.customConfig"
-                        :fonts="fonts"
                         :sections="editor.sections"
-                        :selected-music="editor.selectedMusic"
-                        :default-music="defaultMusic"
                         :invitation-id="editor.invitationId"
-                        :upload-audio="editor.uploadAudio"
                         :on-toggle-section="editor.toggleSection"
                         :template="currentTemplate"
                         :templates="templates"
                         :can-use-premium="canUsePremium"
-                        :can-use-custom-music="canUseCustomMusic"
                         :invitation-status="editor.publish?.status ?? invitation?.status ?? 'draft'"
-                        @update:selected-music="editor.selectedMusic = $event"
                         @template-changed="onTemplateChanged"
                     />
                     <StepPublikasi
-                        v-else-if="editor.currentStep === 6"
+                        v-else-if="currentStepKey === 'publikasi'"
                         :publish="editor.publish"
                         :sections="editor.sections"
                         :invitation-id="editor.invitationId"
                         :invitation-status="invitation?.status?.value ?? invitation?.status ?? 'draft'"
                         :is-saving="editor.isSaving"
-                        :save-step6="editor.saveStep6"
+                        :save-step3="editor.saveStep3"
                         :template="currentTemplate"
                         :basic="editor.basic"
                         :details="editor.details"
@@ -224,7 +202,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                 </Transition>
 
                 <!-- ── Footer nav ──────────────────────────────── -->
-                <div v-if="editor.currentStep < 6"
+                <div v-if="currentStepKey !== 'publikasi'"
                      class="border-t border-stone-100 px-4 py-4 flex items-center justify-between bg-stone-50/50 sticky bottom-0">
                     <button
                         v-if="editor.currentStep > 1"
@@ -234,7 +212,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        Kembali
+                        {{ t('dashboard.invitations.create.back') }}
                     </button>
                     <div v-else />
 
@@ -248,7 +226,7 @@ const progressPercent = computed(() => Math.round(((editor.currentStep - 1) / 5)
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                         </svg>
-                        {{ editor.isSaving ? 'Menyimpan…' : editor.currentStep === 5 ? 'Lanjut ke Publikasi' : 'Simpan & Lanjut' }}
+                        {{ editor.isSaving ? t('dashboard.invitations.create.saving') : editor.currentStep === 2 ? t('dashboard.invitations.create.nextToPublish') : t('dashboard.invitations.create.saveAndNext') }}
                         <svg v-if="!editor.isSaving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>

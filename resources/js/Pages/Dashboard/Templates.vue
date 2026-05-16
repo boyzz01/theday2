@@ -2,6 +2,10 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import axios from 'axios';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     categories:    Array,
@@ -27,8 +31,24 @@ watch([activeCategory, activeTier], ([cat, tier]) => {
 const creatingId = ref(null);
 const canCreateInvitation = computed(() => usePage().props.can_create_invitation ?? true);
 
+const isPremium = computed(() => usePage().props.auth?.subscription?.plan_slug === 'premium');
+
 // ── Limit modal (invitation quota reached) ────────────────────────
-const showLimitModal = ref(false);
+const showLimitModal    = ref(false);
+const addonLoading      = ref(false);
+const addonError        = ref('');
+
+const buyAddon = async () => {
+    addonLoading.value = true;
+    addonError.value   = '';
+    try {
+        const { data } = await axios.post(route('dashboard.addons.checkout'), { quantity: 1 });
+        window.location.href = data.payment_url;
+    } catch (err) {
+        addonError.value = err?.response?.data?.error ?? t('dashboard.templates.errorProcessing');
+        addonLoading.value = false;
+    }
+};
 
 // ── Upgrade modal (premium template clicked by free user) ─────────
 const upgradeTemplate = ref(null); // template that triggered the modal
@@ -57,10 +77,10 @@ if (typeof window !== 'undefined') {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
-const tierConfig = {
-    free:    { label: 'Gratis',  bg: '#D1FAE5', color: '#065F46' },
-    premium: { label: 'Premium', bg: '#EFF2F0', color: '#2C2417' },
-};
+const tierConfig = computed(() => ({
+    free:    { label: t('dashboard.templates.tierFree'),    bg: '#D1FAE5', color: '#065F46' },
+    premium: { label: t('dashboard.templates.tierPremium'), bg: '#EFF2F0', color: '#2C2417' },
+}));
 
 const primaryColor   = (t) => t.default_config?.primary_color   ?? '#92A89C';
 const secondaryColor = (t) => t.default_config?.secondary_color ?? '#FEFAE0';
@@ -88,15 +108,15 @@ const useTemplate = (template) => {
 };
 
 const allCategories = computed(() => [
-    { slug: 'all', name: 'Semua' },
+    { slug: 'all', name: t('dashboard.templates.categoryAll') },
     ...props.categories,
 ]);
 
-const tiers = [
-    { value: 'all',     label: 'Semua' },
-    { value: 'free',    label: 'Gratis' },
-    { value: 'premium', label: 'Premium' },
-];
+const tiers = computed(() => [
+    { value: 'all',     label: t('dashboard.templates.tierAll') },
+    { value: 'free',    label: t('dashboard.templates.tierFree') },
+    { value: 'premium', label: t('dashboard.templates.tierPremium') },
+]);
 
 const filteredCount = computed(() => props.templates.length);
 </script>
@@ -104,16 +124,16 @@ const filteredCount = computed(() => props.templates.length);
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800">Pilih Template</h1>
+            <h1 class="text-base font-semibold text-stone-800">{{ t('dashboard.templates.pageTitle') }}</h1>
         </template>
 
         <div class="max-w-6xl mx-auto space-y-6">
 
             <!-- ── Page heading ─────────────────────────────────── -->
             <div>
-                <h2 class="text-xl font-semibold text-stone-800">Template Undangan</h2>
+                <h2 class="text-xl font-semibold text-stone-800">{{ t('dashboard.templates.heading') }}</h2>
                 <p class="text-sm text-stone-400 mt-1">
-                    Pilih template yang sesuai dengan acaramu. Semua bisa dikustomisasi warna & font-nya.
+                    {{ t('dashboard.templates.subheading') }}
                 </p>
             </div>
 
@@ -139,7 +159,7 @@ const filteredCount = computed(() => props.templates.length);
 
                 <!-- Tier pills -->
                 <div class="flex items-center gap-2 sm:ml-auto">
-                    <span class="text-xs text-stone-400 font-medium">Tier:</span>
+                    <span class="text-xs text-stone-400 font-medium">{{ t('dashboard.templates.tierLabel') }}</span>
                     <div class="flex items-center gap-1.5">
                         <button
                             v-for="tier in tiers"
@@ -161,7 +181,7 @@ const filteredCount = computed(() => props.templates.length);
 
             <!-- Result count -->
             <p class="text-xs text-stone-400">
-                Menampilkan <span class="font-semibold text-stone-600">{{ filteredCount }}</span> template
+                {{ t('dashboard.templates.showingCount', { count: filteredCount }) }}
             </p>
 
             <!-- ── Template Grid ─────────────────────────────────── -->
@@ -202,14 +222,14 @@ const filteredCount = computed(() => props.templates.length);
                                 </p>
                                 <p class="text-lg font-semibold text-stone-700 leading-tight"
                                    :style="`font-family: '${fontTitle(template)}', serif`">
-                                    Nama & Nama
+                                    {{ t('dashboard.templates.mockNames') }}
                                 </p>
                                 <div class="flex items-center gap-2 my-2">
                                     <div class="w-6 h-px" :style="`background-color: ${primaryColor(template)}`"/>
                                     <div class="w-1.5 h-1.5 rounded-full" :style="`background-color: ${primaryColor(template)}`"/>
                                     <div class="w-6 h-px" :style="`background-color: ${primaryColor(template)}`"/>
                                 </div>
-                                <p class="text-xs text-stone-500">Sabtu, 12 Juli 2025</p>
+                                <p class="text-xs text-stone-500">{{ t('dashboard.templates.mockDate') }}</p>
                                 <div class="w-10 h-px mt-3" :style="`background-color: ${primaryColor(template)}`"/>
                             </div>
                         </template>
@@ -243,7 +263,7 @@ const filteredCount = computed(() => props.templates.length);
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
-                                Preview
+                                {{ t('dashboard.templates.preview') }}
                             </button>
                             <!-- Gunakan / lock button -->
                             <button
@@ -260,7 +280,7 @@ const filteredCount = computed(() => props.templates.length);
                                 <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                Gunakan
+                                {{ t('dashboard.templates.use') }}
                             </button>
                             <!-- Free user + premium template: show upgrade button -->
                             <button
@@ -272,7 +292,7 @@ const filteredCount = computed(() => props.templates.length);
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
-                                Premium
+                                {{ t('dashboard.templates.premiumBadge') }}
                             </button>
                         </div>
                     </div>
@@ -292,7 +312,7 @@ const filteredCount = computed(() => props.templates.length);
                                 @click="openPreview(template)"
                                 class="flex-1 py-2 rounded-xl text-xs font-medium border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
                             >
-                                Preview
+                                {{ t('dashboard.templates.preview') }}
                             </button>
                             <!-- Free template OR premium user: direct use -->
                             <button
@@ -306,7 +326,7 @@ const filteredCount = computed(() => props.templates.length);
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                {{ creatingId === template.id ? 'Membuat…' : 'Gunakan Template' }}
+                                {{ creatingId === template.id ? t('dashboard.templates.creating') : t('dashboard.templates.useTemplate') }}
                             </button>
                             <!-- Premium template + free user: upgrade CTA -->
                             <button
@@ -318,7 +338,7 @@ const filteredCount = computed(() => props.templates.length);
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
-                                Upgrade
+                                {{ t('dashboard.templates.upgrade') }}
                             </button>
                         </div>
                     </div>
@@ -328,14 +348,14 @@ const filteredCount = computed(() => props.templates.length);
             <!-- ── Empty state ───────────────────────────────────── -->
             <div v-else class="py-24 text-center">
                 <div class="text-5xl mb-4">🎨</div>
-                <p class="text-sm font-medium text-stone-600 mb-1">Tidak ada template ditemukan</p>
-                <p class="text-xs text-stone-400">Coba ubah filter kategori atau tier.</p>
+                <p class="text-sm font-medium text-stone-600 mb-1">{{ t('dashboard.templates.emptyTitle') }}</p>
+                <p class="text-xs text-stone-400">{{ t('dashboard.templates.emptySubtitle') }}</p>
                 <button
                     @click="activeCategory = 'all'; activeTier = 'all'"
                     class="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
                     style="background-color: #92A89C"
                 >
-                    Reset Filter
+                    {{ t('dashboard.templates.resetFilter') }}
                 </button>
             </div>
 
@@ -377,7 +397,7 @@ const filteredCount = computed(() => props.templates.length);
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                     </svg>
-                                    {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template' }}
+                                    {{ creatingId === previewTemplate.id ? t('dashboard.templates.creating') : t('dashboard.templates.useTemplate') }}
                                 </button>
                                 <button
                                     v-else
@@ -388,7 +408,7 @@ const filteredCount = computed(() => props.templates.length);
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                     </svg>
-                                    Upgrade ke Premium
+                                    {{ t('dashboard.templates.upgradeToPremium') }}
                                 </button>
                                 <button
                                     @click="closePreview"
@@ -439,20 +459,20 @@ const filteredCount = computed(() => props.templates.length);
                                         </p>
                                         <div class="w-full rounded-xl px-4 py-3 mb-3 text-left"
                                              :style="`background: ${primaryColor(previewTemplate)}15`">
-                                            <p class="text-xs text-stone-400 mb-0.5">Tanggal</p>
-                                            <p class="text-xs font-semibold text-stone-700">Sabtu, 12 Juli 2025</p>
+                                            <p class="text-xs text-stone-400 mb-0.5">{{ t('dashboard.templates.mockDateLabel') }}</p>
+                                            <p class="text-xs font-semibold text-stone-700">{{ t('dashboard.templates.mockDate') }}</p>
                                         </div>
                                         <div class="w-full rounded-xl px-4 py-3 text-left"
                                              :style="`background: ${primaryColor(previewTemplate)}15`">
-                                            <p class="text-xs text-stone-400 mb-0.5">Lokasi</p>
-                                            <p class="text-xs font-semibold text-stone-700">Gedung Serbaguna</p>
-                                            <p class="text-xs text-stone-400">Jakarta Selatan</p>
+                                            <p class="text-xs text-stone-400 mb-0.5">{{ t('dashboard.templates.mockLocationLabel') }}</p>
+                                            <p class="text-xs font-semibold text-stone-700">{{ t('dashboard.templates.mockVenue') }}</p>
+                                            <p class="text-xs text-stone-400">{{ t('dashboard.templates.mockCity') }}</p>
                                         </div>
                                         <button
                                             class="mt-5 w-full py-2.5 rounded-xl text-xs font-semibold text-white"
                                             :style="`background-color: ${primaryColor(previewTemplate)}`"
                                         >
-                                            Konfirmasi Kehadiran
+                                            {{ t('dashboard.templates.mockConfirmAttendance') }}
                                         </button>
                                         <div class="w-12 h-px mt-5" :style="`background-color: ${primaryColor(previewTemplate)}`"/>
                                     </div>
@@ -462,55 +482,61 @@ const filteredCount = computed(() => props.templates.length);
                             <!-- Template info panel -->
                             <div class="w-full md:w-72 flex-shrink-0 border-t md:border-t-0 md:border-l border-stone-100 p-6 space-y-5">
                                 <div>
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Deskripsi</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('dashboard.templates.infoDescription') }}</p>
                                     <p class="text-sm text-stone-600 leading-relaxed">
-                                        {{ previewTemplate.description ?? 'Template elegan yang dapat dikustomisasi sesuai kebutuhanmu.' }}
+                                        {{ previewTemplate.description ?? t('dashboard.templates.infoDescriptionFallback') }}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Palet Warna</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('dashboard.templates.infoPalette') }}</p>
                                     <div class="flex gap-2">
                                         <div class="flex flex-col items-center gap-1">
                                             <div class="w-10 h-10 rounded-xl shadow-sm border border-stone-100"
                                                  :style="`background-color: ${primaryColor(previewTemplate)}`"/>
-                                            <span class="text-xs text-stone-400">Primer</span>
+                                            <span class="text-xs text-stone-400">{{ t('dashboard.templates.colorPrimary') }}</span>
                                         </div>
                                         <div class="flex flex-col items-center gap-1">
                                             <div class="w-10 h-10 rounded-xl shadow-sm border border-stone-100"
                                                  :style="`background-color: ${secondaryColor(previewTemplate)}`"/>
-                                            <span class="text-xs text-stone-400">Sekunder</span>
+                                            <span class="text-xs text-stone-400">{{ t('dashboard.templates.colorSecondary') }}</span>
                                         </div>
                                         <div class="flex flex-col items-center gap-1">
                                             <div class="w-10 h-10 rounded-xl shadow-sm border border-stone-100"
                                                  :style="`background-color: ${accentColor(previewTemplate)}`"/>
-                                            <span class="text-xs text-stone-400">Aksen</span>
+                                            <span class="text-xs text-stone-400">{{ t('dashboard.templates.colorAccent') }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Tipografi</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('dashboard.templates.infoTypography') }}</p>
                                     <div class="space-y-2">
                                         <div class="flex items-center justify-between text-xs">
-                                            <span class="text-stone-400">Judul</span>
+                                            <span class="text-stone-400">{{ t('dashboard.templates.typographyTitle') }}</span>
                                             <span class="font-medium text-stone-700">{{ previewTemplate.default_config?.font_title }}</span>
                                         </div>
                                         <div class="flex items-center justify-between text-xs">
-                                            <span class="text-stone-400">Teks</span>
+                                            <span class="text-stone-400">{{ t('dashboard.templates.typographyBody') }}</span>
                                             <span class="font-medium text-stone-700">{{ previewTemplate.default_config?.font_body }}</span>
                                         </div>
                                         <div class="flex items-center justify-between text-xs">
-                                            <span class="text-stone-400">Animasi</span>
+                                            <span class="text-stone-400">{{ t('dashboard.templates.typographyAnimation') }}</span>
                                             <span class="font-medium text-stone-700">{{ previewTemplate.default_config?.animation }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Fitur</p>
+                                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">{{ t('dashboard.templates.infoFeatures') }}</p>
                                     <ul class="space-y-1.5">
-                                        <li v-for="feat in ['Responsif mobile', 'Musik latar', 'RSVP online', 'Peta lokasi', 'Galeri foto']"
+                                        <li v-for="feat in [
+                                                t('dashboard.templates.featureMobile'),
+                                                t('dashboard.templates.featureMusic'),
+                                                t('dashboard.templates.featureRsvp'),
+                                                t('dashboard.templates.featureMap'),
+                                                t('dashboard.templates.featureGallery'),
+                                            ]"
                                             :key="feat"
                                             class="flex items-center gap-2 text-xs text-stone-600">
                                             <svg class="w-3.5 h-3.5 flex-shrink-0" :style="`color: ${primaryColor(previewTemplate)}`"
@@ -534,7 +560,7 @@ const filteredCount = computed(() => props.templates.length);
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                     </svg>
-                                    {{ creatingId === previewTemplate.id ? 'Membuat…' : 'Gunakan Template Ini' }}
+                                    {{ creatingId === previewTemplate.id ? t('dashboard.templates.creating') : t('dashboard.templates.useTemplateThis') }}
                                 </button>
                                 <button
                                     v-else
@@ -545,7 +571,7 @@ const filteredCount = computed(() => props.templates.length);
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                     </svg>
-                                    Upgrade ke Premium
+                                    {{ t('dashboard.templates.upgradeToPremium') }}
                                 </button>
                             </div>
                         </div>
@@ -583,7 +609,7 @@ const filteredCount = computed(() => props.templates.length);
                                 </svg>
                             </div>
                             <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-semibold tracking-wide">
-                                Premium
+                                {{ t('dashboard.templates.premiumBadge') }}
                             </span>
                         </div>
                         <!-- Close button -->
@@ -600,15 +626,21 @@ const filteredCount = computed(() => props.templates.length);
                     <!-- Content -->
                     <div class="p-6">
                         <h3 class="text-base font-semibold text-stone-800 mb-1">
-                            Template <span :style="`color: ${primaryColor(upgradeTemplate)}`">{{ upgradeTemplate.name }}</span> tersedia di Premium
+                            {{ t('dashboard.templates.upgradeModalTitle', { name: upgradeTemplate.name }) }}
                         </h3>
                         <p class="text-sm text-stone-500 leading-relaxed mb-5">
-                            Upgrade ke Premium untuk menggunakan template ini dan menikmati fitur lanjutan: live streaming, kisah cinta, amplop digital, dan lebih banyak lagi.
+                            {{ t('dashboard.templates.upgradeModalDesc') }}
                         </p>
 
                         <!-- Benefit pills -->
                         <div class="flex flex-wrap gap-2 mb-5">
-                            <span v-for="feat in ['Semua template', 'Live streaming', 'Kisah cinta', 'Amplop digital', 'Upload musik']"
+                            <span v-for="feat in [
+                                    t('dashboard.templates.upgradeBenefitAllTemplates'),
+                                    t('dashboard.templates.upgradeBenefitLiveStreaming'),
+                                    t('dashboard.templates.upgradeBenefitLoveStory'),
+                                    t('dashboard.templates.upgradeBenefitDigitalEnvelope'),
+                                    t('dashboard.templates.upgradeBenefitMusicUpload'),
+                                ]"
                                   :key="feat"
                                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
                                 <svg class="w-3 h-3 flex-shrink-0" :style="`color: ${primaryColor(upgradeTemplate)}`"
@@ -629,13 +661,13 @@ const filteredCount = computed(() => props.templates.length);
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
                                 </svg>
-                                Upgrade ke Premium
+                                {{ t('dashboard.templates.upgradeToPremium') }}
                             </a>
                             <button
                                 @click="closeUpgradeModal(); activeTier = 'free'"
                                 class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
                             >
-                                Lihat Template Gratis
+                                {{ t('dashboard.templates.upgradeSeeFreeTpl') }}
                             </button>
                         </div>
                     </div>
@@ -663,7 +695,7 @@ const filteredCount = computed(() => props.templates.length);
                                 </svg>
                             </div>
                             <span class="px-3 py-1 rounded-full bg-[#92A89C]/20 text-[#73877C] text-xs font-semibold">
-                                Batas Undangan
+                                {{ t('dashboard.templates.limitModalBadge') }}
                             </span>
                         </div>
                         <button
@@ -679,42 +711,69 @@ const filteredCount = computed(() => props.templates.length);
                     <!-- Content -->
                     <div class="p-6">
                         <h3 class="text-base font-semibold text-stone-800 mb-1">
-                            Batas undangan tercapai
+                            {{ t('dashboard.templates.limitModalTitle') }}
                         </h3>
-                        <p class="text-sm text-stone-500 leading-relaxed mb-5">
-                            Paket gratis hanya mendukung 1 undangan. Upgrade ke Premium untuk membuat undangan tanpa batas dan akses semua fitur lanjutan.
-                        </p>
 
-                        <!-- Benefit pills -->
-                        <div class="flex flex-wrap gap-2 mb-5">
-                            <span v-for="feat in ['Undangan tak terbatas', 'Semua template', 'Live streaming', 'Amplop digital', 'Upload musik']"
-                                  :key="feat"
-                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
-                                <svg class="w-3 h-3 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                {{ feat }}
-                            </span>
-                        </div>
+                        <!-- Premium user: offer addon -->
+                        <template v-if="isPremium">
+                            <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                                {{ t('dashboard.templates.limitPremiumDesc') }}
+                            </p>
+                            <p v-if="addonError" class="text-xs text-red-500 mb-3">{{ addonError }}</p>
+                            <div class="flex flex-col gap-2">
+                                <button
+                                    @click="buyAddon"
+                                    :disabled="addonLoading"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors disabled:opacity-60"
+                                >
+                                    {{ addonLoading ? t('dashboard.templates.limitProcessing') : t('dashboard.templates.limitAddonBtn') }}
+                                </button>
+                                <button @click="showLimitModal = false"
+                                        class="w-full py-2.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors">
+                                    {{ t('dashboard.templates.close') }}
+                                </button>
+                            </div>
+                        </template>
 
-                        <!-- Actions -->
-                        <div class="flex flex-col gap-2">
-                            <a
-                                href="/upgrade"
-                                class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
-                            >
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
-                                </svg>
-                                Upgrade ke Premium
-                            </a>
-                            <button
-                                @click="showLimitModal = false"
-                                class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
-                            >
-                                Tutup
-                            </button>
-                        </div>
+                        <!-- Free user: offer upgrade -->
+                        <template v-else>
+                            <p class="text-sm text-stone-500 leading-relaxed mb-5">
+                                {{ t('dashboard.templates.limitFreeDesc') }}
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-5">
+                                <span v-for="feat in [
+                                        t('dashboard.templates.limitBenefitUnlimited'),
+                                        t('dashboard.templates.upgradeBenefitAllTemplates'),
+                                        t('dashboard.templates.upgradeBenefitLiveStreaming'),
+                                        t('dashboard.templates.upgradeBenefitDigitalEnvelope'),
+                                        t('dashboard.templates.upgradeBenefitMusicUpload'),
+                                    ]"
+                                      :key="feat"
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium">
+                                    <svg class="w-3 h-3 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    {{ feat }}
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <a
+                                    href="/upgrade"
+                                    class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-[#92A89C] hover:bg-[#73877C] transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M5 16L3 5l5.5 5L12 2l3.5 8L21 5l-2 11H5zm2 4h10v-2H7v2z"/>
+                                    </svg>
+                                    {{ t('dashboard.templates.upgradeToPremium') }}
+                                </a>
+                                <button
+                                    @click="showLimitModal = false"
+                                    class="w-full py-2.5 rounded-xl text-sm font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors"
+                                >
+                                    {{ t('dashboard.templates.close') }}
+                                </button>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>

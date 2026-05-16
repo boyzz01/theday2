@@ -1,7 +1,9 @@
 <script setup>
 defineProps({
     // 254px screen (260px frame – 6px border) / 375px content = 0.677
-    scale: { type: Number, default: 0.677 },
+    scale:      { type: Number,  default: 0.677 },
+    screenBg:   { type: String,  default: 'white' },
+    scrollable: { type: Boolean, default: true },
 });
 </script>
 
@@ -17,7 +19,7 @@ defineProps({
         </div>
 
         <!-- Screen — overflow-hidden so scaled content stays inside -->
-        <div class="phone-screen">
+        <div class="phone-screen" :style="{ background: screenBg, overflowY: scrollable ? 'auto' : 'hidden' }">
             <!--
                 Scale container: always 375 px wide, scaled to fit the 260 px
                 screen width (260/375 ≈ 0.693 but let caller override).

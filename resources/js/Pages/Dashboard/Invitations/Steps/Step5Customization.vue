@@ -1,5 +1,8 @@
 <script setup>
 import { computed, watch, onMounted } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     customConfig: { type: Object, required: true },
@@ -48,6 +51,13 @@ const fontsByCategory = computed(() => {
 });
 
 const fontCategories = computed(() => Object.keys(fontsByCategory.value));
+
+const galleryLayouts = computed(() => [
+    { value: 'polaroid', icon: '🖼️', label: t('dashboard.invitations.step5Customization.galleryPolaroidLabel'), desc: t('dashboard.invitations.step5Customization.galleryPolaroidDesc') },
+    { value: 'masonry',  icon: '🧱', label: t('dashboard.invitations.step5Customization.galleryMasonryLabel'),  desc: t('dashboard.invitations.step5Customization.galleryMasonryDesc')  },
+    { value: 'grid',     icon: '⊞',  label: t('dashboard.invitations.step5Customization.galleryGridLabel'),    desc: t('dashboard.invitations.step5Customization.galleryGridDesc')    },
+    { value: 'scroll',   icon: '↔️', label: t('dashboard.invitations.step5Customization.galleryScrollLabel'),  desc: t('dashboard.invitations.step5Customization.galleryScrollDesc')  },
+]);
 </script>
 
 <template>
@@ -55,14 +65,14 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
 
         <div>
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">
-                Kustomisasi Tampilan
+                {{ t('dashboard.invitations.step5Customization.title') }}
             </h2>
-            <p class="text-sm text-stone-400 mt-0.5">Sesuaikan warna dan gaya tipografi undangan</p>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step5Customization.subtitle') }}</p>
         </div>
 
         <!-- ── Warna utama ─────────────────────────────────── -->
         <div class="space-y-3">
-            <label class="block text-sm font-medium text-stone-700">Warna Utama</label>
+            <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step5Customization.primaryColor') }}</label>
 
             <!-- Preset swatches -->
             <div class="flex flex-wrap gap-2">
@@ -105,7 +115,7 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                     </svg>
-                    Pilih
+                    {{ t('dashboard.invitations.step5Customization.pickColor') }}
                     <input v-model="customConfig.primary_color" type="color" class="sr-only"/>
                 </label>
             </div>
@@ -113,7 +123,7 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
             <!-- Preview blob -->
             <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-stone-50 border border-stone-100">
                 <div class="w-6 h-6 rounded-full flex-shrink-0" :style="{ backgroundColor: customConfig.primary_color }"/>
-                <span class="text-sm text-stone-600">Preview warna utama</span>
+                <span class="text-sm text-stone-600">{{ t('dashboard.invitations.step5Customization.colorPreview') }}</span>
                 <div class="ml-auto h-2 flex-1 max-w-24 rounded-full" :style="{ backgroundColor: customConfig.primary_color + '40' }">
                     <div class="h-full rounded-full w-2/3" :style="{ backgroundColor: customConfig.primary_color }"/>
                 </div>
@@ -122,7 +132,7 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
 
         <!-- ── Font ───────────────────────────────────────── -->
         <div class="space-y-3">
-            <label class="block text-sm font-medium text-stone-700">Font Utama</label>
+            <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step5Customization.fontLabel') }}</label>
 
             <select
                 v-model="customConfig.font"
@@ -166,6 +176,28 @@ const fontCategories = computed(() => Object.keys(fontsByCategory.value));
                 <p :style="{ fontFamily: customConfig.font }" class="text-sm text-stone-500 mt-1">
                     Ahmad Budi & Siti Ani
                 </p>
+            </div>
+        </div>
+
+        <!-- ── Gallery Layout ────────────────────────────── -->
+        <div class="space-y-3">
+            <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step5Customization.galleryLayout') }}</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button
+                    v-for="opt in galleryLayouts"
+                    :key="opt.value"
+                    @click="customConfig.gallery_layout = opt.value"
+                    :class="[
+                        'flex flex-col items-start gap-1 px-3 py-3 rounded-xl border text-left transition-all',
+                        customConfig.gallery_layout === opt.value
+                            ? 'border-[#92A89C] bg-[#92A89C]/10'
+                            : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50',
+                    ]"
+                >
+                    <span class="text-lg">{{ opt.icon }}</span>
+                    <span class="text-xs font-semibold text-stone-700">{{ opt.label }}</span>
+                    <span class="text-xs text-stone-400 leading-tight">{{ opt.desc }}</span>
+                </button>
             </div>
         </div>
 

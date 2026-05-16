@@ -53,8 +53,10 @@ class InvitationController extends Controller
                 'details'     => $invitation->details ? [
                     'groom_name'         => $invitation->details->groom_name,
                     'groom_nickname'     => $invitation->details->groom_nickname,
+                    'groom_instagram'    => $invitation->details->groom_instagram,
                     'bride_name'         => $invitation->details->bride_name,
                     'bride_nickname'     => $invitation->details->bride_nickname,
+                    'bride_instagram'    => $invitation->details->bride_instagram,
                     'groom_parent_names' => $invitation->details->groom_parent_names,
                     'bride_parent_names' => $invitation->details->bride_parent_names,
                     'groom_photo_url'    => $invitation->details->groom_photo_url,
@@ -277,10 +279,30 @@ class InvitationController extends Controller
             ['value' => 'Montserrat',         'label' => 'Montserrat',         'category' => 'Sans-serif'],
         ];
 
-        $details = $invitation->details;
-
         $currentUser   = auth()->user();
         $canUsePremium = SectionAccess::isPremium($currentUser);
+
+        $details     = $invitation->details;
+        $coupleBlank = ! $details
+            || (empty($details->groom_name) && empty($details->bride_name)
+                && empty($details->groom_nickname) && empty($details->bride_nickname));
+
+        if ($coupleBlank) {
+            $profile = $currentUser->coupleProfile;
+            if ($profile) {
+                if (! $details) {
+                    $details = $invitation->details()->create(['invitation_id' => $invitation->id]);
+                }
+                $details->groom_name         = $profile->groom_name;
+                $details->groom_nickname     = $profile->groom_nickname;
+                $details->groom_instagram    = $profile->groom_instagram;
+                $details->groom_parent_names = $profile->groom_parent_names;
+                $details->bride_name         = $profile->bride_name;
+                $details->bride_nickname     = $profile->bride_nickname;
+                $details->bride_instagram    = $profile->bride_instagram;
+                $details->bride_parent_names = $profile->bride_parent_names;
+            }
+        }
 
         return Inertia::render('Dashboard/Invitations/Create', [
             'template' => [
@@ -312,8 +334,10 @@ class InvitationController extends Controller
                 'details'              => $details ? [
                     'groom_name'           => $details->groom_name,
                     'groom_nickname'       => $details->groom_nickname,
+                    'groom_instagram'      => $details->groom_instagram,
                     'bride_name'           => $details->bride_name,
                     'bride_nickname'       => $details->bride_nickname,
+                    'bride_instagram'      => $details->bride_instagram,
                     'groom_parent_names'   => $details->groom_parent_names,
                     'bride_parent_names'   => $details->bride_parent_names,
                     'groom_photo_url'      => $details->groom_photo_url,
@@ -409,8 +433,10 @@ class InvitationController extends Controller
         $data = $request->validate([
             'groom_name'           => 'nullable|string|max:255',
             'groom_nickname'       => 'nullable|string|max:10',
+            'groom_instagram'      => 'nullable|string|max:100',
             'bride_name'           => 'nullable|string|max:255',
             'bride_nickname'       => 'nullable|string|max:10',
+            'bride_instagram'      => 'nullable|string|max:100',
             'groom_parent_names'   => 'nullable|string|max:255',
             'bride_parent_names'   => 'nullable|string|max:255',
             'groom_photo_url'      => 'nullable|string|max:2048',

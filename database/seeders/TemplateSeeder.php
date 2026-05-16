@@ -15,15 +15,19 @@ class TemplateSeeder extends Seeder
     public function run(): void
     {
         $pernikahan = TemplateCategory::where('slug', 'pernikahan')->firstOrFail();
+        $storybook  = TemplateCategory::where('slug', 'storybook')->firstOrFail();
+        $cinema     = TemplateCategory::where('slug', 'cinema')->firstOrFail();
 
         $weddingDemo = [
             'details' => [
                 'groom_name'         => 'Ahmad Rizky',
                 'bride_name'         => 'Siti Nurhaliza',
-                'groom_photo_url'    => '/demo/groom.svg',
-                'bride_photo_url'    => '/demo/bride.svg',
+                'groom_photo_url'    => '/image/demo-image/groom.png',
+                'bride_photo_url'    => '/image/demo-image/bride.png',
                 'groom_parent_names' => 'Bpk. Hasan & Ibu Fatimah',
                 'bride_parent_names' => 'Bpk. Rahmat & Ibu Aminah',
+                'groom_instagram'    => 'ahmadrizky',
+                'bride_instagram'    => 'sitinurhaliza',
                 'opening_text'       => "Bismillahirrahmanirrahim\nDengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri pernikahan kami.",
                 'closing_text'       => 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.',
             ],
@@ -48,10 +52,38 @@ class TemplateSeeder extends Seeder
                 ],
             ],
             'gallery' => [
-                '/demo/prewedding-1.svg',
-                '/demo/prewedding-2.svg',
-                '/demo/prewedding-3.svg',
-                '/demo/prewedding-4.svg',
+                '/image/demo-image/galeri/galeri-0.webp',
+                '/image/demo-image/galeri/galeri-1.webp',
+                '/image/demo-image/galeri/galeri-0.webp',
+                '/image/demo-image/galeri/galeri-1.webp',
+            ],
+            'gift' => [
+                'accounts' => [
+                    ['bank' => 'BCA',      'account_number' => '1234567890', 'account_name' => 'Ahmad Rizky'],
+                    ['bank' => 'Mandiri',  'account_number' => '0987654321', 'account_name' => 'Siti Nurhaliza'],
+                ],
+            ],
+            'love_story' => [
+                [
+                    'date'        => 'Maret 2020',
+                    'title'       => 'Pertama Bertemu',
+                    'description' => 'Kami pertama kali bertemu di sebuah seminar kampus. Satu tatapan yang tak terlupakan menjadi awal dari segalanya.',
+                ],
+                [
+                    'date'        => 'Juni 2020',
+                    'title'       => 'Jatuh Hati',
+                    'description' => 'Setelah beberapa bulan sering menghabiskan waktu bersama, kami sadar ada sesuatu yang istimewa di antara kami.',
+                ],
+                [
+                    'date'        => 'Desember 2021',
+                    'title'       => 'Resmi Bersama',
+                    'description' => 'Di bawah langit berbintang, Ahmad memberanikan diri mengungkapkan perasaannya. Siti pun menerima dengan senyum termanis.',
+                ],
+                [
+                    'date'        => 'Juni 2026',
+                    'title'       => 'Menuju Pelaminan',
+                    'description' => 'Dengan restu kedua keluarga dan doa dari orang-orang tercinta, kami siap melangkah ke babak baru kehidupan bersama.',
+                ],
             ],
         ];
 
@@ -136,6 +168,44 @@ class TemplateSeeder extends Seeder
                 'sort_order'     => 3,
             ],
 
+            // ── Storybook (scene/illustrated templates) ────────────
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Beach',
+                'slug'           => 'beach',
+                'thumbnail_url'  => '/images/templates/beach/thumbnail.webp',
+                'description'    => 'Template pernikahan interaktif bergaya pantai tropis — jelajahi setiap bagian undangan layaknya petualangan seru di tepi laut.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 5,
+            ],
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Garden',
+                'slug'           => 'garden',
+                'thumbnail_url'  => '/images/templates/garden/thumbnail.webp',
+                'description'    => 'Template pernikahan interaktif bergaya taman bunga yang hidup — temukan setiap detail undangan di antara hamparan bunga dan pepohonan yang rimbun.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 6,
+            ],
+            [
+                'category_id'    => $storybook->id,
+                'name'           => 'Night Sky',
+                'slug'           => 'night-sky',
+                'thumbnail_url'  => '/images/templates/night-sky/thumbnail.webp',
+                'description'    => 'Template pernikahan interaktif bergaya langit malam berbintang — rayakan cinta di bawah ribuan bintang yang berkelip memukau.',
+                'default_config' => [],
+                'demo_data'      => $weddingDemo,
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 7,
+            ],
+
             // ── Nusantara (Premium, dedicated renderer) ───────────
             [
                 'category_id'    => $pernikahan->id,
@@ -172,6 +242,26 @@ class TemplateSeeder extends Seeder
                 'tier'           => 'premium',
                 'is_active'      => true,
                 'sort_order'     => 4,
+            ],
+
+            // ── Cinema ────────────────────────────────────────────
+            [
+                'category_id'    => $cinema->id,
+                'name'           => 'Netflix',
+                'slug'           => 'netflix',
+                'thumbnail_url'  => null,
+                'description'    => 'Template undangan pernikahan bertema Netflix — cinematic, bold, dan ikonik. Tamu diajak masuk lewat layar "Who\'s Watching?" sebelum menikmati undangan seperti sebuah Netflix Original.',
+                'default_config' => [
+                    'netflix_subtitle' => 'Sebuah Kisah Cinta',
+                    'netflix_tags'     => ['#lovestory', '#romantic', '#halal', '#forever'],
+                ],
+                'demo_data'      => array_merge($weddingDemo, ['custom_config' => [
+                    'netflix_subtitle' => 'Sebuah Kisah Cinta',
+                    'netflix_tags'     => ['#lovestory', '#romantic', '#halal', '#forever'],
+                ]]),
+                'tier'           => 'premium',
+                'is_active'      => true,
+                'sort_order'     => 8,
             ],
         ];
 

@@ -16,14 +16,19 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        $middleware->web(prepend: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+            \App\Http\Middleware\StagingBasicAuth::class,
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Exclude Midtrans webhook from CSRF verification
+        // Exclude Mayar webhook from CSRF verification
         $middleware->validateCsrfTokens(except: [
-            'webhooks/midtrans',
+            'webhooks/mayar',
             'logout',
         ]);
 
@@ -37,4 +42,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             return redirect('/');
         });
+
     })->create();

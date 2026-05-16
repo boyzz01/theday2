@@ -1,0 +1,112 @@
+<h2>Storybook Customize Page — 3 Pendekatan</h2>
+<p class="subtitle">Template Storybook (Garden, Beach, Night Sky) punya estetik visual yang sudah fixed dari scene-nya. Warna & font tidak relevan. Apa yang harus ditampilkan di halaman Customize?</p>
+
+<div class="cards" style="grid-template-columns: 1fr 1fr 1fr;">
+
+  <!-- Option A: Minimal -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f6f2; padding:16px; min-height:260px;">
+      <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:12px;">Tampilan</div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:600; color:#555; margin-bottom:8px;">🖼 Layout Galeri</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <div style="background:#e8d5c0; border-radius:6px; padding:6px; text-align:center; font-size:9px; color:#7a5a40; border:2px solid #c8956a;">Polaroid ✓</div>
+            <div style="background:#fff; border-radius:6px; padding:6px; text-align:center; font-size:9px; color:#aaa;">Masonry</div>
+            <div style="background:#fff; border-radius:6px; padding:6px; text-align:center; font-size:9px; color:#aaa;">Grid</div>
+            <div style="background:#fff; border-radius:6px; padding:6px; text-align:center; font-size:9px; color:#aaa;">Scroll</div>
+          </div>
+        </div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:12px;">
+          <div style="font-size:11px; font-weight:600; color:#555; margin-bottom:6px;">🎵 Musik Latar</div>
+          <div style="background:#fff; border-radius:6px; padding:8px; font-size:9px; color:#aaa; text-align:center;">Pilih musik...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Minimal</h3>
+      <p>Hanya tampilkan yang relevan: gallery layout + musik. Warna & font disembunyikan sepenuhnya untuk Storybook.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Contextual -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f6f2; padding:16px; min-height:260px;">
+      <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:12px;">Tampilan</div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:12px; margin-bottom:8px;">
+          <div style="font-size:11px; font-weight:600; color:#555; margin-bottom:6px;">🖼 Layout Galeri</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+            <div style="background:#e8d5c0; border-radius:5px; padding:5px; text-align:center; font-size:9px; color:#7a5a40; border:2px solid #c8956a;">Polaroid ✓</div>
+            <div style="background:#fff; border-radius:5px; padding:5px; text-align:center; font-size:9px; color:#aaa;">Masonry</div>
+          </div>
+        </div>
+
+        <div style="background:#eef4f0; border-radius:8px; padding:12px; margin-bottom:8px; border:1px dashed #aac8b0;">
+          <div style="font-size:11px; font-weight:600; color:#4a7a5a; margin-bottom:6px;">🎨 Scene Settings</div>
+          <div style="font-size:9px; color:#6a9a7a; margin-bottom:6px;">Pengaturan khusus template ini</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <div style="font-size:9px; color:#555;">Cover overlay</div>
+            <div style="background:#e0e0e0; border-radius:999px; height:14px; width:28px; position:relative;">
+              <div style="position:absolute; right:2px; top:2px; width:10px; height:10px; background:#4a7a5a; border-radius:50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:10px;">
+          <div style="font-size:11px; font-weight:600; color:#555; margin-bottom:4px;">🎵 Musik Latar</div>
+          <div style="background:#fff; border-radius:5px; padding:6px; font-size:9px; color:#aaa; text-align:center;">Pilih musik...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Contextual</h3>
+      <p>Gallery layout + "Scene Settings" khusus per template (misal: overlay cover, hotspot style). Bisa dikembangkan seiring waktu.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Keep All -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f6f2; padding:16px; min-height:260px;">
+      <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:8px;">Tampilan</div>
+
+        <div style="background:#fef3f3; border-radius:8px; padding:10px; margin-bottom:6px; border:1px solid #fcc; opacity:.7;">
+          <div style="font-size:10px; font-weight:600; color:#c88; margin-bottom:4px;">🎨 Warna & Font</div>
+          <div style="font-size:8px; color:#c88; font-style:italic;">Tidak berlaku untuk template Storybook</div>
+          <div style="display:flex; gap:4px; margin-top:6px; opacity:.4;">
+            <div style="width:14px; height:14px; border-radius:50%; background:#D4A373;"></div>
+            <div style="width:14px; height:14px; border-radius:50%; background:#E57070;"></div>
+            <div style="width:14px; height:14px; border-radius:50%; background:#52796F;"></div>
+          </div>
+        </div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:10px; margin-bottom:6px;">
+          <div style="font-size:10px; font-weight:600; color:#555; margin-bottom:5px;">🖼 Layout Galeri</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+            <div style="background:#e8d5c0; border-radius:5px; padding:4px; text-align:center; font-size:8px; color:#7a5a40; border:1.5px solid #c8956a;">Polaroid ✓</div>
+            <div style="background:#fff; border-radius:5px; padding:4px; text-align:center; font-size:8px; color:#aaa;">Masonry</div>
+          </div>
+        </div>
+
+        <div style="background:#f4f0eb; border-radius:8px; padding:8px;">
+          <div style="font-size:10px; font-weight:600; color:#555; margin-bottom:3px;">🎵 Musik</div>
+          <div style="background:#fff; border-radius:4px; padding:5px; font-size:8px; color:#aaa; text-align:center;">Pilih...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Keep All (disabled)</h3>
+      <p>Tampilkan semua section seperti template biasa, tapi warna & font di-grey-out dengan label "tidak berlaku".</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:8px; padding:12px 16px; background:rgba(100,160,120,0.08); border-radius:10px; border-left:3px solid #6aa080;">
+  <span class="label">Rekomendasi</span>
+  <p style="margin:4px 0 0; font-size:13px; color:#444;"><strong>B (Contextual)</strong> — memberikan ruang untuk berkembang dengan Scene Settings, tanpa membuang yang tidak relevan. A cocok jika mau simpel dulu untuk MVP.</p>
+</div>

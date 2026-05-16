@@ -2,6 +2,9 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t, locale } = useLocale();
 
 const props = defineProps({
     weddingPlan: Object,
@@ -189,15 +192,15 @@ function closeSwipe(id) {
 
 
 // ── Form ───────────────────────────────────────────────────────────────────
-const ASSIGNEE_OPTIONS = [
-    { value: 'bride',   label: 'Mempelai Wanita' },
-    { value: 'groom',   label: 'Mempelai Pria' },
-    { value: 'both',    label: 'Bersama' },
-    { value: 'parents', label: 'Orang Tua' },
-    { value: 'family',  label: 'Keluarga' },
-    { value: 'wo',      label: 'Wedding Organizer' },
-    { value: 'custom',  label: 'Lainnya…' },
-];
+const ASSIGNEE_OPTIONS = computed(() => [
+    { value: 'bride',   label: t('dashboard.checklist.assignee.bride') },
+    { value: 'groom',   label: t('dashboard.checklist.assignee.groom') },
+    { value: 'both',    label: t('dashboard.checklist.assignee.both') },
+    { value: 'parents', label: t('dashboard.checklist.assignee.parents') },
+    { value: 'family',  label: t('dashboard.checklist.assignee.family') },
+    { value: 'wo',      label: t('dashboard.checklist.assignee.wo') },
+    { value: 'custom',  label: t('dashboard.checklist.assignee.custom') },
+]);
 
 const emptyForm = () => ({
     title:                '',
@@ -232,35 +235,35 @@ const CATEGORY_ORDER = [
     'busana','dekorasi','dokumentasi','tamu','acara','lainnya',
 ];
 
-const categories = [
-    { value: 'administrasi', label: 'Administrasi' },
-    { value: 'venue',        label: 'Venue' },
-    { value: 'vendor',       label: 'Vendor' },
-    { value: 'undangan',     label: 'Undangan' },
-    { value: 'keuangan',     label: 'Keuangan' },
-    { value: 'busana',       label: 'Busana' },
-    { value: 'dekorasi',     label: 'Dekorasi' },
-    { value: 'dokumentasi',  label: 'Dokumentasi' },
-    { value: 'tamu',         label: 'Tamu' },
-    { value: 'acara',        label: 'Acara' },
-    { value: 'lainnya',      label: 'Lainnya' },
-];
+const categories = computed(() => [
+    { value: 'administrasi', label: t('dashboard.checklist.category.administrasi') },
+    { value: 'venue',        label: t('dashboard.checklist.category.venue') },
+    { value: 'vendor',       label: t('dashboard.checklist.category.vendor') },
+    { value: 'undangan',     label: t('dashboard.checklist.category.undangan') },
+    { value: 'keuangan',     label: t('dashboard.checklist.category.keuangan') },
+    { value: 'busana',       label: t('dashboard.checklist.category.busana') },
+    { value: 'dekorasi',     label: t('dashboard.checklist.category.dekorasi') },
+    { value: 'dokumentasi',  label: t('dashboard.checklist.category.dokumentasi') },
+    { value: 'tamu',         label: t('dashboard.checklist.category.tamu') },
+    { value: 'acara',        label: t('dashboard.checklist.category.acara') },
+    { value: 'lainnya',      label: t('dashboard.checklist.category.lainnya') },
+]);
 
 const categoryLabel = (val) => {
-    const found = categories.find(c => c.value === val);
+    const found = categories.value.find(c => c.value === val);
     return found ? found.label : (val.charAt(0).toUpperCase() + val.slice(1));
 };
 
-const priorityConfig = {
-    high:   { label: 'Tinggi', dotClass: 'bg-red-500',   textClass: 'text-red-600'   },
-    medium: { label: 'Sedang', dotClass: 'bg-[#92A89C]', textClass: 'text-[#73877C]' },
-    low:    { label: 'Rendah', dotClass: 'bg-stone-300', textClass: 'text-stone-400' },
-};
+const priorityConfig = computed(() => ({
+    high:   { label: t('dashboard.checklist.priority.high'),   dotClass: 'bg-red-500',   textClass: 'text-red-600'   },
+    medium: { label: t('dashboard.checklist.priority.medium'), dotClass: 'bg-[#92A89C]', textClass: 'text-[#73877C]' },
+    low:    { label: t('dashboard.checklist.priority.low'),    dotClass: 'bg-stone-300', textClass: 'text-stone-400' },
+}));
 
 const assigneeLabel = (type, label) => {
     if (!type) return null;
     if (type === 'custom') return label || 'Custom';
-    return ASSIGNEE_OPTIONS.find(o => o.value === type)?.label ?? type;
+    return ASSIGNEE_OPTIONS.value.find(o => o.value === type)?.label ?? type;
 };
 
 // ── Urgency ────────────────────────────────────────────────────────────────
@@ -270,11 +273,11 @@ function urgencyInfo(task) {
     const due = new Date(task.due_date + 'T00:00:00');
     const diff = Math.round((due - now) / 86400000);
 
-    if (diff < 0)  return { label: `Lewat ${Math.abs(diff)} hari`, cls: 'bg-red-50 text-red-500 border border-red-100' };
-    if (diff === 0) return { label: 'Hari ini',               cls: 'bg-orange-50 text-orange-500 border border-orange-100' };
-    if (diff === 1) return { label: 'Besok',                  cls: 'bg-amber-50 text-amber-600 border border-amber-100' };
-    if (diff <= 7)  return { label: `${diff} hari lagi`,      cls: 'bg-yellow-50 text-yellow-600 border border-yellow-100' };
-    return { label: `H-${diff}`, cls: 'bg-stone-50 text-stone-400' };
+    if (diff < 0)  return { label: t('dashboard.checklist.urgency.overdue', { days: Math.abs(diff) }),  cls: 'bg-red-50 text-red-500 border border-red-100' };
+    if (diff === 0) return { label: t('dashboard.checklist.urgency.today'),                              cls: 'bg-orange-50 text-orange-500 border border-orange-100' };
+    if (diff === 1) return { label: t('dashboard.checklist.urgency.tomorrow'),                           cls: 'bg-amber-50 text-amber-600 border border-amber-100' };
+    if (diff <= 7)  return { label: t('dashboard.checklist.urgency.daysLeft', { days: diff }),           cls: 'bg-yellow-50 text-yellow-600 border border-yellow-100' };
+    return { label: t('dashboard.checklist.urgency.countdown', { days: diff }), cls: 'bg-stone-50 text-stone-400' };
 }
 
 // ── Computed ───────────────────────────────────────────────────────────────
@@ -383,12 +386,12 @@ function deadlineGroups(list) {
     }
 
     const sections = [
-        { key: 'overdue', label: 'Terlambat',        list: buckets.overdue },
-        { key: 'today',   label: 'Hari ini',          list: buckets.today   },
-        { key: 'week',    label: '7 hari ke depan',   list: buckets.week    },
-        { key: 'month',   label: '30 hari ke depan',  list: buckets.month   },
-        { key: 'later',   label: 'Nanti',              list: buckets.later   },
-        { key: 'done',    label: 'Selesai',            list: buckets.done    },
+        { key: 'overdue', label: t('dashboard.checklist.deadlineGroup.overdue'), list: buckets.overdue },
+        { key: 'today',   label: t('dashboard.checklist.deadlineGroup.today'),   list: buckets.today   },
+        { key: 'week',    label: t('dashboard.checklist.deadlineGroup.week'),    list: buckets.week    },
+        { key: 'month',   label: t('dashboard.checklist.deadlineGroup.month'),   list: buckets.month   },
+        { key: 'later',   label: t('dashboard.checklist.deadlineGroup.later'),   list: buckets.later   },
+        { key: 'done',    label: t('dashboard.checklist.deadlineGroup.done'),    list: buckets.done    },
     ];
 
     return sections
@@ -405,7 +408,7 @@ function assigneeGroups(list) {
     }
     return [...map.entries()].map(([key, items]) => {
         const label = key === '__none__'
-            ? 'Tanpa PIC'
+            ? t('dashboard.checklist.assignee.noPic')
             : assigneeLabel(key, items[0]?.assignee_label) ?? key;
         return buildGroupShape(key, label, items);
     });
@@ -455,7 +458,7 @@ onMounted(async () => {
         await Promise.all([loadTasks(), loadSummary()]);
         playSwipeHint();
     } catch {
-        error.value = 'Gagal memuat checklist. Silakan muat ulang halaman.';
+        error.value = t('dashboard.checklist.error.loadFailed');
     } finally {
         loading.value = false;
     }
@@ -476,7 +479,7 @@ async function saveEventDate() {
     if (!eventDate.value || savingDate.value) return;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     if (new Date(eventDate.value) < today) {
-        eventDateError.value = 'Tanggal acara tidak boleh di masa lalu.';
+        eventDateError.value = t('dashboard.checklist.eventDate.errorPast');
         return;
     }
     savingDate.value = true;
@@ -484,7 +487,7 @@ async function saveEventDate() {
         await axios.patch(route('dashboard.checklist.event-date'), { event_date: eventDate.value });
         await Promise.all([loadTasks(), loadSummary()]);
     } catch (e) {
-        eventDateError.value = e.response?.data?.errors?.event_date?.[0] ?? 'Gagal menyimpan tanggal.';
+        eventDateError.value = e.response?.data?.errors?.event_date?.[0] ?? t('dashboard.checklist.eventDate.errorSave');
     } finally {
         savingDate.value = false;
     }
@@ -523,10 +526,10 @@ async function restoreTask(task) {
 // ── Delete ─────────────────────────────────────────────────────────────────
 async function deleteTask(task) {
     closeSwipe(task.id);
-    if (!confirm(`Hapus "${task.title}"?`)) return;
+    if (!confirm(t('dashboard.checklist.actions.deleteConfirm', { title: task.title }))) return;
     await axios.delete(route('dashboard.checklist.tasks.destroy', task.id));
     await Promise.all([loadTasks(), loadSummary()]);
-    showToast('Task dihapus.');
+    showToast(t('dashboard.checklist.actions.toastDeleted'));
 }
 
 // ── Bulk ───────────────────────────────────────────────────────────────────
@@ -540,10 +543,14 @@ async function doBulkAction(action) {
         });
         cancelBulkMode();
         await Promise.all([loadTasks(), loadSummary()]);
-        const msg = action === 'done' ? 'Ditandai selesai.' : action === 'archive' ? 'Diarsipkan.' : 'Task dihapus.';
+        const msg = action === 'done'
+            ? t('dashboard.checklist.actions.toastBulkDone')
+            : action === 'archive'
+                ? t('dashboard.checklist.actions.toastBulkArchived')
+                : t('dashboard.checklist.actions.toastBulkDeleted');
         showToast(msg);
     } catch {
-        showToast('Gagal melakukan aksi.', 'error');
+        showToast(t('dashboard.checklist.actions.toastBulkFailed'), 'error');
     } finally {
         bulking.value = false;
     }
@@ -562,7 +569,7 @@ function openCreate() {
 function openEdit(task) {
     closeSwipe(task.id);
     editingTask.value = task;
-    const isKnown = categories.some(c => c.value === task.category);
+    const isKnown = categories.value.some(c => c.value === task.category);
     usingCustomCategory.value = !isKnown;
     customCategory.value = isKnown ? '' : task.category;
     form.value = {
@@ -592,7 +599,7 @@ async function saveForm() {
         ? customCategory.value.trim()
         : form.value.category;
     if (!effectiveCategory) {
-        formError.value.category = 'Kategori wajib diisi.';
+        formError.value.category = t('dashboard.checklist.form.categoryRequired');
         saving.value = false;
         return;
     }
@@ -612,7 +619,7 @@ async function saveForm() {
         const isEdit = !!editingTask.value;
         closeForm();
         await Promise.all([loadTasks(), loadSummary()]);
-        showToast(isEdit ? 'Task diperbarui.' : 'Task ditambahkan.');
+        showToast(isEdit ? t('dashboard.checklist.actions.toastUpdated') : t('dashboard.checklist.actions.toastAdded'));
     } catch (e) {
         if (e.response?.status === 422) {
             const errs = e.response.data.errors ?? {};
@@ -624,8 +631,20 @@ async function saveForm() {
 }
 
 // ── Date picker modal ──────────────────────────────────────────────────────
-const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const MONTHS_ID = computed(() => [
+    t('dashboard.checklist.months.jan'), t('dashboard.checklist.months.feb'),
+    t('dashboard.checklist.months.mar'), t('dashboard.checklist.months.apr'),
+    t('dashboard.checklist.months.may'), t('dashboard.checklist.months.jun'),
+    t('dashboard.checklist.months.jul'), t('dashboard.checklist.months.aug'),
+    t('dashboard.checklist.months.sep'), t('dashboard.checklist.months.oct'),
+    t('dashboard.checklist.months.nov'), t('dashboard.checklist.months.dec'),
+]);
+const DAYS_ID = computed(() => [
+    t('dashboard.checklist.days.sun'), t('dashboard.checklist.days.mon'),
+    t('dashboard.checklist.days.tue'), t('dashboard.checklist.days.wed'),
+    t('dashboard.checklist.days.thu'), t('dashboard.checklist.days.fri'),
+    t('dashboard.checklist.days.sat'),
+]);
 
 const showDatePicker = ref(false);
 const datePickerMode = ref('');
@@ -686,7 +705,7 @@ function isCalPastDay(day) {
 function calDisplayDate(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(y, m - 1, d).toLocaleDateString(locale.value === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 const currentPickerDate = computed(() =>
     datePickerMode.value === 'event' ? eventDate.value : form.value.due_date
@@ -698,7 +717,7 @@ const currentPickerDate = computed(() =>
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800">Wedding Planner</h1>
+            <h1 class="text-base font-semibold text-stone-800">{{ t('dashboard.checklist.header.title') }}</h1>
         </template>
 
         <!-- Toast -->
@@ -731,7 +750,7 @@ const currentPickerDate = computed(() =>
         <div v-else-if="error" class="flex flex-col items-center py-24 gap-3">
             <p class="text-stone-500 text-sm">{{ error }}</p>
             <button @click="() => { error = null; loading = true; onMounted(); }"
-                    class="text-sm text-[#73877C] underline">Coba lagi</button>
+                    class="text-sm text-[#73877C] underline">{{ t('dashboard.checklist.error.retry') }}</button>
         </div>
 
         <template v-else>
@@ -740,13 +759,13 @@ const currentPickerDate = computed(() =>
             <Transition name="slide-down">
                 <div v-if="bulkMode"
                      class="sticky top-0 z-20 mb-4 px-4 py-3 bg-white border border-stone-200 rounded-xl shadow-sm flex items-center gap-2">
-                    <span class="text-sm font-medium text-stone-700 flex-1">{{ selectedIds.size }} dipilih</span>
+                    <span class="text-sm font-medium text-stone-700 flex-1">{{ t('dashboard.checklist.bulk.selected', { count: selectedIds.size }) }}</span>
                     <button @click="doBulkAction('done')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50">Selesai</button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50">{{ t('dashboard.checklist.bulk.markDone') }}</button>
                     <button @click="doBulkAction('archive')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-50">Arsipkan</button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-50">{{ t('dashboard.checklist.bulk.archive') }}</button>
                     <button @click="doBulkAction('delete')" :disabled="bulking"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50">Hapus</button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50">{{ t('dashboard.checklist.bulk.delete') }}</button>
                     <button @click="cancelBulkMode"
                             class="ml-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -759,7 +778,7 @@ const currentPickerDate = computed(() =>
             <!-- ── Summary cards ──────────────────────────────────── -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Progress</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.checklist.summary.progress') }}</p>
                     <p class="text-2xl font-bold text-stone-800">{{ summary.progress }}<span class="text-sm font-normal text-stone-400">%</span></p>
                     <div class="mt-2 h-1.5 rounded-full bg-stone-100 overflow-hidden">
                         <div class="h-full rounded-full transition-all duration-500"
@@ -768,9 +787,9 @@ const currentPickerDate = computed(() =>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl border border-stone-100 p-4">
-                    <p class="text-xs text-stone-400 mb-1">Selesai</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.checklist.summary.done') }}</p>
                     <p class="text-2xl font-bold text-green-600">{{ summary.done }}</p>
-                    <p class="text-xs text-stone-400 mt-1">dari {{ summary.total }} task</p>
+                    <p class="text-xs text-stone-400 mt-1">{{ t('dashboard.checklist.summary.doneOf', { total: summary.total }) }}</p>
                 </div>
                 <div
                     class="rounded-xl border p-4 cursor-pointer transition-colors"
@@ -779,9 +798,9 @@ const currentPickerDate = computed(() =>
                         : 'bg-white border-stone-100'"
                     @click="summary.overdue > 0 && (groupBy = 'deadline')"
                 >
-                    <p class="text-xs mb-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-400'">Terlambat</p>
+                    <p class="text-xs mb-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-400'">{{ t('dashboard.checklist.summary.overdue') }}</p>
                     <p class="text-2xl font-bold" :class="summary.overdue > 0 ? 'text-red-600' : 'text-stone-300'">{{ summary.overdue }}</p>
-                    <p class="text-xs mt-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-300'">task overdue</p>
+                    <p class="text-xs mt-1" :class="summary.overdue > 0 ? 'text-red-400' : 'text-stone-300'">{{ t('dashboard.checklist.summary.overdueTask') }}</p>
                 </div>
                 <div
                     class="rounded-xl border p-4 cursor-pointer transition-colors"
@@ -790,9 +809,9 @@ const currentPickerDate = computed(() =>
                         : 'bg-white border-stone-100'"
                     @click="summary.upcoming_7d > 0 && (groupBy = 'deadline')"
                 >
-                    <p class="text-xs mb-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-400'">7 Hari Lagi</p>
+                    <p class="text-xs mb-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-400'">{{ t('dashboard.checklist.summary.upcoming') }}</p>
                     <p class="text-2xl font-bold" :class="summary.upcoming_7d > 0 ? 'text-amber-600' : 'text-stone-300'">{{ summary.upcoming_7d }}</p>
-                    <p class="text-xs mt-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-300'">deadline dekat</p>
+                    <p class="text-xs mt-1" :class="summary.upcoming_7d > 0 ? 'text-amber-500' : 'text-stone-300'">{{ t('dashboard.checklist.summary.upcomingDeadline') }}</p>
                 </div>
             </div>
 
@@ -801,7 +820,7 @@ const currentPickerDate = computed(() =>
                 <div v-if="allDone"
                      class="mb-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-sm text-emerald-700 flex items-center gap-2">
                     <span class="text-lg">🎉</span>
-                    <span class="font-medium">Semua task selesai! Pernikahan siap dirayakan.</span>
+                    <span class="font-medium">{{ t('dashboard.checklist.allDone') }}</span>
                 </div>
             </Transition>
 
@@ -813,19 +832,19 @@ const currentPickerDate = computed(() =>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <span>Isi tanggal acara agar tenggat task dihitung otomatis.</span>
+                    <span>{{ t('dashboard.checklist.eventDate.prompt') }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" @click="openDatePicker('event')"
                             class="flex-1 border rounded-lg px-3 py-1.5 text-sm text-left bg-white transition-colors hover:border-[#92A89C]/60"
                             :class="eventDateError ? 'border-red-300' : 'border-[#B8C7BF]'">
                         <span v-if="eventDate" class="text-stone-800">{{ calDisplayDate(eventDate) }}</span>
-                        <span v-else class="text-stone-400">Pilih tanggal acara</span>
+                        <span v-else class="text-stone-400">{{ t('dashboard.checklist.eventDate.placeholder') }}</span>
                     </button>
                     <button @click="saveEventDate" :disabled="!eventDate || savingDate"
                             class="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                             style="background-color: #92A89C">
-                        {{ savingDate ? 'Menyimpan…' : 'Simpan' }}
+                        {{ savingDate ? t('dashboard.checklist.eventDate.saving') : t('dashboard.checklist.eventDate.save') }}
                     </button>
                 </div>
                 <p v-if="eventDateError" class="mt-1.5 text-xs text-red-500">{{ eventDateError }}</p>
@@ -837,44 +856,44 @@ const currentPickerDate = computed(() =>
                     <!-- Group by -->
                     <select v-model="groupBy"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="category">Grup: Kategori</option>
-                        <option value="deadline">Grup: Deadline</option>
-                        <option value="assignee">Grup: PIC</option>
+                        <option value="category">{{ t('dashboard.checklist.controls.groupCategory') }}</option>
+                        <option value="deadline">{{ t('dashboard.checklist.controls.groupDeadline') }}</option>
+                        <option value="assignee">{{ t('dashboard.checklist.controls.groupAssignee') }}</option>
                     </select>
 
                     <select v-model="filterStatus"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="">Semua status</option>
-                        <option value="todo">Belum selesai</option>
-                        <option value="done">Selesai</option>
-                        <option value="archived">Diarsipkan</option>
+                        <option value="">{{ t('dashboard.checklist.controls.statusAll') }}</option>
+                        <option value="todo">{{ t('dashboard.checklist.controls.statusTodo') }}</option>
+                        <option value="done">{{ t('dashboard.checklist.controls.statusDone') }}</option>
+                        <option value="archived">{{ t('dashboard.checklist.controls.statusArchived') }}</option>
                     </select>
 
                     <select v-model="filterCat"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="">Semua kategori</option>
+                        <option value="">{{ t('dashboard.checklist.controls.categoryAll') }}</option>
                         <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                     </select>
 
                     <select v-model="filterPriority"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="">Semua prioritas</option>
-                        <option value="high">Tinggi</option>
-                        <option value="medium">Sedang</option>
-                        <option value="low">Rendah</option>
+                        <option value="">{{ t('dashboard.checklist.controls.priorityAll') }}</option>
+                        <option value="high">{{ t('dashboard.checklist.priority.high') }}</option>
+                        <option value="medium">{{ t('dashboard.checklist.priority.medium') }}</option>
+                        <option value="low">{{ t('dashboard.checklist.priority.low') }}</option>
                     </select>
 
                     <select v-model="filterAssignee"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="">Semua PIC</option>
+                        <option value="">{{ t('dashboard.checklist.controls.assigneeAll') }}</option>
                         <option v-for="o in ASSIGNEE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
 
                     <select v-model="sortBy"
                             class="w-full sm:w-auto text-sm border border-stone-200 rounded-lg pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                        <option value="">Urutan default</option>
-                        <option value="due_date">Tenggat terdekat</option>
-                        <option value="priority">Prioritas tertinggi</option>
+                        <option value="">{{ t('dashboard.checklist.controls.sortDefault') }}</option>
+                        <option value="due_date">{{ t('dashboard.checklist.controls.sortDueDate') }}</option>
+                        <option value="priority">{{ t('dashboard.checklist.controls.sortPriority') }}</option>
                     </select>
                 </div>
 
@@ -888,7 +907,7 @@ const currentPickerDate = computed(() =>
                             <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform"
                                  :class="moveDoneToBottom ? 'translate-x-4' : 'translate-x-0'"/>
                         </div>
-                        Selesai ke bawah
+                        {{ t('dashboard.checklist.controls.moveDoneToBottom') }}
                     </label>
                           <div class="group relative flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-stone-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -897,7 +916,7 @@ const currentPickerDate = computed(() =>
                             </svg>
                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-lg bg-stone-800 text-white text-xs leading-relaxed
                                         opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
-                                Task yang sudah selesai otomatis dipindah ke bagian bawah grup, agar task yang belum selesai lebih mudah dilihat.
+                                {{ t('dashboard.checklist.controls.moveDoneTooltip') }}
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800"/>
                             </div>
                         </div>
@@ -908,7 +927,7 @@ const currentPickerDate = computed(() =>
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Tambah Task
+                        {{ t('dashboard.checklist.controls.addTask') }}
                     </button>
                 </div>
             </div>
@@ -921,18 +940,18 @@ const currentPickerDate = computed(() =>
                               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                 </div>
-                <h3 class="text-stone-700 font-medium mb-1">Belum ada task</h3>
-                <p class="text-stone-400 text-sm mb-4">Mulai persiapan pernikahanmu</p>
+                <h3 class="text-stone-700 font-medium mb-1">{{ t('dashboard.checklist.empty.noTasks') }}</h3>
+                <p class="text-stone-400 text-sm mb-4">{{ t('dashboard.checklist.empty.noTasksHint') }}</p>
                 <button @click="openCreate"
                         class="px-4 py-2 rounded-xl text-sm font-medium text-white"
                         style="background-color: #92A89C">
-                    Tambah task
+                    {{ t('dashboard.checklist.empty.addTask') }}
                 </button>
             </div>
 
             <!-- ── Empty state (filtered) ─────────────────────────── -->
             <div v-else-if="groups.length === 0" class="py-12 text-center">
-                <p class="text-stone-400 text-sm">Tidak ada task yang cocok dengan filter ini.</p>
+                <p class="text-stone-400 text-sm">{{ t('dashboard.checklist.empty.noFilterMatch') }}</p>
             </div>
 
             <!-- ── Groups ─────────────────────────────────────────── -->
@@ -968,7 +987,7 @@ const currentPickerDate = computed(() =>
                         </div>
                         <span v-if="!expandedGroups.has(group.cat)"
                               class="text-xs text-stone-400 ml-auto">
-                            {{ group.tasks.length }} task
+                            {{ t('dashboard.checklist.group.taskCount', { count: group.tasks.length }) }}
                         </span>
                     </button>
 
@@ -995,7 +1014,7 @@ const currentPickerDate = computed(() =>
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        Selesai
+                                        {{ t('dashboard.checklist.swipe.done') }}
                                     </button>
                                     <button @click="openEdit(task)"
                                             class="h-full px-4 flex flex-col items-center justify-center gap-0.5 text-xs font-medium text-stone-600 bg-stone-100">
@@ -1003,7 +1022,7 @@ const currentPickerDate = computed(() =>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        Edit
+                                        {{ t('dashboard.checklist.swipe.edit') }}
                                     </button>
                                     <button @click="deleteTask(task)"
                                             class="h-full px-4 flex flex-col items-center justify-center gap-0.5 text-xs font-medium text-red-600 bg-red-50">
@@ -1011,7 +1030,7 @@ const currentPickerDate = computed(() =>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
-                                        Hapus
+                                        {{ t('dashboard.checklist.swipe.delete') }}
                                     </button>
                                 </div>
 
@@ -1150,7 +1169,7 @@ const currentPickerDate = computed(() =>
                                             <template v-else>
                                                 <button @click.stop="restoreTask(task)"
                                                         class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10 hover:bg-[#92A89C]/20 transition-colors">
-                                                    Pulihkan
+                                                    {{ t('dashboard.checklist.task.restore') }}
                                                 </button>
                                             </template>
                                         </div>
@@ -1159,7 +1178,7 @@ const currentPickerDate = computed(() =>
                                         <div v-if="task.status === 'archived'" class="flex sm:hidden items-center ml-2">
                                             <button @click.stop="restoreTask(task)"
                                                     class="text-xs px-2.5 py-1 rounded-lg text-[#73877C] bg-[#92A89C]/10">
-                                                Pulihkan
+                                                {{ t('dashboard.checklist.task.restore') }}
                                             </button>
                                         </div>
 
@@ -1180,7 +1199,7 @@ const currentPickerDate = computed(() =>
                                     <div v-if="getSubtaskState(task.id).loading"
                                          class="flex items-center gap-2 text-xs text-stone-400 py-1">
                                         <div class="w-3 h-3 rounded-full border border-stone-300 border-t-[#92A89C] animate-spin"/>
-                                        Memuat subtugas…
+                                        {{ t('dashboard.checklist.subtask.loading') }}
                                     </div>
 
                                     <template v-else>
@@ -1210,14 +1229,14 @@ const currentPickerDate = computed(() =>
 
                                         <!-- Empty subtasks -->
                                         <p v-if="getSubtaskState(task.id).items.length === 0 && getSubtaskState(task.id).loaded"
-                                           class="text-xs text-stone-400 italic">Belum ada subtugas.</p>
+                                           class="text-xs text-stone-400 italic">{{ t('dashboard.checklist.subtask.empty') }}</p>
 
                                         <!-- Add subtask input -->
                                         <div class="flex items-center gap-2 mt-1">
                                             <input
                                                 v-model="getSubtaskState(task.id).newTitle"
                                                 type="text"
-                                                placeholder="Tambah subtugas…"
+                                                :placeholder="t('dashboard.checklist.subtask.placeholder')"
                                                 class="flex-1 text-xs border border-stone-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-[#92A89C]/40"
                                                 @keydown.enter="addSubtask(task)"
                                             />
@@ -1226,7 +1245,7 @@ const currentPickerDate = computed(() =>
                                                 :disabled="!getSubtaskState(task.id).newTitle.trim() || getSubtaskState(task.id).saving"
                                                 class="text-xs px-2 py-1.5 rounded-lg font-medium text-white disabled:opacity-40 transition-opacity"
                                                 style="background-color: #92A89C">
-                                                + Tambah
+                                                {{ t('dashboard.checklist.subtask.add') }}
                                             </button>
                                         </div>
                                     </template>
@@ -1243,7 +1262,7 @@ const currentPickerDate = computed(() =>
 
         <!-- ── FAB mobile ─────────────────────────────────────────── -->
         <button @click="openCreate"
-                class="fixed bottom-6 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
+                class="fixed bottom-20 right-6 lg:hidden w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-white z-20"
                 style="background-color: #92A89C">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -1257,14 +1276,14 @@ const currentPickerDate = computed(() =>
                  @click.self="closeForm">
                 <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[90dvh] overflow-y-auto">
                     <h2 class="text-base font-semibold text-stone-800 mb-4">
-                        {{ editingTask ? 'Edit Task' : 'Tambah Task Baru' }}
+                        {{ editingTask ? t('dashboard.checklist.form.titleEdit') : t('dashboard.checklist.form.titleAdd') }}
                     </h2>
 
                     <div class="space-y-3">
                         <!-- Title -->
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Nama task <span class="text-red-400">*</span></label>
-                            <input v-model="form.title" type="text" placeholder="Contoh: Booking fotografer"
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldName') }} <span class="text-red-400">*</span></label>
+                            <input v-model="form.title" type="text" :placeholder="t('dashboard.checklist.form.namePlaceholder')"
                                    class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="formError.title ? 'border-red-300' : 'border-stone-200'"/>
                             <p v-if="formError.title" class="text-xs text-red-500 mt-1">{{ formError.title }}</p>
@@ -1273,56 +1292,56 @@ const currentPickerDate = computed(() =>
                         <div class="grid grid-cols-2 gap-3">
                             <!-- Category -->
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Kategori <span class="text-red-400">*</span></label>
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldCategory') }} <span class="text-red-400">*</span></label>
                                 <select v-if="!usingCustomCategory"
                                         v-model="form.category"
                                         class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
                                     <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
                                 </select>
-                                <input v-else v-model="customCategory" type="text" placeholder="Nama kategori"
+                                <input v-else v-model="customCategory" type="text" :placeholder="t('dashboard.checklist.form.categoryCustomPlaceholder')"
                                        class="w-full border rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                        :class="formError.category ? 'border-red-300' : 'border-stone-200'"/>
                                 <button @click="usingCustomCategory = !usingCustomCategory"
                                         class="mt-1 text-xs text-[#73877C] hover:underline">
-                                    {{ usingCustomCategory ? '← Dari daftar' : '+ Kategori lain' }}
+                                    {{ usingCustomCategory ? t('dashboard.checklist.form.switchToList') : t('dashboard.checklist.form.switchToCustom') }}
                                 </button>
                                 <p v-if="formError.category" class="text-xs text-red-500 mt-1">{{ formError.category }}</p>
                             </div>
                             <!-- Priority -->
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Prioritas</label>
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldPriority') }}</label>
                                 <select v-model="form.priority"
                                         class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                                    <option value="low">Rendah</option>
-                                    <option value="medium">Sedang</option>
-                                    <option value="high">Tinggi</option>
+                                    <option value="low">{{ t('dashboard.checklist.priority.low') }}</option>
+                                    <option value="medium">{{ t('dashboard.checklist.priority.medium') }}</option>
+                                    <option value="high">{{ t('dashboard.checklist.priority.high') }}</option>
                                 </select>
                             </div>
                         </div>
 
                         <!-- Assignee -->
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Penanggung jawab (opsional)</label>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldAssignee') }}</label>
                             <select v-model="form.assignee_type"
                                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                                <option value="">Tidak ditentukan</option>
+                                <option value="">{{ t('dashboard.checklist.form.assigneeNone') }}</option>
                                 <option v-for="o in ASSIGNEE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
                             </select>
                             <input v-if="form.assignee_type === 'custom'"
                                    v-model="form.assignee_label"
                                    type="text"
-                                   placeholder="Nama penanggung jawab"
+                                   :placeholder="t('dashboard.checklist.form.assigneeCustomPlaceholder')"
                                    class="mt-1.5 w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
 
                         <!-- Due date -->
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Tenggat (opsional)</label>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldDueDate') }}</label>
                             <div class="flex items-center gap-1.5">
                                 <button type="button" @click="openDatePicker('due')"
                                         class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm text-left transition-colors hover:border-[#92A89C]/50">
                                     <span v-if="form.due_date" class="text-stone-800">{{ calDisplayDate(form.due_date) }}</span>
-                                    <span v-else class="text-stone-400">Pilih tanggal</span>
+                                    <span v-else class="text-stone-400">{{ t('dashboard.checklist.form.dueDatePlaceholder') }}</span>
                                 </button>
                                 <button v-if="form.due_date" type="button" @click="form.due_date = ''"
                                         class="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex-shrink-0">
@@ -1336,17 +1355,17 @@ const currentPickerDate = computed(() =>
                         <!-- Reminder toggle -->
                         <div class="flex items-center justify-between py-1">
                             <div>
-                                <p class="text-xs text-stone-700 font-medium">Aktifkan pengingat</p>
-                                <p class="text-xs text-stone-400">Pengingat in-app sebelum tenggat</p>
+                                <p class="text-xs text-stone-700 font-medium">{{ t('dashboard.checklist.form.reminderLabel') }}</p>
+                                <p class="text-xs text-stone-400">{{ t('dashboard.checklist.form.reminderSub') }}</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <select v-if="form.reminder_enabled"
                                         v-model="form.reminder_offset_days"
                                         class="text-xs border border-stone-200 rounded-lg px-2 py-1 bg-white text-stone-700 focus:outline-none">
-                                    <option :value="1">1 hari sebelum</option>
-                                    <option :value="7">7 hari sebelum</option>
-                                    <option :value="14">14 hari sebelum</option>
-                                    <option :value="30">30 hari sebelum</option>
+                                    <option :value="1">{{ t('dashboard.checklist.form.reminderDaysBefore', { days: 1 }) }}</option>
+                                    <option :value="7">{{ t('dashboard.checklist.form.reminderDaysBefore', { days: 7 }) }}</option>
+                                    <option :value="14">{{ t('dashboard.checklist.form.reminderDaysBefore', { days: 14 }) }}</option>
+                                    <option :value="30">{{ t('dashboard.checklist.form.reminderDaysBefore', { days: 30 }) }}</option>
                                 </select>
                                 <div class="relative w-9 h-5 flex-shrink-0 cursor-pointer"
                                      @click="form.reminder_enabled = !form.reminder_enabled">
@@ -1360,8 +1379,8 @@ const currentPickerDate = computed(() =>
 
                         <!-- Description -->
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Catatan (opsional)</label>
-                            <textarea v-model="form.description" rows="2" placeholder="Tambahkan catatan…"
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.checklist.form.fieldNotes') }}</label>
+                            <textarea v-model="form.description" rows="2" :placeholder="t('dashboard.checklist.form.notesPlaceholder')"
                                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
                     </div>
@@ -1369,12 +1388,12 @@ const currentPickerDate = computed(() =>
                     <div class="flex gap-3 mt-5">
                         <button @click="closeForm"
                                 class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
-                            Batal
+                            {{ t('dashboard.checklist.form.btnCancel') }}
                         </button>
                         <button @click="saveForm" :disabled="saving"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                 style="background-color: #92A89C">
-                            {{ saving ? 'Menyimpan…' : (editingTask ? 'Simpan' : 'Tambah') }}
+                            {{ saving ? t('dashboard.checklist.form.btnSaving') : (editingTask ? t('dashboard.checklist.form.btnSave') : t('dashboard.checklist.form.btnAdd')) }}
                         </button>
                     </div>
                 </div>
@@ -1395,7 +1414,7 @@ const currentPickerDate = computed(() =>
 
                         <div class="flex items-center justify-between px-5 py-4">
                             <div>
-                                <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                                <p class="text-sm font-bold text-stone-800">{{ t('dashboard.checklist.datePicker.title') }}</p>
                                 <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">
                                     {{ calDisplayDate(currentPickerDate) }}
                                 </p>
@@ -1454,8 +1473,8 @@ const currentPickerDate = computed(() =>
                                     :disabled="!currentPickerDate"
                                     class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
                                     style="background-color:#92A89C">
-                                <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
-                                <span v-else>Pilih tanggal dulu</span>
+                                <span v-if="currentPickerDate">{{ t('dashboard.checklist.datePicker.confirm', { date: calDisplayDate(currentPickerDate) }) }}</span>
+                                <span v-else>{{ t('dashboard.checklist.datePicker.noDate') }}</span>
                             </button>
                         </div>
                     </div>

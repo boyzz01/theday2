@@ -2,6 +2,9 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 // ── Props ──────────────────────────────────────────────────────────────────
 const props = defineProps({
@@ -101,19 +104,28 @@ const activeFilterCount = computed(() => {
 const activeFilterChips = computed(() => {
     const chips = [];
     if (filters.send_status) {
-        const labels = { not_sent: 'Belum Kirim', sent: 'Sudah Kirim', opened: 'Sudah Dibuka' };
-        chips.push({ key: 'send_status', label: `Status: ${labels[filters.send_status] ?? filters.send_status}` });
+        const labels = {
+            not_sent: t('dashboard.guests.sendStatusNotSent'),
+            sent: t('dashboard.guests.sendStatusSent'),
+            opened: t('dashboard.guests.sendStatusOpened'),
+        };
+        chips.push({ key: 'send_status', label: `${t('dashboard.guests.chipStatusPrefix')}${labels[filters.send_status] ?? filters.send_status}` });
     }
     if (filters.rsvp_status) {
-        const labels = { pending: 'Belum Respon', attending: 'Hadir', not_attending: 'Tidak Hadir', maybe: 'Mungkin' };
-        chips.push({ key: 'rsvp_status', label: `RSVP: ${labels[filters.rsvp_status] ?? filters.rsvp_status}` });
+        const labels = {
+            pending: t('dashboard.guests.rsvpPending'),
+            attending: t('dashboard.guests.rsvpAttending'),
+            not_attending: t('dashboard.guests.rsvpNotAttending'),
+            maybe: t('dashboard.guests.rsvpMaybe'),
+        };
+        chips.push({ key: 'rsvp_status', label: `${t('dashboard.guests.chipRsvpPrefix')}${labels[filters.rsvp_status] ?? filters.rsvp_status}` });
     }
     if (filters.category) {
-        chips.push({ key: 'category', label: `Kategori: ${filters.category}` });
+        chips.push({ key: 'category', label: `${t('dashboard.guests.chipCategoryPrefix')}${filters.category}` });
     }
     if (filters.invitation_id) {
         const inv = props.invitations.find(i => i.id == filters.invitation_id);
-        chips.push({ key: 'invitation_id', label: `Undangan: ${inv?.title ?? filters.invitation_id}` });
+        chips.push({ key: 'invitation_id', label: `${t('dashboard.guests.chipInvitationPrefix')}${inv?.title ?? filters.invitation_id}` });
     }
     return chips;
 });
@@ -129,7 +141,7 @@ onMounted(async () => {
     try {
         await Promise.all([loadGuests(), loadSummary(), loadCategories()]);
     } catch (e) {
-        error.value = 'Gagal memuat data. Silakan muat ulang halaman.';
+        error.value = t('dashboard.guests.loadError');
     } finally {
         loading.value = false;
     }
@@ -260,10 +272,10 @@ async function saveGuest() {
             );
             const idx = guests.value.findIndex(g => g.id === editingGuest.value.id);
             if (idx > -1) guests.value[idx] = data;
-            showToast('Tamu berhasil diperbarui.');
+            showToast(t('dashboard.guests.toastGuestUpdated'));
         } else {
             await axios.post(route('dashboard.guest-list.store'), payload);
-            showToast('Tamu berhasil ditambahkan.');
+            showToast(t('dashboard.guests.toastGuestAdded'));
         }
 
         closeGuestForm();
@@ -272,7 +284,7 @@ async function saveGuest() {
         if (e.response?.status === 422) {
             guestErrors.value = e.response.data.errors ?? {};
         } else {
-            showToast('Gagal menyimpan tamu. Coba lagi.');
+            showToast(t('dashboard.guests.toastSaveFailed'));
         }
     } finally {
         savingGuest.value = false;
@@ -306,7 +318,7 @@ async function previewTemplate() {
         templatePreview.value  = data.rendered;
         templateWarnings.value = data.warnings ?? [];
     } catch {
-        showToast('Gagal memuat preview. Coba lagi.');
+        showToast(t('dashboard.guests.toastPreviewFailed'));
     } finally {
         previewLoading.value = false;
     }
@@ -321,7 +333,7 @@ async function saveTemplate() {
             content: templateForm.content,
         });
         showTemplateModal.value = false;
-        showToast('Template berhasil disimpan.');
+        showToast(t('dashboard.guests.toastTemplateSaved'));
     } catch (e) {
         if (e.response?.status === 422) {
             templateErrors.value = e.response.data.errors ?? {};
@@ -384,7 +396,7 @@ async function confirmSent() {
         if (idx > -1) guests.value[idx] = data;
         await loadSummary();
         showSendModal.value = false;
-        showToast('Status diperbarui: Sudah Dikirim');
+        showToast(t('dashboard.guests.toastStatusUpdated'));
     } finally {
         markingSent.value = false;
     }
@@ -394,12 +406,12 @@ async function copyMessage() {
     if (!generatedMsg.value) return;
     try {
         await navigator.clipboard.writeText(generatedMsg.value);
-        showToast('Teks undangan berhasil disalin');
+        showToast(t('dashboard.guests.toastCopied'));
         if (sendTarget.value) {
             axios.post(route('dashboard.guest-list.message.copy-log', sendTarget.value.id)).catch(() => {});
         }
     } catch {
-        showToast('Gagal menyalin. Salin manual di atas.');
+        showToast(t('dashboard.guests.toastCopyFailed'));
     }
 }
 
@@ -438,7 +450,7 @@ async function previewImport() {
         importPreview.value = data.rows;
         importStep.value    = 'preview';
     } catch (e) {
-        showToast('Gagal memproses data import.');
+        showToast(t('dashboard.guests.toastImportFailed'));
     } finally {
         importPreviewing.value = false;
     }
@@ -489,7 +501,7 @@ async function bulkMarkSent() {
             ids.map(id => axios.post(route('dashboard.guest-list.message.mark-sent', id)))
         );
         await Promise.all([loadGuests(), loadSummary()]);
-        showToast(`${ids.length} tamu ditandai sudah dikirim`);
+        showToast(t('dashboard.guests.toastBulkSent', { n: ids.length }));
     } finally {
         bulkMarkSentLoading.value = false;
     }
@@ -503,7 +515,7 @@ async function bulkDelete() {
         await axios.post(route('dashboard.guest-list.bulk.destroy'), { ids });
         showBulkDeleteConfirm.value = false;
         await Promise.all([loadGuests(), loadSummary()]);
-        showToast(`${ids.length} tamu berhasil dihapus`);
+        showToast(t('dashboard.guests.toastBulkDeleted', { n: ids.length }));
     } finally {
         bulkDeleteLoading.value = false;
     }
@@ -525,7 +537,7 @@ async function bulkUpdateCategory() {
         });
         showBulkCategoryModal.value = false;
         await Promise.all([loadGuests(), loadCategories()]);
-        showToast(`Kategori ${ids.length} tamu diperbarui`);
+        showToast(t('dashboard.guests.toastBulkCategoryUpdated', { n: ids.length }));
     } finally {
         bulkCategoryLoading.value = false;
     }
@@ -550,23 +562,23 @@ function showToast(msg) {
 // ── Helpers ────────────────────────────────────────────────────────────────
 function sendStatusBadge(status) {
     return {
-        not_sent: { label: 'Belum Kirim',  cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
-        sent:     { label: 'Sudah Kirim',  cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
-        opened:   { label: 'Sudah Dibuka', cls: 'bg-green-50 text-green-700 ring-1 ring-green-100' },
+        not_sent: { label: t('dashboard.guests.sendStatusNotSent'),  cls: 'bg-stone-100 text-stone-500 ring-1 ring-stone-200' },
+        sent:     { label: t('dashboard.guests.sendStatusSent'),     cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
+        opened:   { label: t('dashboard.guests.sendStatusOpened'),   cls: 'bg-green-50 text-green-700 ring-1 ring-green-100' },
     }[status] ?? { label: status, cls: 'bg-stone-100 text-stone-400' };
 }
 
 function rsvpBadge(status) {
     return {
-        pending:       { label: 'Belum Respon', cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
-        attending:     { label: 'Hadir',        cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
-        not_attending: { label: 'Tidak Hadir',  cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
-        maybe:         { label: 'Mungkin',      cls: 'bg-violet-50 text-violet-600 ring-1 ring-violet-100' },
+        pending:       { label: t('dashboard.guests.rsvpPending'),      cls: 'bg-[#92A89C]/10 text-[#73877C] ring-1 ring-[#92A89C]/20' },
+        attending:     { label: t('dashboard.guests.rsvpAttending'),    cls: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' },
+        not_attending: { label: t('dashboard.guests.rsvpNotAttending'), cls: 'bg-red-50 text-red-500 ring-1 ring-red-100' },
+        maybe:         { label: t('dashboard.guests.rsvpMaybe'),        cls: 'bg-violet-50 text-violet-600 ring-1 ring-violet-100' },
     }[status] ?? { label: status, cls: 'bg-stone-100 text-stone-400' };
 }
 
 function relativeTime(iso) {
-    if (!iso) return 'Belum pernah';
+    if (!iso) return t('dashboard.guests.relativeNever');
     const now  = new Date();
     const date = new Date(iso);
     const ms   = now - date;
@@ -574,11 +586,11 @@ function relativeTime(iso) {
     const hr   = Math.floor(min / 60);
     const days = Math.floor(hr / 24);
 
-    if (min < 1)   return 'Baru saja';
-    if (min < 60)  return `${min} mnt lalu`;
-    if (hr  < 24)  return `${hr} jam lalu`;
-    if (days === 1) return 'Kemarin';
-    if (days < 7)  return `${days} hari lalu`;
+    if (min < 1)    return t('dashboard.guests.relativeJustNow');
+    if (min < 60)   return t('dashboard.guests.relativeMinutes', { n: min });
+    if (hr  < 24)   return t('dashboard.guests.relativeHours', { n: hr });
+    if (days === 1) return t('dashboard.guests.relativeYesterday');
+    if (days < 7)   return t('dashboard.guests.relativeDays', { n: days });
     return formatDate(iso);
 }
 
@@ -605,14 +617,16 @@ function hasValidPhone(guest) {
 }
 
 function sendLabel(guest) {
-    return (guest.send_status === 'sent' || guest.send_status === 'opened') ? 'Kirim Ulang' : 'Kirim WA';
+    return (guest.send_status === 'sent' || guest.send_status === 'opened')
+        ? t('dashboard.guests.sendLabelResend')
+        : t('dashboard.guests.sendLabelSend');
 }
 </script>
 
 <template>
     <DashboardLayout>
         <template #header>
-            <h1 class="text-base font-semibold text-stone-800">Guest List</h1>
+            <h1 class="text-base font-semibold text-stone-800">{{ t('dashboard.guests.title') }}</h1>
         </template>
 
         <!-- ── Loading ───────────────────────────────────────────── -->
@@ -629,9 +643,9 @@ function sendLabel(guest) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <p class="flex-1">Buat template WhatsApp agar pengiriman undangan lebih cepat.</p>
+                <p class="flex-1">{{ t('dashboard.guests.templateBannerText') }}</p>
                 <button @click="openTemplateEditor"
-                        class="text-xs font-semibold text-[#2C2417] underline whitespace-nowrap">Atur Template</button>
+                        class="text-xs font-semibold text-[#2C2417] underline whitespace-nowrap">{{ t('dashboard.guests.setTemplate') }}</button>
             </div>
 
             <!-- ── Summary Cards (clickable quick filters) ───────── -->
@@ -640,42 +654,42 @@ function sendLabel(guest) {
                 <button @click="applyStatFilter('reset','')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('total','') ? 'bg-[#92A89C]/10 border-[#92A89C]/50 ring-2 ring-[#92A89C]/30' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Total Tamu</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statTotal') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-stone-800">{{ summary.total }}</p>
                 </button>
                 <!-- Belum Kirim -->
                 <button @click="applyStatFilter('send_status','not_sent')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('send_status','not_sent') ? 'bg-stone-100 border-stone-400 ring-2 ring-stone-200' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Belum Kirim</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statNotSent') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-stone-500">{{ summary.not_sent }}</p>
                 </button>
                 <!-- Sudah Kirim -->
                 <button @click="applyStatFilter('send_status','sent')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('send_status','sent') ? 'bg-[#92A89C]/10 border-blue-300 ring-2 ring-[#92A89C]/20' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Sudah Kirim</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statSent') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-[#73877C]">{{ summary.sent + summary.opened }}</p>
                 </button>
                 <!-- Sudah Dibuka -->
                 <button @click="applyStatFilter('send_status','opened')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('send_status','opened') ? 'bg-green-50 border-green-300 ring-2 ring-green-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Sudah Dibuka</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statOpened') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-green-600">{{ summary.opened }}</p>
                 </button>
                 <!-- Hadir -->
                 <button @click="applyStatFilter('rsvp_status','attending')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('rsvp_status','attending') ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-100' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Hadir</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statAttending') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-emerald-600">{{ summary.attending }}</p>
                 </button>
                 <!-- Belum Respon -->
                 <button @click="applyStatFilter('rsvp_status','pending')"
                         class="text-left rounded-xl border p-3 sm:p-4 transition-all"
                         :class="isStatActive('rsvp_status','pending') ? 'bg-[#92A89C]/10 border-[#92A89C]/50 ring-2 ring-[#92A89C]/20' : 'bg-white border-stone-100 hover:border-stone-200 hover:bg-stone-50/50'">
-                    <p class="text-xs text-stone-400 mb-1">Belum Respon</p>
+                    <p class="text-xs text-stone-400 mb-1">{{ t('dashboard.guests.statPending') }}</p>
                     <p class="text-xl sm:text-2xl font-bold text-[#73877C]">{{ summary.pending_rsvp }}</p>
                 </button>
             </div>
@@ -692,7 +706,7 @@ function sendLabel(guest) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                        <input v-model="search" type="text" placeholder="Cari nama atau nomor…"
+                        <input v-model="search" type="text" :placeholder="t('dashboard.guests.searchPlaceholder')"
                                class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                     </div>
 
@@ -704,7 +718,7 @@ function sendLabel(guest) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
                         </svg>
-                        Filter
+                        {{ t('dashboard.guests.filterButton') }}
                         <span v-if="activeFilterCount > 0"
                               class="w-4 h-4 rounded-full bg-[#73877C] text-white text-xs flex items-center justify-center font-bold">
                             {{ activeFilterCount }}
@@ -715,37 +729,37 @@ function sendLabel(guest) {
                     <div class="hidden md:flex items-center gap-2">
                         <select v-model="filters.send_status"
                                 class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                            <option value="">Semua status</option>
-                            <option value="not_sent">Belum Kirim</option>
-                            <option value="sent">Sudah Kirim</option>
-                            <option value="opened">Sudah Dibuka</option>
+                            <option value="">{{ t('dashboard.guests.filterAllStatus') }}</option>
+                            <option value="not_sent">{{ t('dashboard.guests.sendStatusNotSent') }}</option>
+                            <option value="sent">{{ t('dashboard.guests.sendStatusSent') }}</option>
+                            <option value="opened">{{ t('dashboard.guests.sendStatusOpened') }}</option>
                         </select>
 
                         <select v-model="filters.rsvp_status"
                                 class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                            <option value="">Semua RSVP</option>
-                            <option value="pending">Belum Respon</option>
-                            <option value="attending">Hadir</option>
-                            <option value="not_attending">Tidak Hadir</option>
-                            <option value="maybe">Mungkin</option>
+                            <option value="">{{ t('dashboard.guests.filterAllRsvp') }}</option>
+                            <option value="pending">{{ t('dashboard.guests.rsvpPending') }}</option>
+                            <option value="attending">{{ t('dashboard.guests.rsvpAttending') }}</option>
+                            <option value="not_attending">{{ t('dashboard.guests.rsvpNotAttending') }}</option>
+                            <option value="maybe">{{ t('dashboard.guests.rsvpMaybe') }}</option>
                         </select>
 
                         <select v-if="categories.length > 0" v-model="filters.category"
                                 class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                            <option value="">Semua kategori</option>
+                            <option value="">{{ t('dashboard.guests.filterAllCategory') }}</option>
                             <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                         </select>
 
                         <select v-model="sort"
                                 class="text-sm border border-stone-200 rounded-xl pl-3 pr-8 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                            <option value="newest">Terbaru</option>
-                            <option value="name_asc">Nama A–Z</option>
-                            <option value="not_sent">Belum Kirim Dulu</option>
-                            <option value="not_rsvp">Belum RSVP Dulu</option>
+                            <option value="newest">{{ t('dashboard.guests.sortNewest') }}</option>
+                            <option value="name_asc">{{ t('dashboard.guests.sortNameAsc') }}</option>
+                            <option value="not_sent">{{ t('dashboard.guests.sortNotSentFirst') }}</option>
+                            <option value="not_rsvp">{{ t('dashboard.guests.sortNotRsvpFirst') }}</option>
                         </select>
 
                         <button v-if="hasActiveFilter" @click="resetAllFilters"
-                                class="text-xs text-stone-500 underline px-2 whitespace-nowrap">Reset</button>
+                                class="text-xs text-stone-500 underline px-2 whitespace-nowrap">{{ t('dashboard.guests.resetButton') }}</button>
                     </div>
                 </div>
 
@@ -757,7 +771,7 @@ function sendLabel(guest) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M4 6h16M4 10h16M4 14h8"/>
                         </svg>
-                        Template WA
+                        {{ t('dashboard.guests.templateWaButton') }}
                     </button>
                     <button @click="openImport"
                             class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
@@ -765,7 +779,7 @@ function sendLabel(guest) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
-                        <span class="hidden lg:inline">Import</span>
+                        <span class="hidden lg:inline">{{ t('dashboard.guests.importButton') }}</span>
                     </button>
                     <button @click="openCreate"
                             class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -773,7 +787,7 @@ function sendLabel(guest) {
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        <span class="hidden lg:inline">Tambah Tamu</span>
+                        <span class="hidden lg:inline">{{ t('dashboard.guests.addGuestButton') }}</span>
                     </button>
                 </div>
 
@@ -792,7 +806,7 @@ function sendLabel(guest) {
                     </button>
                 </div>
                 <button @click="resetAllFilters" class="text-xs text-stone-400 hover:text-stone-600 px-1 underline">
-                    Reset semua
+                    {{ t('dashboard.guests.resetAll') }}
                 </button>
             </div>
 
@@ -800,7 +814,7 @@ function sendLabel(guest) {
             <Transition name="slide-down">
                 <div v-if="selected.length > 0"
                      class="mb-3 flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-[#92A89C]/10 border border-[#B8C7BF]/50">
-                    <p class="text-sm text-[#2C2417] font-medium mr-1">{{ selected.length }} tamu dipilih</p>
+                    <p class="text-sm text-[#2C2417] font-medium mr-1">{{ t('dashboard.guests.bulkSelected', { n: selected.length }) }}</p>
 
                     <!-- Kirim WA -->
                     <button @click="openSendModal(guests.find(g => g.id === selected[0]))"
@@ -808,29 +822,29 @@ function sendLabel(guest) {
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                         </svg>
-                        Kirim WA
+                        {{ t('dashboard.guests.bulkSendWa') }}
                     </button>
 
                     <!-- Ubah Kategori -->
                     <button @click="openBulkCategoryModal"
                             class="text-xs px-3 py-1.5 rounded-lg bg-white border border-[#B8C7BF] text-[#73877C] font-medium hover:bg-[#92A89C]/10 transition-colors">
-                        Ubah Kategori
+                        {{ t('dashboard.guests.bulkChangeCategory') }}
                     </button>
 
                     <!-- Export -->
                     <button @click="bulkExport"
                             class="text-xs px-3 py-1.5 rounded-lg bg-white border border-[#B8C7BF] text-[#73877C] font-medium hover:bg-[#92A89C]/10 transition-colors">
-                        Export
+                        {{ t('dashboard.guests.bulkExport') }}
                     </button>
 
                     <!-- Hapus -->
                     <button @click="showBulkDeleteConfirm = true"
                             class="text-xs px-3 py-1.5 rounded-lg bg-white border border-red-200 text-red-500 font-medium hover:bg-red-50 transition-colors">
-                        Hapus
+                        {{ t('dashboard.guests.bulkDelete') }}
                     </button>
 
                     <button @click="selected = []"
-                            class="ml-auto text-xs text-[#73877C] hover:underline">Batal</button>
+                            class="ml-auto text-xs text-[#73877C] hover:underline">{{ t('dashboard.guests.bulkCancel') }}</button>
                 </div>
             </Transition>
 
@@ -849,24 +863,24 @@ function sendLabel(guest) {
                 </div>
                 <div class="text-center">
                     <p class="text-stone-700 font-medium">
-                        {{ hasActiveFilter ? 'Tidak ada tamu yang cocok' : 'Tambahkan tamu pertamamu' }}
+                        {{ hasActiveFilter ? t('dashboard.guests.emptyNoMatch') : t('dashboard.guests.emptyTitle') }}
                     </p>
                     <p class="text-stone-400 text-sm mt-1">
-                        {{ hasActiveFilter ? 'Coba ubah atau reset filter di atas.' : 'Kelola daftar tamu dan kirim undangan lewat WhatsApp.' }}
+                        {{ hasActiveFilter ? t('dashboard.guests.emptyNoMatchHint') : t('dashboard.guests.emptyHint') }}
                     </p>
                 </div>
                 <div v-if="hasActiveFilter">
                     <button @click="resetAllFilters"
                             class="px-4 py-2 rounded-xl text-sm border border-stone-200 text-stone-600 hover:bg-stone-50">
-                        Reset Filter
+                        {{ t('dashboard.guests.resetFilterButton') }}
                     </button>
                 </div>
                 <div v-else class="flex gap-2">
                     <button @click="openCreate"
                             class="px-4 py-2 rounded-xl text-sm font-medium text-white"
-                            style="background-color:#92A89C">Tambah Tamu</button>
+                            style="background-color:#92A89C">{{ t('dashboard.guests.addGuestButton') }}</button>
                     <button @click="openImport"
-                            class="px-4 py-2 rounded-xl text-sm border border-stone-200 text-stone-600 hover:bg-stone-50">Import CSV</button>
+                            class="px-4 py-2 rounded-xl text-sm border border-stone-200 text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.importCsvButton') }}</button>
                 </div>
             </div>
 
@@ -880,12 +894,12 @@ function sendLabel(guest) {
                                     <input type="checkbox" :checked="allSelected" @change="toggleSelectAll"
                                            class="rounded border-stone-300 text-[#92A89C] focus:ring-[#92A89C]/30"/>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Tamu</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Kategori</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Status Kirim</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">RSVP</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Terakhir Kirim</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wide">Aksi</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableGuest') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableCategory') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableSendStatus') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableRsvp') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableLastSent') }}</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wide">{{ t('dashboard.guests.tableActions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-stone-50">
@@ -950,16 +964,16 @@ function sendLabel(guest) {
                                         </button>
                                         <span v-else
                                               class="text-xs px-2.5 py-1.5 rounded-lg bg-stone-50 text-stone-300 cursor-not-allowed"
-                                              title="Nomor belum diisi">Kirim WA</span>
+                                              :title="t('dashboard.guests.noPhoneNumber')">{{ t('dashboard.guests.bulkSendWa') }}</span>
                                         <button @click="openEdit(guest)"
-                                                class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors" title="Edit">
+                                                class="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors" :title="t('dashboard.guests.editButton')">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </button>
                                         <button @click="showDeleteConfirm = guest"
-                                                class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
+                                                class="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors" :title="t('dashboard.guests.deleteButton')">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -991,7 +1005,7 @@ function sendLabel(guest) {
                         <!-- Row 3: category + RSVP chips -->
                         <div class="flex flex-wrap gap-1 mb-3">
                             <span class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 font-medium">
-                                {{ guest.category || 'Lainnya' }}
+                                {{ guest.category || t('dashboard.guests.categoryOther') }}
                             </span>
                             <span class="text-xs px-2.5 py-0.5 rounded-full font-medium"
                                   :class="rsvpBadge(guest.rsvp_status).cls">
@@ -1009,17 +1023,17 @@ function sendLabel(guest) {
                             {{ sendLabel(guest) }}
                         </button>
                         <div v-else class="w-full flex items-center justify-center py-2.5 rounded-xl bg-stone-50 text-xs text-stone-300 mb-2 cursor-not-allowed">
-                            Nomor belum diisi
+                            {{ t('dashboard.guests.noPhoneNumber') }}
                         </div>
                         <!-- Row 5: secondary actions -->
                         <div class="flex items-center gap-2 pt-2 border-t border-stone-50">
                             <button @click="openEdit(guest)"
                                     class="flex-1 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 text-xs font-medium transition-colors">
-                                Edit
+                                {{ t('dashboard.guests.editButton') }}
                             </button>
                             <button @click="showDeleteConfirm = guest"
                                     class="flex-1 py-1.5 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-500 text-xs font-medium transition-colors">
-                                Hapus
+                                {{ t('dashboard.guests.deleteButton') }}
                             </button>
                         </div>
                     </div>
@@ -1031,7 +1045,7 @@ function sendLabel(guest) {
                  class="flex items-center justify-between mt-4 pt-4 border-t border-stone-100">
                 <p class="text-xs text-stone-400">
                     {{ (guestsMeta.current_page - 1) * guestsMeta.per_page + 1 }}–{{ Math.min(guestsMeta.current_page * guestsMeta.per_page, guestsMeta.total) }}
-                    dari {{ guestsMeta.total }} tamu
+                    {{ t('dashboard.guests.paginationOf', { total: guestsMeta.total }) }}
                 </p>
                 <div class="flex gap-1">
                     <button v-for="p in guestsMeta.last_page" :key="p"
@@ -1057,7 +1071,7 @@ function sendLabel(guest) {
                  @click.self="showFilterSheet = false">
                 <div class="bg-white w-full rounded-t-2xl shadow-xl p-5 max-h-[80vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-base font-semibold text-stone-800">Filter & Urutan</h2>
+                        <h2 class="text-base font-semibold text-stone-800">{{ t('dashboard.guests.filterSheetTitle') }}</h2>
                         <button @click="showFilterSheet = false" class="text-stone-400 hover:text-stone-600">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1068,9 +1082,14 @@ function sendLabel(guest) {
                     <div class="space-y-4">
                         <!-- Status Kirim -->
                         <div>
-                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Status Kirim</label>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">{{ t('dashboard.guests.filterSendStatus') }}</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button v-for="opt in [{v:'',l:'Semua'},{v:'not_sent',l:'Belum Kirim'},{v:'sent',l:'Sudah Kirim'},{v:'opened',l:'Sudah Dibuka'}]"
+                                <button v-for="opt in [
+                                    {v:'',l:t('dashboard.guests.filterAll')},
+                                    {v:'not_sent',l:t('dashboard.guests.sendStatusNotSent')},
+                                    {v:'sent',l:t('dashboard.guests.sendStatusSent')},
+                                    {v:'opened',l:t('dashboard.guests.sendStatusOpened')}
+                                ]"
                                         :key="opt.v"
                                         @click="filters.send_status = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
@@ -1084,9 +1103,15 @@ function sendLabel(guest) {
 
                         <!-- RSVP -->
                         <div>
-                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">RSVP</label>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">{{ t('dashboard.guests.filterRsvpLabel') }}</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button v-for="opt in [{v:'',l:'Semua'},{v:'pending',l:'Belum Respon'},{v:'attending',l:'Hadir'},{v:'not_attending',l:'Tidak Hadir'},{v:'maybe',l:'Mungkin'}]"
+                                <button v-for="opt in [
+                                    {v:'',l:t('dashboard.guests.filterAll')},
+                                    {v:'pending',l:t('dashboard.guests.rsvpPending')},
+                                    {v:'attending',l:t('dashboard.guests.rsvpAttending')},
+                                    {v:'not_attending',l:t('dashboard.guests.rsvpNotAttending')},
+                                    {v:'maybe',l:t('dashboard.guests.rsvpMaybe')}
+                                ]"
                                         :key="opt.v"
                                         @click="filters.rsvp_status = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
@@ -1100,12 +1125,12 @@ function sendLabel(guest) {
 
                         <!-- Kategori -->
                         <div v-if="categories.length > 0">
-                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Kategori</label>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">{{ t('dashboard.guests.filterCategoryLabel') }}</label>
                             <div class="flex flex-wrap gap-2">
                                 <button @click="filters.category = ''"
                                         class="py-1.5 px-3 rounded-xl text-sm border transition-colors"
                                         :class="filters.category === '' ? 'border-[#92A89C] bg-[#92A89C]/10 text-[#73877C] font-medium' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
-                                    Semua
+                                    {{ t('dashboard.guests.filterAll') }}
                                 </button>
                                 <button v-for="cat in categories" :key="cat"
                                         @click="filters.category = cat"
@@ -1118,9 +1143,14 @@ function sendLabel(guest) {
 
                         <!-- Urutan -->
                         <div>
-                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">Urutan</label>
+                            <label class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2 block">{{ t('dashboard.guests.filterSortLabel') }}</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button v-for="opt in [{v:'newest',l:'Terbaru'},{v:'name_asc',l:'Nama A–Z'},{v:'not_sent',l:'Belum Kirim Dulu'},{v:'not_rsvp',l:'Belum RSVP Dulu'}]"
+                                <button v-for="opt in [
+                                    {v:'newest',l:t('dashboard.guests.sortNewest')},
+                                    {v:'name_asc',l:t('dashboard.guests.sortNameAsc')},
+                                    {v:'not_sent',l:t('dashboard.guests.sortNotSentFirst')},
+                                    {v:'not_rsvp',l:t('dashboard.guests.sortNotRsvpFirst')}
+                                ]"
                                         :key="opt.v"
                                         @click="sort = opt.v"
                                         class="py-2 px-3 rounded-xl text-sm border transition-colors"
@@ -1136,12 +1166,12 @@ function sendLabel(guest) {
                     <div class="flex gap-3 mt-5 pt-4 border-t border-stone-100">
                         <button @click="resetAllFilters; showFilterSheet = false"
                                 class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">
-                            Reset
+                            {{ t('dashboard.guests.filterReset') }}
                         </button>
                         <button @click="showFilterSheet = false"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white"
                                 style="background-color:#92A89C">
-                            Terapkan
+                            {{ t('dashboard.guests.filterApply') }}
                         </button>
                     </div>
                 </div>
@@ -1157,20 +1187,20 @@ function sendLabel(guest) {
                  @click.self="closeGuestForm">
                 <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl p-6">
                     <h2 class="text-base font-semibold text-stone-800 mb-4">
-                        {{ editingGuest ? 'Edit Tamu' : 'Tambah Tamu Baru' }}
+                        {{ editingGuest ? t('dashboard.guests.modalEditTitle') : t('dashboard.guests.modalAddTitle') }}
                     </h2>
 
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Nama tamu <span class="text-red-400">*</span></label>
-                            <input v-model="guestForm.name" type="text" placeholder="Bapak Andi"
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formNameLabel') }} <span class="text-red-400">*</span></label>
+                            <input v-model="guestForm.name" type="text" :placeholder="t('dashboard.guests.formNamePlaceholder')"
                                    class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="guestErrors.name ? 'border-red-300' : 'border-stone-200'"/>
                             <p v-if="guestErrors.name" class="text-xs text-red-500 mt-1">{{ guestErrors.name[0] }}</p>
                         </div>
 
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Nomor WhatsApp <span class="text-red-400">*</span></label>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formPhoneLabel') }} <span class="text-red-400">*</span></label>
                             <input v-model="guestForm.phone_number" type="tel" placeholder="08123456789"
                                    class="w-full border rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                    :class="guestErrors.phone_number ? 'border-red-300' : 'border-stone-200'"/>
@@ -1179,8 +1209,8 @@ function sendLabel(guest) {
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Kategori</label>
-                                <input v-model="guestForm.category" type="text" placeholder="Keluarga"
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formCategoryLabel') }}</label>
+                                <input v-model="guestForm.category" type="text" :placeholder="t('dashboard.guests.formCategoryPlaceholder')"
                                        list="category-list"
                                        class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                                 <datalist id="category-list">
@@ -1188,24 +1218,24 @@ function sendLabel(guest) {
                                 </datalist>
                             </div>
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Sapaan</label>
-                                <input v-model="guestForm.greeting" type="text" placeholder="Bapak / Ibu / Kak"
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formGreetingLabel') }}</label>
+                                <input v-model="guestForm.greeting" type="text" :placeholder="t('dashboard.guests.formGreetingPlaceholder')"
                                        class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                             </div>
                         </div>
 
                         <div v-if="invitations.length > 0">
-                            <label class="text-xs text-stone-500 mb-1 block">Undangan terkait</label>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formInvitationLabel') }}</label>
                             <select v-model="guestForm.invitation_id"
                                     class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                                <option value="">Tidak ditautkan</option>
+                                <option value="">{{ t('dashboard.guests.formInvitationNone') }}</option>
                                 <option v-for="inv in invitations" :key="inv.id" :value="inv.id">{{ inv.title }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="text-xs text-stone-500 mb-1 block">Catatan</label>
-                            <textarea v-model="guestForm.note" rows="2" placeholder="Tambahkan catatan…"
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.formNoteLabel') }}</label>
+                            <textarea v-model="guestForm.note" rows="2" :placeholder="t('dashboard.guests.formNotePlaceholder')"
                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </div>
                     </div>
@@ -1213,12 +1243,12 @@ function sendLabel(guest) {
                     <div class="flex gap-3 mt-5">
                         <button @click="closeGuestForm"
                                 class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
-                            Batal
+                            {{ t('dashboard.guests.cancelButton') }}
                         </button>
                         <button @click="saveGuest" :disabled="savingGuest"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                 style="background-color:#92A89C">
-                            {{ savingGuest ? 'Menyimpan…' : (editingGuest ? 'Simpan' : 'Tambah') }}
+                            {{ savingGuest ? t('dashboard.guests.savingButton') : (editingGuest ? t('dashboard.guests.saveButton') : t('dashboard.guests.addButton')) }}
                         </button>
                     </div>
                 </div>
@@ -1233,16 +1263,15 @@ function sendLabel(guest) {
                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
                  @click.self="showDeleteConfirm = null">
                 <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
-                    <h2 class="text-base font-semibold text-stone-800 mb-2">Hapus Tamu</h2>
+                    <h2 class="text-base font-semibold text-stone-800 mb-2">{{ t('dashboard.guests.deleteModalTitle') }}</h2>
                     <p class="text-sm text-stone-500 mb-5">
-                        Hapus <span class="font-medium text-stone-700">{{ showDeleteConfirm.name }}</span> dari daftar tamu?
-                        Tindakan ini tidak bisa dibatalkan.
+                        {{ t('dashboard.guests.deleteModalBody', { name: showDeleteConfirm.name }) }}
                     </p>
                     <div class="flex gap-3">
                         <button @click="showDeleteConfirm = null"
-                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.cancelButton') }}</button>
                         <button @click="deleteGuest(showDeleteConfirm)"
-                                class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors">Hapus</button>
+                                class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors">{{ t('dashboard.guests.deleteConfirmButton') }}</button>
                     </div>
                 </div>
             </div>
@@ -1256,16 +1285,16 @@ function sendLabel(guest) {
                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
                  @click.self="showBulkDeleteConfirm = false">
                 <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
-                    <h2 class="text-base font-semibold text-stone-800 mb-2">Hapus {{ selected.length }} Tamu</h2>
+                    <h2 class="text-base font-semibold text-stone-800 mb-2">{{ t('dashboard.guests.bulkDeleteModalTitle', { n: selected.length }) }}</h2>
                     <p class="text-sm text-stone-500 mb-5">
-                        Semua tamu yang dipilih akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                        {{ t('dashboard.guests.bulkDeleteModalBody') }}
                     </p>
                     <div class="flex gap-3">
                         <button @click="showBulkDeleteConfirm = false"
-                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.cancelButton') }}</button>
                         <button @click="bulkDelete" :disabled="bulkDeleteLoading"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 transition-colors">
-                            {{ bulkDeleteLoading ? 'Menghapus…' : 'Hapus Semua' }}
+                            {{ bulkDeleteLoading ? t('dashboard.guests.deletingButton') : t('dashboard.guests.deleteAllButton') }}
                         </button>
                     </div>
                 </div>
@@ -1280,10 +1309,10 @@ function sendLabel(guest) {
                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
                  @click.self="showBulkCategoryModal = false">
                 <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
-                    <h2 class="text-base font-semibold text-stone-800 mb-1">Ubah Kategori</h2>
-                    <p class="text-sm text-stone-500 mb-4">{{ selected.length }} tamu akan diubah kategorinya.</p>
+                    <h2 class="text-base font-semibold text-stone-800 mb-1">{{ t('dashboard.guests.bulkCategoryModalTitle') }}</h2>
+                    <p class="text-sm text-stone-500 mb-4">{{ t('dashboard.guests.bulkCategoryModalBody', { n: selected.length }) }}</p>
 
-                    <input v-model="bulkCategoryValue" type="text" placeholder="Keluarga"
+                    <input v-model="bulkCategoryValue" type="text" :placeholder="t('dashboard.guests.formCategoryPlaceholder')"
                            list="bulk-category-list"
                            class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30 mb-4"/>
                     <datalist id="bulk-category-list">
@@ -1292,11 +1321,11 @@ function sendLabel(guest) {
 
                     <div class="flex gap-3">
                         <button @click="showBulkCategoryModal = false"
-                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                                class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.cancelButton') }}</button>
                         <button @click="bulkUpdateCategory" :disabled="!bulkCategoryValue || bulkCategoryLoading"
                                 class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-opacity hover:opacity-90"
                                 style="background-color:#92A89C">
-                            {{ bulkCategoryLoading ? 'Menyimpan…' : 'Simpan' }}
+                            {{ bulkCategoryLoading ? t('dashboard.guests.savingButton') : t('dashboard.guests.saveButton') }}
                         </button>
                     </div>
                 </div>
@@ -1312,7 +1341,7 @@ function sendLabel(guest) {
                  @click.self="showTemplateModal = false">
                 <div class="bg-white w-full max-w-2xl rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-base font-semibold text-stone-800">Template Pesan WhatsApp</h2>
+                        <h2 class="text-base font-semibold text-stone-800">{{ t('dashboard.guests.templateModalTitle') }}</h2>
                         <button @click="showTemplateModal = false" class="text-stone-400 hover:text-stone-600">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1323,19 +1352,19 @@ function sendLabel(guest) {
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="space-y-3">
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Nama template</label>
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.templateNameLabel') }}</label>
                                 <input v-model="templateForm.name" type="text"
                                        class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                             </div>
                             <div>
-                                <label class="text-xs text-stone-500 mb-1 block">Isi pesan</label>
+                                <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.templateContentLabel') }}</label>
                                 <textarea v-model="templateForm.content" rows="10"
                                           class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"
                                           :class="templateErrors.content ? 'border-red-300' : ''"/>
                                 <p v-if="templateErrors.content" class="text-xs text-red-500 mt-1">{{ templateErrors.content[0] }}</p>
                             </div>
                             <div>
-                                <p class="text-xs text-stone-400 mb-2">Placeholder (klik untuk sisipkan):</p>
+                                <p class="text-xs text-stone-400 mb-2">{{ t('dashboard.guests.templatePlaceholderHint') }}</p>
                                 <div class="flex flex-wrap gap-1.5">
                                     <button v-for="ph in ['guest_name','invitation_url','greeting','bride_name','groom_name','event_date','event_time','event_location']"
                                             :key="ph"
@@ -1349,10 +1378,10 @@ function sendLabel(guest) {
 
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
-                                <p class="text-xs text-stone-500">Preview pesan</p>
+                                <p class="text-xs text-stone-500">{{ t('dashboard.guests.templatePreviewLabel') }}</p>
                                 <button @click="previewTemplate" :disabled="previewLoading"
                                         class="text-xs text-[#73877C] underline disabled:opacity-50">
-                                    {{ previewLoading ? 'Memuat…' : 'Refresh preview' }}
+                                    {{ previewLoading ? t('dashboard.guests.templateLoadingPreview') : t('dashboard.guests.templateRefreshPreview') }}
                                 </button>
                             </div>
                             <div v-if="templateWarnings.length > 0" class="space-y-1">
@@ -1360,7 +1389,7 @@ function sendLabel(guest) {
                                    class="text-xs text-[#73877C] bg-[#92A89C]/10 px-2.5 py-1.5 rounded-lg">{{ w }}</p>
                             </div>
                             <div class="bg-stone-50 rounded-xl p-4 min-h-40 text-sm text-stone-700 whitespace-pre-wrap font-sans border border-stone-100">
-                                <span v-if="!templatePreview" class="text-stone-300 text-xs">Klik "Refresh preview" untuk melihat hasil pesan.</span>
+                                <span v-if="!templatePreview" class="text-stone-300 text-xs">{{ t('dashboard.guests.templatePreviewEmpty') }}</span>
                                 <span v-else>{{ templatePreview }}</span>
                             </div>
                         </div>
@@ -1368,14 +1397,14 @@ function sendLabel(guest) {
 
                     <div class="flex flex-wrap gap-3 mt-5 pt-4 border-t border-stone-100">
                         <button @click="resetTemplate"
-                                class="text-xs text-stone-500 underline hover:text-stone-700">Reset ke default</button>
+                                class="text-xs text-stone-500 underline hover:text-stone-700">{{ t('dashboard.guests.templateResetDefault') }}</button>
                         <div class="ml-auto flex gap-3">
                             <button @click="showTemplateModal = false"
-                                    class="px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                                    class="px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.cancelButton') }}</button>
                             <button @click="saveTemplate" :disabled="savingTemplate"
                                     class="px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                     style="background-color:#92A89C">
-                                {{ savingTemplate ? 'Menyimpan…' : 'Simpan Template' }}
+                                {{ savingTemplate ? t('dashboard.guests.templateSavingButton') : t('dashboard.guests.templateSaveButton') }}
                             </button>
                         </div>
                     </div>
@@ -1400,7 +1429,7 @@ function sendLabel(guest) {
                         </div>
                         <div>
                             <h2 class="text-base font-semibold text-stone-800">
-                                {{ sendTarget?.send_status === 'sent' || sendTarget?.send_status === 'opened' ? 'Kirim Ulang Undangan' : 'Kirim Undangan' }}
+                                {{ sendTarget?.send_status === 'sent' || sendTarget?.send_status === 'opened' ? t('dashboard.guests.sendModalTitleResend') : t('dashboard.guests.sendModalTitleSend') }}
                             </h2>
                             <p class="text-xs text-stone-400">{{ sendTarget?.name }} · {{ sendTarget?.normalized_phone ? formatPhone(sendTarget.normalized_phone) : sendTarget?.phone_number }}</p>
                         </div>
@@ -1420,7 +1449,7 @@ function sendLabel(guest) {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
-                                Copy
+                                {{ t('dashboard.guests.copyButton') }}
                             </button>
                             <button @click="openWhatsApp"
                                     class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
@@ -1428,13 +1457,13 @@ function sendLabel(guest) {
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                                 </svg>
-                                Buka WhatsApp
+                                {{ t('dashboard.guests.openWhatsApp') }}
                             </button>
                         </div>
 
                         <button @click="confirmSent" :disabled="markingSent"
                                 class="w-full py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 disabled:opacity-50 transition-colors">
-                            {{ markingSent ? 'Memperbarui…' : 'Tandai sudah dikirim' }}
+                            {{ markingSent ? t('dashboard.guests.markingButton') : t('dashboard.guests.markSentButton') }}
                         </button>
                     </template>
                 </div>
@@ -1450,7 +1479,7 @@ function sendLabel(guest) {
                  @click.self="showImportModal = false">
                 <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-base font-semibold text-stone-800">Import Tamu</h2>
+                        <h2 class="text-base font-semibold text-stone-800">{{ t('dashboard.guests.importModalTitle') }}</h2>
                         <button @click="showImportModal = false" class="text-stone-400 hover:text-stone-600">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1463,33 +1492,33 @@ function sendLabel(guest) {
                             <button @click="importMode = 'paste'"
                                     :class="importMode === 'paste' ? 'text-white' : 'text-stone-600 hover:bg-stone-50'"
                                     :style="importMode === 'paste' ? 'background-color:#92A89C' : ''"
-                                    class="flex-1 py-2 text-sm font-medium transition-colors">Paste List</button>
+                                    class="flex-1 py-2 text-sm font-medium transition-colors">{{ t('dashboard.guests.importPasteTab') }}</button>
                             <button @click="importMode = 'csv'"
                                     :class="importMode === 'csv' ? 'text-white' : 'text-stone-600 hover:bg-stone-50'"
                                     :style="importMode === 'csv' ? 'background-color:#92A89C' : ''"
-                                    class="flex-1 py-2 text-sm font-medium transition-colors">Upload CSV</button>
+                                    class="flex-1 py-2 text-sm font-medium transition-colors">{{ t('dashboard.guests.importCsvTab') }}</button>
                         </div>
 
                         <div v-if="invitations.length > 0" class="mb-4">
-                            <label class="text-xs text-stone-500 mb-1 block">Undangan terkait (opsional)</label>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.importInvitationLabel') }}</label>
                             <select v-model="importInvId"
                                     class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30">
-                                <option value="">Tidak ditautkan</option>
+                                <option value="">{{ t('dashboard.guests.formInvitationNone') }}</option>
                                 <option v-for="inv in invitations" :key="inv.id" :value="inv.id">{{ inv.title }}</option>
                             </select>
                         </div>
 
                         <template v-if="importMode === 'paste'">
-                            <label class="text-xs text-stone-500 mb-1 block">Paste daftar tamu (satu baris = satu tamu)</label>
-                            <p class="text-xs text-stone-300 mb-2">Format: Nama, Nomor WA, Kategori (opsional)</p>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.importPasteLabel') }}</label>
+                            <p class="text-xs text-stone-300 mb-2">{{ t('dashboard.guests.importPasteFormatHint') }}</p>
                             <textarea v-model="importText" rows="8"
                                       placeholder="Bapak Andi,08123456789,Keluarga&#10;Ibu Rina,08234567890,Teman"
                                       class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#92A89C]/30"/>
                         </template>
 
                         <template v-else>
-                            <label class="text-xs text-stone-500 mb-1 block">Upload file CSV</label>
-                            <p class="text-xs text-stone-300 mb-2">Header: name, phone, category, greeting, note</p>
+                            <label class="text-xs text-stone-500 mb-1 block">{{ t('dashboard.guests.importCsvLabel') }}</label>
+                            <p class="text-xs text-stone-300 mb-2">{{ t('dashboard.guests.importCsvFormatHint') }}</p>
                             <input type="file" accept=".csv,.txt" @change="onFileChange"
                                    class="w-full text-sm text-stone-700 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:text-white file:cursor-pointer hover:file:opacity-90"
                                    style="--file-bg:#92A89C"/>
@@ -1497,11 +1526,11 @@ function sendLabel(guest) {
 
                         <div class="flex gap-3 mt-5">
                             <button @click="showImportModal = false"
-                                    class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Batal</button>
+                                    class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.cancelButton') }}</button>
                             <button @click="previewImport" :disabled="importPreviewing || (!importText && !importFile)"
                                     class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                     style="background-color:#92A89C">
-                                {{ importPreviewing ? 'Memproses…' : 'Preview Data' }}
+                                {{ importPreviewing ? t('dashboard.guests.importProcessingButton') : t('dashboard.guests.importPreviewButton') }}
                             </button>
                         </div>
                     </template>
@@ -1509,11 +1538,11 @@ function sendLabel(guest) {
                     <template v-else-if="importStep === 'preview'">
                         <div class="mb-3 flex items-center gap-3">
                             <span class="text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-medium">
-                                {{ importPreview.filter(r => r.valid).length }} valid
+                                {{ t('dashboard.guests.importPreviewValid', { n: importPreview.filter(r => r.valid).length }) }}
                             </span>
                             <span v-if="importPreview.filter(r => !r.valid).length > 0"
                                   class="text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-600 font-medium">
-                                {{ importPreview.filter(r => !r.valid).length }} error
+                                {{ t('dashboard.guests.importPreviewError', { n: importPreview.filter(r => !r.valid).length }) }}
                             </span>
                         </div>
 
@@ -1521,11 +1550,11 @@ function sendLabel(guest) {
                             <table class="w-full text-xs">
                                 <thead class="bg-stone-50 sticky top-0">
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">#</th>
-                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">Nama</th>
-                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">Nomor WA</th>
-                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">Kategori</th>
-                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">Status</th>
+                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">{{ t('dashboard.guests.importTableRow') }}</th>
+                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">{{ t('dashboard.guests.importTableName') }}</th>
+                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">{{ t('dashboard.guests.importTablePhone') }}</th>
+                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">{{ t('dashboard.guests.importTableCategory') }}</th>
+                                        <th class="px-3 py-2 text-left text-stone-500 font-medium">{{ t('dashboard.guests.importTableStatus') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-stone-50">
@@ -1536,7 +1565,7 @@ function sendLabel(guest) {
                                         <td class="px-3 py-2 text-stone-500">{{ row.phone }}</td>
                                         <td class="px-3 py-2 text-stone-500">{{ row.category || '—' }}</td>
                                         <td class="px-3 py-2">
-                                            <span v-if="row.valid" class="text-green-600">✓ Valid</span>
+                                            <span v-if="row.valid" class="text-green-600">{{ t('dashboard.guests.importValid') }}</span>
                                             <span v-else class="text-red-500">{{ row.errors.join(', ') }}</span>
                                         </td>
                                     </tr>
@@ -1546,12 +1575,12 @@ function sendLabel(guest) {
 
                         <div class="flex gap-3">
                             <button @click="importStep = 'input'"
-                                    class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">Kembali</button>
+                                    class="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50">{{ t('dashboard.guests.importBackButton') }}</button>
                             <button @click="commitImport"
                                     :disabled="importCommitting || importPreview.filter(r => r.valid).length === 0"
                                     class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                     style="background-color:#92A89C">
-                                {{ importCommitting ? 'Menyimpan…' : `Import ${importPreview.filter(r => r.valid).length} Tamu` }}
+                                {{ importCommitting ? t('dashboard.guests.importCommittingButton') : t('dashboard.guests.importCommitButton', { n: importPreview.filter(r => r.valid).length }) }}
                             </button>
                         </div>
                     </template>
@@ -1563,12 +1592,12 @@ function sendLabel(guest) {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <p class="font-medium text-stone-800 mb-1">Import Berhasil</p>
+                            <p class="font-medium text-stone-800 mb-1">{{ t('dashboard.guests.importSuccessTitle') }}</p>
                             <p class="text-sm text-stone-500">{{ importResult?.message }}</p>
                         </div>
                         <button @click="showImportModal = false"
                                 class="w-full py-2.5 rounded-xl text-sm font-medium text-white"
-                                style="background-color:#92A89C">Selesai</button>
+                                style="background-color:#92A89C">{{ t('dashboard.guests.importDoneButton') }}</button>
                     </template>
                 </div>
             </div>
@@ -1577,7 +1606,7 @@ function sendLabel(guest) {
         <!-- ── Toast ──────────────────────────────────────────────── -->
         <Transition name="slide-up">
             <div v-if="toast"
-                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg whitespace-nowrap">
+                 class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-800 text-white text-sm shadow-lg whitespace-nowrap">
                 {{ toast }}
             </div>
         </Transition>

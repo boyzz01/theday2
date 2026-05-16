@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     selectedMusic: { type: Object,   required: true }, // ref(null)
@@ -54,12 +57,12 @@ async function handleAudioUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
-        uploadError.value = 'Ukuran file maksimal 4 MB.';
+        uploadError.value = t('dashboard.invitations.step4Music.fileTooLarge');
         e.target.value = '';
         return;
     }
     if (!props.invitationId) {
-        uploadError.value = 'Simpan informasi dasar terlebih dahulu.';
+        uploadError.value = t('dashboard.invitations.step4Music.saveFirstWarning');
         return;
     }
     isUploading.value = true;
@@ -68,7 +71,7 @@ async function handleAudioUpload(e) {
         const result = await props.uploadAudio(file);
         emit('select', { title: result.name ?? file.name, file_url: result.url });
     } catch {
-        uploadError.value = 'Gagal mengupload file audio.';
+        uploadError.value = t('dashboard.invitations.step4Music.uploadError');
     } finally {
         isUploading.value = false;
         e.target.value = '';
@@ -82,9 +85,9 @@ async function handleAudioUpload(e) {
 
         <div>
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">
-                Musik Latar
+                {{ t('dashboard.invitations.step4Music.title') }}
             </h2>
-            <p class="text-sm text-stone-400 mt-0.5">Pilih musik yang akan diputar saat undangan dibuka</p>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step4Music.subtitle') }}</p>
         </div>
 
         <!-- Selected indicator -->
@@ -97,7 +100,7 @@ async function handleAudioUpload(e) {
             </svg>
             <div class="flex-1 min-w-0">
                 <p class="font-medium text-green-800 truncate">{{ selectedMusic.title }}</p>
-                <p class="text-xs text-green-600">Musik terpilih</p>
+                <p class="text-xs text-green-600">{{ t('dashboard.invitations.step4Music.selectedLabel') }}</p>
             </div>
             <button @click="emit('select', null)" class="text-green-400 hover:text-green-600 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,7 +111,7 @@ async function handleAudioUpload(e) {
 
         <!-- Default music list -->
         <div>
-            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Koleksi Musik</h3>
+            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">{{ t('dashboard.invitations.step4Music.collectionTitle') }}</h3>
             <div class="space-y-2">
                 <div
                     v-for="music in defaultMusic"
@@ -162,7 +165,7 @@ async function handleAudioUpload(e) {
 
         <!-- Upload custom music -->
         <div>
-            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Upload Musik Sendiri</h3>
+            <h3 class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">{{ t('dashboard.invitations.step4Music.uploadTitle') }}</h3>
             <label :class="[
                 'flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-all',
                 isUploading
@@ -184,9 +187,9 @@ async function handleAudioUpload(e) {
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-stone-700">
-                        {{ isUploading ? 'Mengunggah audio…' : 'Upload file musik' }}
+                        {{ isUploading ? t('dashboard.invitations.step4Music.uploadingLabel') : t('dashboard.invitations.step4Music.uploadLabel') }}
                     </p>
-                    <p class="text-xs text-stone-400">MP3, WAV, OGG · maks 4 MB</p>
+                    <p class="text-xs text-stone-400">{{ t('dashboard.invitations.step4Music.uploadHint') }}</p>
                 </div>
                 <input type="file" accept="audio/*" class="sr-only"
                        :disabled="isUploading || !invitationId"
@@ -195,7 +198,7 @@ async function handleAudioUpload(e) {
 
             <p v-if="uploadError" class="mt-2 text-xs text-red-600">{{ uploadError }}</p>
             <p v-if="!invitationId" class="mt-2 text-xs text-[#73877C]">
-                Simpan informasi dasar terlebih dahulu untuk upload musik.
+                {{ t('dashboard.invitations.step4Music.saveFirstHint') }}
             </p>
         </div>
 

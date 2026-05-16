@@ -85,13 +85,18 @@ class InvitationSectionController extends Controller
             'is_enabled' => 'sometimes|boolean',
         ]);
 
-        if ($invitation->sections()->where('section_key', $sectionKey)->doesntExist()) {
-            \App\Models\InvitationSection::initializeForInvitation($invitation->id);
-        }
-
-        $section = $invitation->sections()
-            ->where('section_key', $sectionKey)
-            ->firstOrFail();
+        $section = $invitation->sections()->firstOrCreate(
+            ['section_key' => $sectionKey],
+            [
+                'section_type'      => $sectionKey,
+                'label'             => $sectionKey,
+                'is_enabled'        => true,
+                'is_required'       => false,
+                'sort_order'        => 0,
+                'completion_status' => 'empty',
+                'data_json'         => [],
+            ]
+        );
 
         $updates = ['data_json' => $data['data']];
         if (isset($data['status'])) {

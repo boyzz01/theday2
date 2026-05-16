@@ -2,6 +2,14 @@
 import { computed, onMounted } from 'vue';
 import { useInvitationTemplate } from '@/Composables/useInvitationTemplate';
 
+const SECTION_BG_DEFAULTS = {
+    cover:   { type: 'image', value: '/image/demo-image/bride-groom.png', opacity: 0.75 },
+    opening: { type: 'color', value: '#0f0e0c' },
+    events:  { type: 'color', value: '#faf9f7' },
+    gallery: { type: 'color', value: '#f5f0e8' },
+    closing: { type: 'image', value: '/image/demo-image/bride-groom.png', opacity: 0.6 },
+}
+
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
@@ -27,10 +35,12 @@ const {
     localMessages, msgForm, msgSubmitting, msgSuccess, msgError, submitMessage,
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
     videoEmbedUrl, vReveal,
+    sectionBg, bgStyle,
 } = useInvitationTemplate(props, {
-    galleryLayout: 'grid',
-    openingStyle:  'fade',
-    revealClass:   'p-visible',
+    galleryLayout:     'grid',
+    openingStyle:      'fade',
+    revealClass:       'p-visible',
+    sectionBgDefaults: SECTION_BG_DEFAULTS,
 });
 
 const guestDisplayName = computed(() =>
@@ -73,9 +83,11 @@ onMounted(() => {
             @click="triggerGate"
         >
             <div
-                v-if="coverPhotoUrl"
+                v-if="sectionBg('cover') || coverPhotoUrl"
                 class="pearl-gate__bg"
-                :style="{ backgroundImage: `url(${coverPhotoUrl})` }"
+                :style="sectionBg('cover')
+                    ? bgStyle(sectionBg('cover'))
+                    : { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
             />
             <div class="pearl-gate__overlay" />
 
@@ -134,7 +146,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Opening / Pasangan ── -->
-            <section v-if="sectionEnabled('opening')" class="pearl-opening" :ref="vReveal">
+            <section v-if="sectionEnabled('opening')" class="pearl-opening" style="position:relative" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('opening')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('opening'))"
+                />
                 <div class="pearl-divider-label" :style="{ fontFamily: fontBody, color: primary }">
                     <span class="pearl-line" :style="{ background: primary }"></span>
                     Wedding Ceremony
@@ -226,7 +244,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Events ── -->
-            <section v-if="sectionEnabled('events') && events.length" class="pearl-events" :style="{ background: darkBg }" :ref="vReveal">
+            <section v-if="sectionEnabled('events') && events.length" class="pearl-events" :style="{ background: darkBg, position: 'relative' }" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('events')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('events'))"
+                />
                 <div class="pearl-section-title" :style="{ fontFamily: fontTitle, color: '#fff' }">Tanggal Pernikahan</div>
                 <div class="pearl-events__grid">
                     <div
@@ -320,7 +344,13 @@ onMounted(() => {
             </section>
 
             <!-- ── Gallery ── -->
-            <section v-if="sectionEnabled('gallery') && galleries.length" class="pearl-gallery" :ref="vReveal">
+            <section v-if="sectionEnabled('gallery') && galleries.length" class="pearl-gallery" style="position:relative" :ref="vReveal">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('gallery')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('gallery'))"
+                />
                 <div class="pearl-divider-label" :style="{ fontFamily: fontBody, color: primary }">
                     <span class="pearl-line" :style="{ background: primary }"></span>
                     Gallery
@@ -478,9 +508,11 @@ onMounted(() => {
                 :style="{ background: darkBg }"
             >
                 <div
-                    v-if="coverPhotoUrl"
+                    v-if="sectionBg('closing') || coverPhotoUrl"
                     class="pearl-closing__bg"
-                    :style="{ backgroundImage: `url(${coverPhotoUrl})` }"
+                    :style="sectionBg('closing')
+                        ? bgStyle(sectionBg('closing'))
+                        : { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
                 />
                 <div class="pearl-closing__overlay" :style="{ background: `${darkBg}cc` }" />
                 <div class="pearl-closing__content">

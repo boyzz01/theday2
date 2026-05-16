@@ -16,6 +16,7 @@ class RegistrationTest extends TestCase
 
         Plan::create([
             'name'               => 'Free',
+            'slug'               => 'free',
             'price'              => 0,
             'duration_days'      => 0,
             'max_invitations'    => 3,
@@ -47,6 +48,6 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice', absolute: false));
     }
 }

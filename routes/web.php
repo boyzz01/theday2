@@ -16,9 +16,12 @@ use App\Http\Controllers\Dashboard\GuestImportController;
 use App\Http\Controllers\Dashboard\GuestListController;
 use App\Http\Controllers\Dashboard\GuestMessageController;
 use App\Http\Controllers\Dashboard\InvitationController;
+use App\Http\Controllers\Dashboard\InvitationCustomizeController;
 use App\Http\Controllers\Dashboard\AddonController;
 use App\Http\Controllers\Dashboard\SubscriptionController;
+use App\Http\Controllers\Dashboard\TransactionController;
 use App\Http\Controllers\Dashboard\TemplateController;
+use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Dashboard\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\ArticleController;
@@ -30,6 +33,13 @@ use App\Http\Controllers\Public\PersonalizedInvitationController;
 use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\TemplateGalleryController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/maintenance', function () {
+    if (!env('MAINTENANCE_MODE', false)) {
+        return redirect()->route('home');
+    }
+    return inertia('Maintenance');
+})->name('maintenance');
 
 Route::get('/', function () {
     $featuredArticles = \App\Models\Article::published()
@@ -151,6 +161,11 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post('/invitations/{invitation}/upload', [InvitationController::class, 'upload'])->name('invitations.upload');
     Route::post('/invitations/{invitation}/upload-audio', [InvitationController::class, 'uploadAudio'])->name('invitations.upload-audio');
 
+    // Kustomisasi page (premium)
+    Route::get( '/invitations/{invitation}/customize',                 [InvitationCustomizeController::class, 'show'])->name('invitations.customize');
+    Route::post('/invitations/{invitation}/customize',                 [InvitationCustomizeController::class, 'update'])->name('invitations.customize.update');
+    Route::post('/invitations/{invitation}/sections/{key}/background', [InvitationCustomizeController::class, 'uploadBackground'])->name('invitations.sections.background');
+
     // ── Buku Tamu (guest messages per invitation) ────────────────────────
     Route::get(   '/invitations/{invitation}/buku-tamu',            [DashboardGuestMessageController::class, 'index'])->name('buku-tamu.show');
     Route::get(   '/invitations/{invitation}/messages',             [DashboardGuestMessageController::class, 'messages'])->name('invitations.messages.list');
@@ -204,6 +219,7 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::get( '/paket',                                [SubscriptionController::class, 'index'])->name('paket');
     Route::post('/subscriptions/checkout',               [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
     Route::post('/addons/checkout',                      [AddonController::class, 'checkout'])->name('addons.checkout');
+    Route::get( '/transactions',                         [TransactionController::class, 'index'])->name('transactions.index');
     Route::get( '/transactions/{transaction}/invoice',   [SubscriptionController::class, 'invoice'])->name('transactions.invoice');
 
     // ── Checklist ────────────────────────────────────────────────────────
@@ -223,6 +239,12 @@ Route::middleware(['auth', 'verified', 'onboarding'])->prefix('dashboard')->name
     Route::post(  '/checklist/tasks/{taskId}/subtasks',              [ChecklistController::class, 'storeSubtask'])->name('checklist.tasks.subtasks.store');
     Route::patch( '/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'updateSubtask'])->name('checklist.tasks.subtasks.update');
     Route::delete('/checklist/tasks/{taskId}/subtasks/{subtaskId}',  [ChecklistController::class, 'destroySubtask'])->name('checklist.tasks.subtasks.destroy');
+});
+
+// ── Payment return & status polling (no onboarding guard) ───────────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/payment/return',                            [PaymentReturnController::class, 'show']  )->name('payment.return');
+    Route::get('/payment/transactions/{transaction}/status', [PaymentReturnController::class, 'status'])->name('payment.status');
 });
 
 // Keep legacy route alias so Breeze redirects still work
@@ -253,7 +275,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // ── Webhooks (no auth) ──────────────────────────────────────────────────
-Route::post('/webhooks/midtrans', [WebhookController::class, 'midtrans'])->name('webhooks.midtrans');
+Route::post('/webhooks/mayar', [WebhookController::class, 'mayar'])->name('webhooks.mayar');
 
 // ── Contact page ────────────────────────────────────────────────────────
 Route::get( '/kontak', [ContactController::class, 'index'])->name('contact');

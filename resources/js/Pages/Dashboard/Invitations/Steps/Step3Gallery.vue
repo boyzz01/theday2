@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     galleries:         { type: Object,   required: true }, // ref([])
@@ -16,7 +19,7 @@ const editingCaptionIndex = ref(null);
 
 async function handleFiles(files) {
     if (!props.invitationId) {
-        uploadError.value = 'Simpan informasi dasar (Step 1) terlebih dahulu sebelum upload foto.';
+        uploadError.value = t('dashboard.invitations.step3Gallery.saveFirstWarning');
         return;
     }
     isUploading.value = true;
@@ -27,7 +30,7 @@ async function handleFiles(files) {
             await props.uploadGalleryFile(file);
         }
     } catch {
-        uploadError.value = 'Gagal mengunggah foto. Coba lagi.';
+        uploadError.value = t('dashboard.invitations.step3Gallery.uploadError');
     } finally {
         isUploading.value = false;
     }
@@ -59,9 +62,9 @@ function onCardDrop(i) {
 
         <div>
             <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">
-                Galeri Foto
+                {{ t('dashboard.invitations.step3Gallery.title') }}
             </h2>
-            <p class="text-sm text-stone-400 mt-0.5">Upload dan susun foto untuk galeri undangan</p>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.step3Gallery.subtitle') }}</p>
         </div>
 
         <!-- Drop zone -->
@@ -81,7 +84,7 @@ function onCardDrop(i) {
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                <span class="text-sm text-[#73877C] font-medium">Mengunggah foto…</span>
+                <span class="text-sm text-[#73877C] font-medium">{{ t('dashboard.invitations.step3Gallery.uploading') }}</span>
             </div>
             <template v-else>
                 <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center">
@@ -91,11 +94,11 @@ function onCardDrop(i) {
                     </svg>
                 </div>
                 <div class="text-center">
-                    <p class="text-sm font-medium text-stone-700">Drag & drop foto di sini</p>
-                    <p class="text-xs text-stone-400 mt-0.5">atau klik untuk memilih file (JPG, PNG, WebP · maks 5 MB per foto)</p>
+                    <p class="text-sm font-medium text-stone-700">{{ t('dashboard.invitations.step3Gallery.dropzone') }}</p>
+                    <p class="text-xs text-stone-400 mt-0.5">{{ t('dashboard.invitations.step3Gallery.dropzoneHint') }}</p>
                 </div>
                 <span class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white" style="background-color: #92A89C">
-                    Pilih Foto
+                    {{ t('dashboard.invitations.step3Gallery.choosePhoto') }}
                 </span>
             </template>
             <input type="file" accept="image/*" multiple class="sr-only"
@@ -108,7 +111,7 @@ function onCardDrop(i) {
             {{ uploadError }}
         </p>
         <p v-else-if="!invitationId" class="text-xs text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 rounded-xl px-4 py-2.5">
-            Simpan informasi dasar (Step 1) terlebih dahulu untuk dapat upload foto.
+            {{ t('dashboard.invitations.step3Gallery.saveFirstHint') }}
         </p>
 
         <!-- Photo grid -->
@@ -183,7 +186,7 @@ function onCardDrop(i) {
 
         <!-- Empty state -->
         <div v-else class="text-center py-6 text-stone-400 text-sm">
-            Belum ada foto. Upload foto di atas untuk memulai.
+            {{ t('dashboard.invitations.step3Gallery.empty') }}
         </div>
 
     </div>

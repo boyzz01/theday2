@@ -8,6 +8,14 @@ import JavaneseGate   from '@/Components/invitation/ornaments/JavaneseGate.vue';
 import WayangBorder   from '@/Components/invitation/ornaments/WayangBorder.vue';
 import SectionGallery from '@/Pages/Invitation/Sections/SectionGallery.vue';
 
+const SECTION_BG_DEFAULTS = {
+    cover:   { type: 'color', value: '#2C1810' },
+    opening: { type: 'color', value: '#1a1008' },
+    events:  { type: 'color', value: '#f5efe8' },
+    gallery: { type: 'color', value: '#f5efe8' },
+    closing: { type: 'color', value: '#2C1810' },
+}
+
 const props = defineProps({
     invitation: { type: Object,  required: true },
     messages:   { type: Array,   default: () => [] },
@@ -33,10 +41,12 @@ const {
     localMessages, msgForm, msgSubmitting, msgSuccess, msgError, submitMessage,
     rsvpForm, rsvpSubmitting, rsvpSuccess, rsvpError, submitRsvp,
     videoEmbedUrl, vReveal,
+    sectionBg, bgStyle,
 } = useInvitationTemplate(props, {
-    galleryLayout: 'grid',
-    openingStyle:  'gate',
-    revealClass:   'n-visible',
+    galleryLayout:     'grid',
+    openingStyle:      'gate',
+    revealClass:       'n-visible',
+    sectionBgDefaults: SECTION_BG_DEFAULTS,
 });
 
 // Nusantara-specific: inject Google Fonts
@@ -237,6 +247,13 @@ onMounted(() => {
                     ? { backgroundImage: `url(${coverPhotoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center top' }
                     : { background: bgColor }"
             >
+                <!-- Section background overlay (color or image from editor / defaults) -->
+                <div
+                    v-if="sectionBg('cover')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('cover'))"
+                />
+
                 <!-- Dark overlay when photo present for readability -->
                 <div v-if="coverPhotoUrl" class="n-cover-photo-overlay" :style="{ background: darkBg }"/>
 
@@ -311,6 +328,12 @@ onMounted(() => {
 
             <!-- ── Section 2: Opening / Sambutan ───────────────────── -->
             <section class="n-section n-section-light" :style="{ background: bgColor }">
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('opening')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('opening'))"
+                />
                 <BatikKawung :color="primary" :opacity="0.03"/>
 
                 <!-- Corner sulur ornaments -->
@@ -436,6 +459,12 @@ onMounted(() => {
                 class="n-section n-section-dark"
                 :style="{ background: darkBg }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('events')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('events'))"
+                />
                 <!-- Mandala background -->
                 <div class="n-mandala-bg">
                     <MandalaBg :color="primaryLight" :opacity="0.05" size="600px"/>
@@ -624,6 +653,12 @@ onMounted(() => {
                 class="n-section n-section-light n-gallery-section"
                 :style="{ background: bgColor }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('gallery')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('gallery'))"
+                />
                 <!-- WayangBorder frame around the content -->
                 <div class="n-wayang-frame">
                     <WayangBorder :primary-color="primary" :light-color="primaryLight"/>
@@ -1031,6 +1066,12 @@ onMounted(() => {
                 class="n-section n-section-dark n-closing"
                 :style="{ background: darkBg }"
             >
+                <!-- Section background overlay from editor -->
+                <div
+                    v-if="sectionBg('closing')"
+                    class="absolute inset-0 pointer-events-none"
+                    :style="bgStyle(sectionBg('closing'))"
+                />
                 <!-- Full mandala behind content -->
                 <div class="n-closing-mandala">
                     <MandalaBg :color="primaryLight" :opacity="0.06" size="500px"/>

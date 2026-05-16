@@ -67,7 +67,26 @@
       "Bash(mysql -u root theday -e \"DESCRIBE subscriptions;\")",
       "Bash(grep -E \"\\\\.\\(php|js|vue\\)$\")",
       "Bash(bash \"C:/Users/Ardi/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"c:/laragon/www/theday\")",
-      "Bash(awk '/<script setup>/,/<\\\\/script>/' \"c:/laragon/www/theday/resources/js/Components/invitation/templates/NusantaraTemplate.vue\")"
+      "Bash(awk '/<script setup>/,/<\\\\/script>/' \"c:/laragon/www/theday/resources/js/Components/invitation/templates/NusantaraTemplate.vue\")",
+      "Bash(git checkout *)",
+      "Bash(git commit -m ' *)",
+      "Bash(node -e ' *)",
+      "Bash(rtk artisan *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(rtk npx *)",
+      "WebFetch(domain:docs.mayar.id)",
+      "Bash(rtk composer *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); reqs=d.get\\('require',{}\\); print\\('midtrans in require:', any\\('midtrans' in k for k in reqs\\)\\); print\\('midtrans in require-dev:', any\\('midtrans' in k for k in d.get\\('require-dev',{}\\)\\)\\)\")",
+      "Bash(git -C C:/laragon/www/theday show --stat eccab27)",
+      "Bash(git -C C:/laragon/www/theday show 096a484:.env.example)",
+      "Bash(git -C C:/laragon/www/theday show 096a484:config/midtrans.php)",
+      "Bash(php /c/laragon/www/theday/artisan make:migration add_mayar_to_payment_method_enum --path=database/migrations)",
+      "Bash(php /c/laragon/www/theday/artisan test tests/Feature/Payment/MayarServiceTest.php)",
+      "Bash(php /c/laragon/www/theday/artisan test tests/Feature/Payment/SubscriptionCheckoutTest.php)"
+    ],
+    "additionalDirectories": [
+      "C:\\laragon\\www\\theday\\docs\\superpowers\\specs"
     ]
   }
 }

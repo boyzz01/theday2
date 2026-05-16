@@ -20,21 +20,23 @@ return new class extends Migration
         }
 
         // Extend completion_status enum to include 'disabled'
-        // We check current enum values first to avoid duplicate ALTER if re-run
-        $columnType = DB::select("
-            SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'invitation_sections'
-              AND COLUMN_NAME = 'completion_status'
-        ")[0]->COLUMN_TYPE ?? '';
+        // MySQL only: SQLite does not support ENUM or INFORMATION_SCHEMA
+        if (DB::getDriverName() === 'mysql') {
+            $columnType = DB::select("
+                SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'invitation_sections'
+                  AND COLUMN_NAME = 'completion_status'
+            ")[0]->COLUMN_TYPE ?? '';
 
-        if (!str_contains($columnType, "'disabled'")) {
-            DB::statement("
-                ALTER TABLE invitation_sections
-                MODIFY COLUMN completion_status
-                ENUM('empty','incomplete','complete','warning','disabled','error')
-                NOT NULL DEFAULT 'empty'
-            ");
+            if (!str_contains($columnType, "'disabled'")) {
+                DB::statement("
+                    ALTER TABLE invitation_sections
+                    MODIFY COLUMN completion_status
+                    ENUM('empty','incomplete','complete','warning','disabled','error')
+                    NOT NULL DEFAULT 'empty'
+                ");
+            }
         }
     }
 

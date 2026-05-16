@@ -1,11 +1,14 @@
 <script setup>
-// Step 6 — Publikasi
+// Step 3 — Publikasi
 // Sections: slug_settings (req), password_protection (opt), preview_and_publish (req)
 
 import { ref, computed, watch, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t } = useLocale();
 
 const props = defineProps({
     publish:            { type: Object,   required: true },
@@ -13,12 +16,13 @@ const props = defineProps({
     invitationId:       { type: String,   default: null },
     invitationStatus:   { type: String,   default: 'draft' },
     isSaving:           { type: Boolean,  default: false },
-    saveStep6:          { type: Function, required: true },
+    saveStep3:          { type: Function, required: true },
     template:           { type: Object,   required: true },
     basic:              { type: Object,   required: true },
     details:            { type: Object,   default: null },
     onToggleSection:    { type: Function, required: true },
     canUsePremium:      { type: Boolean,  default: false },
+    isStorybook:        { type: Boolean,  default: false },
 });
 
 const expanded       = ref(new Set(['slug_settings', 'password_protection', 'preview_and_publish']));
@@ -39,7 +43,7 @@ async function unpublish() {
         publishStatus.value = null;
         router.reload();
     } catch (e) {
-        publishError.value = e.response?.data?.message ?? 'Gagal mengembalikan ke draft.';
+        publishError.value = e.response?.data?.message ?? t('dashboard.invitations.stepPublikasi.revertError');
         isUnpublishing.value = false;
     }
 }
@@ -104,19 +108,19 @@ async function handleAction(action) {
 
     if (props.canUsePremium) {
         if (!props.publish.slug?.trim()) {
-            publishError.value = 'URL undangan wajib diisi sebelum menyimpan.';
+            publishError.value = t('dashboard.invitations.stepPublikasi.urlRequired');
             ensureExpanded('slug_settings');
             return;
         }
         if (slugStatus.value === 'taken') {
-            publishError.value = 'URL undangan sudah dipakai oleh undangan lain. Pilih URL yang berbeda.';
+            publishError.value = t('dashboard.invitations.stepPublikasi.urlAlreadyTaken');
             ensureExpanded('slug_settings');
             return;
         }
     }
 
     try {
-        await props.saveStep6(action);
+        await props.saveStep3(action);
         publishStatus.value = action === 'publish' ? 'published' : 'draft';
 
         if (action === 'draft') {
@@ -127,7 +131,7 @@ async function handleAction(action) {
     } catch (e) {
         publishError.value = e.response?.data?.errors?.slug?.[0]
             ?? e.response?.data?.message
-            ?? 'Terjadi kesalahan. Coba lagi.';
+            ?? t('dashboard.invitations.stepPublikasi.generalError');
     }
 }
 
@@ -144,8 +148,8 @@ function goToDashboard() {
     <div class="p-4 sm:p-6 space-y-3">
 
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Publikasi</h2>
-            <p class="text-sm text-stone-400 mt-0.5">Atur URL dan publikasikan undangan Anda</p>
+            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.invitations.stepPublikasi.title') }}</h2>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.stepPublikasi.subtitle') }}</p>
         </div>
 
         <!-- Validation error (slug empty / taken) -->
@@ -165,7 +169,7 @@ function goToDashboard() {
                 <svg class="w-4 h-4 flex-shrink-0 text-[#92A89C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
-                Draft berhasil disimpan.
+                {{ t('dashboard.invitations.stepPublikasi.draftSaved') }}
             </div>
         </Transition>
 
@@ -179,8 +183,8 @@ function goToDashboard() {
                     </svg>
                 </div>
                 <div>
-                    <p class="text-base font-semibold text-green-800">Undangan berhasil dipublikasikan!</p>
-                    <p class="text-sm text-green-600 mt-0.5">Bagikan link di bawah kepada tamu undangan</p>
+                    <p class="text-base font-semibold text-green-800">{{ t('dashboard.invitations.stepPublikasi.publishedTitle') }}</p>
+                    <p class="text-sm text-green-600 mt-0.5">{{ t('dashboard.invitations.stepPublikasi.publishedSubtitle') }}</p>
                 </div>
                 <div v-if="invitationUrl"
                      class="flex items-center gap-2 bg-white rounded-xl border border-green-200 px-4 py-2.5 text-sm">
@@ -191,27 +195,33 @@ function goToDashboard() {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                         </svg>
-                        Salin
+                        {{ t('dashboard.invitations.stepPublikasi.copyLink') }}
                     </button>
                 </div>
-                <button @click="goToDashboard"
-                        class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
-                        style="background-color: #92A89C">
-                    Kembali ke Dashboard
-                </button>
+                <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                    <a v-if="invitationId"
+                       :href="route('dashboard.invitations.customize', { invitation: invitationId })"
+                       class="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all inline-block text-center"
+                       style="background-color: #92A89C">
+                        {{ t('dashboard.invitations.stepPublikasi.customizeInvitation') }}
+                    </a>
+                    <button @click="goToDashboard"
+                            class="px-5 py-2 rounded-xl text-sm font-semibold text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all">
+                        {{ t('dashboard.invitations.stepPublikasi.toDashboard') }}
+                    </button>
+                </div>
             </div>
         </Transition>
 
         <!-- Slug Settings (required) -->
             <SectionAccordionCard
-                title="URL Undangan"
-                description="Alamat unik undangan yang akan dibagikan"
-                :is-required="sections.slug_settings?.is_required ?? true"
-                :is-enabled="sections.slug_settings?.is_enabled ?? true"
+                :title="t('dashboard.invitations.stepPublikasi.urlTitle')"
+                :description="t('dashboard.invitations.stepPublikasi.urlDesc')"
+                :is-required="true"
+                :is-enabled="canUsePremium"
                 :status="sections.slug_settings?.completion_status ?? 'empty'"
                 :expanded="expanded.has('slug_settings')"
                 @toggle-expand="toggle('slug_settings')"
-                @toggle-enabled="onToggleSection('slug_settings')"
             >
                 <!-- Free user: read-only slug display -->
                 <div v-if="!canUsePremium" class="space-y-3">
@@ -235,8 +245,8 @@ function goToDashboard() {
                                   d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                         </svg>
                         <p class="text-xs" style="color:#92400E">
-                            URL kustom hanya tersedia di paket Premium.
-                            <a :href="route('dashboard.paket')" class="font-semibold underline" style="color:#C8A26B">Upgrade →</a>
+                            {{ t('dashboard.invitations.stepPublikasi.urlCustomPremiumOnly') }}
+                            <a :href="route('dashboard.paket')" class="font-semibold underline" style="color:#C8A26B">{{ t('dashboard.invitations.stepPublikasi.urlUpgrade') }}</a>
                         </p>
                     </div>
                 </div>
@@ -270,16 +280,16 @@ function goToDashboard() {
                             </svg>
                         </span>
                     </div>
-                    <p v-if="slugStatus === 'available'" class="text-xs text-green-600">URL tersedia</p>
+                    <p v-if="slugStatus === 'available'" class="text-xs text-green-600">{{ t('dashboard.invitations.stepPublikasi.urlAvailable') }}</p>
                     <div v-else-if="slugStatus === 'taken'" class="flex items-center gap-2 flex-wrap">
-                        <p class="text-xs text-red-500">URL sudah dipakai.</p>
+                        <p class="text-xs text-red-500">{{ t('dashboard.invitations.stepPublikasi.urlTaken') }}</p>
                         <button v-if="slugSuggestion"
                                 @click="publish.slug = slugSuggestion; slugSuggestion = null"
                                 class="text-xs font-semibold text-[#73877C] underline hover:text-[#2C2417]">
-                            Pakai "/{{ slugSuggestion }}"
+                            {{ t('dashboard.invitations.stepPublikasi.urlUseSuggestion', { slug: slugSuggestion }) }}
                         </button>
                     </div>
-                    <p v-else class="text-xs text-stone-400">Hanya huruf, angka, dan tanda hubung. Contoh: budi-dan-ani-2025</p>
+                    <p v-else class="text-xs text-stone-400">{{ t('dashboard.invitations.stepPublikasi.urlHint') }}</p>
                 </div>
             </SectionAccordionCard>
 
@@ -309,14 +319,13 @@ function goToDashboard() {
 
             <!-- Preview & Publish (required) -->
             <SectionAccordionCard
-                title="Preview & Publikasi"
-                description="Tinjau dan publikasikan undangan Anda"
-                :is-required="sections.preview_and_publish?.is_required ?? true"
-                :is-enabled="sections.preview_and_publish?.is_enabled ?? true"
+                :title="t('dashboard.invitations.stepPublikasi.previewTitle')"
+                :description="t('dashboard.invitations.stepPublikasi.previewDesc')"
+                :is-required="true"
+                :is-enabled="true"
                 :status="sections.preview_and_publish?.completion_status ?? 'empty'"
                 :expanded="expanded.has('preview_and_publish')"
                 @toggle-expand="toggle('preview_and_publish')"
-                @toggle-enabled="onToggleSection('preview_and_publish')"
             >
                 <div class="space-y-4">
                     <!-- Summary -->
@@ -326,13 +335,13 @@ function goToDashboard() {
                                  class="w-full h-full object-cover" alt="Template"/>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-stone-800">{{ basic.title || 'Judul Undangan' }}</p>
-                            <p class="text-xs text-stone-400">{{ template.name }} · Pernikahan</p>
+                            <p class="text-sm font-semibold text-stone-800">{{ basic.title || t('dashboard.invitations.stepPublikasi.invitationTitle') }}</p>
+                            <p class="text-xs text-stone-400">{{ template.name }} · {{ t('dashboard.invitations.stepPublikasi.wedding') }}</p>
                         </div>
                         <span :class="[
                             'ml-auto text-xs font-medium px-2.5 py-1 rounded-lg',
                             invitationId ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-stone-100 text-stone-500',
-                        ]">{{ invitationId ? 'Tersimpan' : 'Belum disimpan' }}</span>
+                        ]">{{ invitationId ? t('dashboard.invitations.stepPublikasi.saved') : t('dashboard.invitations.stepPublikasi.notSaved') }}</span>
                     </div>
 
                     <!-- Preview link -->
@@ -345,7 +354,7 @@ function goToDashboard() {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
-                        Preview Undangan
+                        {{ t('dashboard.invitations.stepPublikasi.previewInvitation') }}
                     </a>
 
                     <!-- Action buttons -->
@@ -365,7 +374,7 @@ function goToDashboard() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
-                            Simpan Draft
+                            {{ t('dashboard.invitations.stepPublikasi.saveDraft') }}
                         </button>
                         <button
                             v-else
@@ -381,7 +390,7 @@ function goToDashboard() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                             </svg>
-                            Kembalikan ke Draft
+                            {{ t('dashboard.invitations.stepPublikasi.revertToDraft') }}
                         </button>
 
                         <!-- Publikasi: aktif saat draft, disabled saat sudah published -->
@@ -400,17 +409,19 @@ function goToDashboard() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                             </svg>
-                            Publikasikan Sekarang
+                            {{ t('dashboard.invitations.stepPublikasi.publishNow') }}
                         </button>
-                        <div
-                            v-else
-                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50"
+                        <a
+                            v-else-if="invitationId"
+                            :href="route('dashboard.invitations.customize', { invitation: invitationId })"
+                            class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white transition-all"
+                            style="background-color: #92A89C"
                         >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                             </svg>
-                            Sudah Dipublikasikan
-                        </div>
+                            {{ t('dashboard.invitations.stepPublikasi.customizeButton') }}
+                        </a>
                     </div>
                 </div>
             </SectionAccordionCard>

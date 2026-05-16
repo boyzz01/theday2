@@ -61,47 +61,42 @@ class TemplateGalleryController extends Controller
 
     public function demo(Request $request, Template $template): Response
     {
-        $demo   = $template->demo_data ?? [];
+        // Template-specific config only (custom_config per template)
+        $templateData = $template->demo_data ?? [];
         $config = array_merge(
-            $template->default_config        ?? [],
-            $demo['custom_config']            ?? []
+            $template->default_config  ?? [],
+            $templateData['custom_config'] ?? []
         );
+
+        // Shared wedding demo data — single source of truth
+        $demo = config('demo_data.wedding');
 
         $eventType = 'pernikahan';
 
-        // Format events to match invitation shape expected by section components
-        $events = collect($demo['events'] ?? [])->map(function ($e, $i) {
-            $date = isset($e['event_date'])
-                ? Carbon::parse($e['event_date'])
-                : null;
-
+        $events = collect($demo['events'])->map(function ($e, $i) {
+            $date = Carbon::parse($e['event_date']);
             return [
                 'id'                   => $i + 1,
-                'event_name'           => $e['event_name']    ?? '',
-                'event_date'           => $e['event_date']    ?? null,
-                'event_date_formatted' => $date
-                    ? $date->locale('id')->translatedFormat('l, d F Y')
-                    : null,
-                'start_time'    => $e['start_time']    ?? null,
-                'end_time'      => $e['end_time']      ?? null,
-                'venue_name'    => $e['venue_name']    ?? null,
-                'venue_address' => $e['venue_address'] ?? null,
-                'maps_url'      => $e['maps_url']      ?? null,
+                'event_name'           => $e['event_name'],
+                'event_date'           => $e['event_date'],
+                'event_date_formatted' => $date->locale('id')->translatedFormat('l, d F Y'),
+                'start_time'           => $e['start_time']    ?? null,
+                'end_time'             => $e['end_time']      ?? null,
+                'venue_name'           => $e['venue_name']    ?? null,
+                'venue_address'        => $e['venue_address'] ?? null,
+                'maps_url'             => $e['maps_url']      ?? null,
             ];
         })->values()->all();
 
-        // Format gallery: demo stores plain URL strings
-        $galleries = collect($demo['gallery'] ?? [])->map(fn ($url, $i) => [
+        $galleries = collect($demo['gallery'])->map(fn ($url, $i) => [
             'id'        => $i + 1,
             'image_url' => $url,
             'caption'   => null,
         ])->values()->all();
 
-        $demoMessages = [
-            ['id' => 1, 'name' => 'Budi & Ani',          'message' => 'Selamat menempuh hidup baru! Semoga menjadi keluarga yang sakinah mawaddah warahmah 🤲',    'created_at' => '2 jam lalu'],
-            ['id' => 2, 'name' => 'Keluarga Pak Harto',  'message' => 'Barakallah! Semoga pernikahannya diberkahi Allah SWT 🙏',                                   'created_at' => '5 jam lalu'],
-            ['id' => 3, 'name' => 'Rina',                 'message' => 'Happy wedding! Udah ga sabar mau dateng nih 🎉',                                           'created_at' => '1 hari lalu'],
-            ['id' => 4, 'name' => 'Teman SMA',            'message' => 'Akhirnya nikah juga! Selamat ya bro & sis! 💍',                                            'created_at' => '2 hari lalu'],
+        $sections = [
+            'love_story' => ['data' => ['stories' => $demo['love_story']]],
+            'gift'        => ['data' => $demo['gift']],
         ];
 
         return Inertia::render('Templates/Demo', [
@@ -113,18 +108,19 @@ class TemplateGalleryController extends Controller
             ],
             'invitation' => [
                 'id'         => 'demo',
-                'title'      => ($demo['details']['groom_name'] ?? '') . ' & ' . ($demo['details']['bride_name'] ?? ''),
+                'title'      => $demo['details']['groom_name'] . ' & ' . $demo['details']['bride_name'],
                 'slug'       => 'demo',
                 'event_type' => $eventType,
-                'details'    => $demo['details'] ?? null,
+                'details'    => $demo['details'],
                 'events'     => $events,
                 'galleries'  => $galleries,
+                'sections'   => $sections,
                 'music'      => null,
                 'config'        => $config,
                 'template_slug' => $template->slug,
                 'expires_at'    => null,
             ],
-            'messages' => $demoMessages,
+            'messages' => $demo['messages'],
             'isGuest'  => ! $request->user(),
         ]);
     }

@@ -5,6 +5,9 @@
 import { ref, computed } from 'vue';
 import SectionAccordionCard from '@/Components/Wizard/SectionAccordionCard.vue';
 import PremiumUpsellCard from '@/Components/Wizard/PremiumUpsellCard.vue';
+import { useLocale } from '@/Composables/useLocale';
+
+const { t, locale } = useLocale();
 
 const props = defineProps({
     events:          { type: Object,   required: true }, // ref([])
@@ -42,7 +45,12 @@ function onTimeInput(event, obj, key) {
 
 // ── Date picker ──────────────────────────────────────────────────
 const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const DAYS_EN   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const calMonths = computed(() => locale.value === 'id' ? MONTHS_ID : MONTHS_EN);
+const calDayNames = computed(() => locale.value === 'id' ? DAYS_ID : DAYS_EN);
 
 const showDatePicker = ref(false);
 const activeEvent    = ref(null);
@@ -93,7 +101,7 @@ function isPickedDay(day) {
 function calDisplayDate(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(y, m - 1, d).toLocaleDateString(locale.value === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 </script>
@@ -102,14 +110,14 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
     <div class="p-4 sm:p-6 space-y-3">
 
         <div class="mb-4">
-            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">Acara</h2>
-            <p class="text-sm text-stone-400 mt-0.5">Detail rangkaian acara dan informasi tambahan</p>
+            <h2 class="text-lg font-semibold text-stone-800" style="font-family: 'Playfair Display', serif">{{ t('dashboard.invitations.stepAcara.title') }}</h2>
+            <p class="text-sm text-stone-400 mt-0.5">{{ t('dashboard.invitations.stepAcara.subtitle') }}</p>
         </div>
 
         <!-- Events -->
         <SectionAccordionCard
-            title="Acara & Lokasi"
-            description="Tambahkan satu atau beberapa rangkaian acara"
+            :title="t('dashboard.invitations.stepAcara.eventsTitle')"
+            :description="t('dashboard.invitations.stepAcara.eventsDesc')"
             :is-required="sections.events?.is_required ?? true"
             :is-enabled="sections.events?.is_enabled ?? true"
             :status="sections.events?.completion_status ?? 'empty'"
@@ -129,7 +137,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                 >
                     <!-- Event card header -->
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">Acara {{ index + 1 }}</span>
+                        <span class="text-xs font-semibold text-[#73877C] bg-[#92A89C]/10 border border-[#B8C7BF]/50 px-2 py-0.5 rounded-lg">{{ t('dashboard.invitations.stepAcara.eventBadge', { n: index + 1 }) }}</span>
                         <div class="flex gap-1 ml-auto">
                             <button v-if="index > 0" @click="moveEvent(index, index - 1)"
                                     class="p-1 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors">
@@ -154,45 +162,45 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Nama Acara *</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.eventName') }}</label>
                             <input v-model="event.event_name" type="text" placeholder="Akad Nikah / Resepsi"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Tanggal *</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.date') }}</label>
                             <button type="button" @click="openDatePicker(event)"
                                     class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm text-left transition-colors hover:border-[#92A89C]/50 bg-white">
                                 <span v-if="event.event_date" class="text-stone-800">{{ calDisplayDate(event.event_date) }}</span>
-                                <span v-else class="text-stone-400">Pilih tanggal</span>
+                                <span v-else class="text-stone-400">{{ t('dashboard.invitations.stepAcara.pickDate') }}</span>
                             </button>
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Waktu Mulai</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.startTime') }}</label>
                             <input :value="event.start_time ? event.start_time.slice(0,5) : ''"
                                    @input="onTimeInput($event, event, 'start_time')"
                                    type="text" maxlength="5" placeholder="HH:MM"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Waktu Selesai</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.endTime') }}</label>
                             <input :value="event.end_time ? event.end_time.slice(0,5) : ''"
                                    @input="onTimeInput($event, event, 'end_time')"
                                    type="text" maxlength="5" placeholder="HH:MM"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Nama Venue *</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.venueName') }}</label>
                             <input v-model="event.venue_name" type="text" placeholder="Gedung XYZ"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-xs font-medium text-stone-600">Link Google Maps</label>
+                            <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.mapsUrl') }}</label>
                             <input v-model="event.maps_url" type="url" placeholder="https://maps.google.com/…"
                                    class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition bg-white"/>
                         </div>
                     </div>
                     <div class="space-y-1">
-                        <label class="block text-xs font-medium text-stone-600">Alamat Lengkap</label>
+                        <label class="block text-xs font-medium text-stone-600">{{ t('dashboard.invitations.stepAcara.address') }}</label>
                         <textarea v-model="event.venue_address" rows="2"
                                   placeholder="Jl. Contoh No. 1, Kecamatan, Kota"
                                   class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#92A89C]/50 focus:border-transparent transition resize-none bg-white"/>
@@ -206,15 +214,15 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Tambah Acara
+                    {{ t('dashboard.invitations.stepAcara.addEvent') }}
                 </button>
             </div>
         </SectionAccordionCard>
 
         <!-- Countdown (optional) -->
         <SectionAccordionCard
-            title="Hitung Mundur"
-            description="Tampilkan timer hitung mundur menuju hari H"
+            :title="t('dashboard.invitations.stepAcara.countdownTitle')"
+            :description="t('dashboard.invitations.stepAcara.countdownDesc')"
             :is-required="sections.countdown?.is_required ?? false"
             :is-enabled="sections.countdown?.is_enabled ?? true"
             :status="sections.countdown?.completion_status ?? 'complete'"
@@ -223,16 +231,15 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
             @toggle-enabled="onToggleSection('countdown')"
         >
             <p class="text-sm text-stone-500 py-2">
-                Hitung mundur otomatis menggunakan tanggal acara pertama yang Anda isi.
-                Aktifkan toggle untuk menampilkannya di undangan.
+                {{ t('dashboard.invitations.stepAcara.countdownInfo') }}
             </p>
         </SectionAccordionCard>
 
         <!-- Live Streaming — Premium only (Pattern A: hidden for free users) -->
         <SectionAccordionCard
             v-if="canUsePremium"
-            title="Live Streaming"
-            description="Link siaran langsung acara untuk tamu yang tidak hadir"
+            :title="t('dashboard.invitations.stepAcara.streamingTitle')"
+            :description="t('dashboard.invitations.stepAcara.streamingDesc')"
             :is-required="sections.live_streaming?.is_required ?? false"
             :is-enabled="sections.live_streaming?.is_enabled ?? false"
             :status="sections.live_streaming?.completion_status ?? 'disabled'"
@@ -242,7 +249,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
         >
             <div class="space-y-3">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-stone-700">Link Streaming</label>
+                    <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.stepAcara.streamingUrlLabel') }}</label>
                     <input
                         v-model="sections.live_streaming.data_json.url"
                         type="url"
@@ -251,7 +258,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                     />
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-stone-700">Platform</label>
+                    <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.stepAcara.streamingPlatformLabel') }}</label>
                     <input
                         v-model="sections.live_streaming.data_json.platform"
                         type="text"
@@ -265,8 +272,8 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
         <!-- Additional Info — Premium only (Pattern B: visible locked teaser for free users) -->
         <SectionAccordionCard
             v-if="canUsePremium"
-            title="Informasi Tambahan"
-            description="Catatan khusus untuk tamu undangan"
+            :title="t('dashboard.invitations.stepAcara.additionalTitle')"
+            :description="t('dashboard.invitations.stepAcara.additionalDesc')"
             :is-required="sections.additional_info?.is_required ?? false"
             :is-enabled="sections.additional_info?.is_enabled ?? false"
             :status="sections.additional_info?.completion_status ?? 'disabled'"
@@ -275,7 +282,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
             @toggle-enabled="onToggleSection('additional_info')"
         >
             <div class="space-y-1.5">
-                <label class="block text-sm font-medium text-stone-700">Catatan</label>
+                <label class="block text-sm font-medium text-stone-700">{{ t('dashboard.invitations.stepAcara.additionalNoteLabel') }}</label>
                 <textarea
                     v-model="sections.additional_info.data_json.text"
                     rows="4"
@@ -286,7 +293,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
         </SectionAccordionCard>
         <PremiumUpsellCard
             v-else
-            title="Informasi Tambahan"
+            :title="t('dashboard.invitations.stepAcara.additionalTitle')"
             description="Tambahkan catatan khusus seperti dress code, info parkir, atau pesan untuk tamu undangan."
         />
 
@@ -304,7 +311,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                     </div>
                     <div class="flex items-center justify-between px-5 py-4">
                         <div>
-                            <p class="text-sm font-bold text-stone-800">Pilih Tanggal</p>
+                            <p class="text-sm font-bold text-stone-800">{{ t('dashboard.invitations.stepAcara.datePickerTitle') }}</p>
                             <p v-if="currentPickerDate" class="text-xs text-[#73877C] mt-0.5">{{ calDisplayDate(currentPickerDate) }}</p>
                         </div>
                         <button type="button" @click="closeDatePicker"
@@ -321,7 +328,7 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
-                        <span class="text-sm font-semibold text-stone-700">{{ MONTHS_ID[calMonth] }} {{ calYear }}</span>
+                        <span class="text-sm font-semibold text-stone-700">{{ calMonths[calMonth] }} {{ calYear }}</span>
                         <button type="button" @click="nextCalMonth"
                                 class="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:bg-stone-100 transition-colors">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -330,9 +337,9 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                         </button>
                     </div>
                     <div class="grid grid-cols-7 px-4 pb-1">
-                        <div v-for="d in DAYS_ID" :key="d"
+                        <div v-for="d in calDayNames" :key="d"
                              class="text-center text-xs font-semibold py-1"
-                             :class="d === 'Min' ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
+                             :class="(locale === 'id' ? d === 'Min' : d === 'Sun') ? 'text-rose-400' : 'text-stone-400'">{{ d }}</div>
                     </div>
                     <div class="grid grid-cols-7 px-4 pb-3 gap-y-1">
                         <div v-for="(day, i) in calDays" :key="i" class="flex items-center justify-center aspect-square">
@@ -348,8 +355,8 @@ const currentPickerDate = computed(() => activeEvent.value?.event_date ?? '');
                         <button type="button" @click="closeDatePicker" :disabled="!currentPickerDate"
                                 class="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
                                 style="background-color:#92A89C">
-                            <span v-if="currentPickerDate">Pilih — {{ calDisplayDate(currentPickerDate) }}</span>
-                            <span v-else>Pilih tanggal dulu</span>
+                            <span v-if="currentPickerDate">{{ t('dashboard.invitations.stepAcara.datePickerConfirm', { date: calDisplayDate(currentPickerDate) }) }}</span>
+                            <span v-else>{{ t('dashboard.invitations.stepAcara.datePickerPrompt') }}</span>
                         </button>
                     </div>
                 </div>
