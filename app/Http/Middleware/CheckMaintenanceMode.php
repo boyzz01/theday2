@@ -10,7 +10,7 @@ class CheckMaintenanceMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (env('MAINTENANCE_MODE', false) && $request->path() !== 'maintenance') {
+        if (config('app.maintenance_mode') && $request->path() !== 'maintenance') {
             return redirect()->route('maintenance');
         }
 
